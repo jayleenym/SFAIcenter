@@ -4,13 +4,8 @@ import re
 import sys
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
-
-try:
-    import nbformat  # type: ignore
-except Exception as exc:  # pragma: no cover
-    sys.stderr.write("nbformat is required. Try: python3 -m pip install nbformat\n")
-    raise
-
+import fnmatch
+import json
 import ast
 
 
@@ -129,11 +124,16 @@ def extract_module_elements(source_code: str) -> Tuple[List[str], List[str], Lis
 
 
 def load_notebook_code(notebook_path: Path) -> str:
-    nb = nbformat.read(str(notebook_path), as_version=4)
-    code_cells = [cell for cell in nb.cells if getattr(cell, "cell_type", None) == "code"]
+    with notebook_path.open("r", encoding="utf-8") as f:
+        nb = json.load(f)
+    cells = nb.get("cells", [])
     pieces: List[str] = []
-    for cell in code_cells:
-        cell_src = getattr(cell, "source", "")
+    for cell in cells:
+        if cell.get("cell_type") != "code":
+            continue
+        cell_src = cell.get("source", "")
+        if isinstance(cell_src, list):
+            cell_src = "".join(cell_src)
         if not isinstance(cell_src, str):
             continue
         cleaned = remove_ipython_magics(cell_src)
@@ -259,6 +259,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="Do not overwrite existing .py files",
     )
+    parser.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        help=(
+            "Exclude notebooks by name, stem, or glob pattern. Can be specified multiple times."
+        ),
+    )
 
     args = parser.parse_args(argv)
     start_dir = Path(args.root).resolve()
@@ -266,6 +274,20 @@ def main(argv: Optional[List[str]] = None) -> int:
     overwrite = not args.no_overwrite
 
     notebooks = find_notebooks(start_dir)
+    if args.exclude:
+        patterns: List[str] = list(args.exclude)
+        def is_excluded(p: Path) -> bool:
+            full = str(p)
+            name = p.name
+            stem = p.stem
+            for pat in patterns:
+                if stem == pat or name == pat:
+                    return True
+                if fnmatch.fnmatch(name, pat) or fnmatch.fnmatch(full, pat):
+                    return True
+            return False
+
+        notebooks = [p for p in notebooks if not is_excluded(p)]
     if not notebooks:
         print("No notebooks found.")
         return 0
