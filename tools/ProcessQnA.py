@@ -4,7 +4,9 @@ import os
 import shutil
 from typing import List, Dict, Any
 
+import tools.Openrouter as Openrouter
 
+llm_model = 'openai/gpt-5'
 
 def analyze_extracted_qna(qna_info: dict):
     # qna_info = qna_data['qna_data']
@@ -18,8 +20,8 @@ def analyze_extracted_qna(qna_info: dict):
                 return 'multiple-choice'
             else:
                 # 주관식 - 답변의 문장 수로 단답형/서술형 구분
-                sentence_count = answer.count('.') + answer.count('!') + answer.count('?')
-                if sentence_count <= 1:
+                sentence_count = answer.count('.') + answer.count('!') + answer.count('?') + answer.count('\n')
+                if (sentence_count <= 1) and ("{" not in answer):
                     # 한 문장 또는 한 단어 (단답형)
                     return 'short-answer'
                 else:
@@ -121,18 +123,22 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any
                     # 질문 타입
                     qna_type = analyze_extracted_qna(qna_item)
 
-                    # Domain 찾기
-                    with_domain_dir = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/data/FIN_workbook/1C/with_domain"
-                    qna_domain = find_domain_for_qna(qna_item, file_name, with_domain_dir)
+                    # # Domain 찾기
+                    # with_domain_dir = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/data/FIN_workbook/1C/with_domain"
+                    # qna_domain = find_domain_for_qna(qna_item, file_name, with_domain_dir)
 
                     # 추출할 Q&A 정보 저장
                     qna_items_to_extract.append({
                         'file_id': json_data.get("file_id"),
                         'title': json_data.get('title'),
+                        'cat1_domain': json_data.get('cat1_domain'),
+                        'cat2_sub': json_data.get('cat2_sub'),
+                        'cat3_specific': json_data.get('cat3_specific'),
                         'chapter': page_data.get('chapter'),
                         'page': page_data.get('page'),
                         "qna_type": qna_type,
-                        "qna_domain": qna_domain,
+                        # "qna_domain": qna_domain,
+                        "qna_domain": "",
                         'qna_data': qna_item,
                         'additional_tags_found': additional_tags,
                         'additional_tag_data': additional_tag_data
@@ -170,49 +176,52 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any
         'extracted_qna': extracted_qna
     }
 
-def find_domain_for_qna(qna_item: Dict[str, Any], file_id: str, with_domain_dir: str) -> str:
-    """
-    with_domain 폴더에서 동일한 문제를 찾아서 domain을 반환하는 함수
+# def find_domain_for_qna(qna_item: Dict[str, Any], file_id: str, with_domain_dir: str) -> str:
+#     """
+#     with_domain 폴더에서 동일한 문제를 찾아서 domain을 반환하는 함수
     
-    Args:
-        qna_item: 찾을 Q&A 아이템
-        file_id: 파일 ID
-        with_domain_dir: with_domain 폴더 경로
+#     Args:
+#         qna_item: 찾을 Q&A 아이템
+#         file_id: 파일 ID
+#         with_domain_dir: with_domain 폴더 경로
         
-    Returns:
-        찾은 domain 또는 빈 문자열
-    """
-    try:
-        # with_domain 파일 경로 생성
-        with_domain_file = os.path.join(with_domain_dir, f"{file_id}_extracted_qna_with_domain.json")
+#     Returns:
+#         찾은 domain 또는 빈 문자열
+#     """
+#     try:
+#         # with_domain 파일 경로 생성
+#         with_domain_file = os.path.join(with_domain_dir, f"{file_id}_extracted_qna_with_domain.json")
         
-        if not os.path.exists(with_domain_file):
-            print(f"with_domain 파일이 존재하지 않습니다: {with_domain_file}")
-            return ""
+#         if not os.path.exists(with_domain_file):
+#             print(f"with_domain 파일이 존재하지 않습니다: {with_domain_file}")
+#             return ""
         
-        # with_domain 파일 읽기
-        with open(with_domain_file, 'r', encoding='utf-8') as f:
-            with_domain_data = json.load(f)
+#         # with_domain 파일 읽기
+#         with open(with_domain_file, 'r', encoding='utf-8') as f:
+#             with_domain_data = json.load(f)
         
-        # 현재 Q&A의 질문과 정답으로 매칭
-        current_question = qna_item.get('description', {}).get('question', '')
-        current_answer = qna_item.get('description', {}).get('answer', '')
+#         # 현재 Q&A의 질문과 정답으로 매칭
+#         current_question = qna_item.get('description', {}).get('question', '')
+#         current_answer = qna_item.get('description', {}).get('answer', '')
         
-        for domain_item in with_domain_data:
-            domain_qna = domain_item.get('qna_data', {})
-            domain_question = domain_qna.get('description', {}).get('question', '')
-            domain_answer = domain_qna.get('description', {}).get('answer', '')
+#         for domain_item in with_domain_data:
+#             domain_qna = domain_item.get('qna_data', {})
+#             domain_question = domain_qna.get('description', {}).get('question', '')
+#             domain_answer = domain_qna.get('description', {}).get('answer', '')
             
-            # 질문과 정답이 일치하면 domain 반환
-            if (current_question == domain_question and 
-                current_answer == domain_answer):
-                return domain_item.get('qna_domain', '')
+#             # 질문과 정답이 일치하면 domain 반환
+#             if (current_question == domain_question and 
+#                 current_answer == domain_answer):
+#                 return domain_item.get('qna_domain', '')
         
-        return ""
+#         return ""
         
-    except Exception as e:
-        print(f"Domain 매칭 오류: {e}")
-        return ""
+#     except Exception as e:
+#         print(f"Domain 매칭 오류: {e}")
+#         return ""
+
+
+
 
 def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
     """
@@ -271,6 +280,77 @@ def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
         print(f"- 추출된 Q&A 개수: {len(result['extracted_qna'])}")
     
     return result
+
+
+def add_qna_domain(file_path: str, output_path: str = None) -> Dict[str, Any]:
+    """
+    추출한 qna_data에 domain을 추가하는 함수
+    gpt5 사용
+    """
+    with open(file_path, 'r', encoding='utf-8') as f:
+        qna_data = json.load(f)
+    
+    for i in range(len(qna_data)):
+        qna_item = qna_data[i]
+        question = qna_item['qna_data']['description']['question']
+
+        system_prompt = """
+당신은 금융 문제지를 분류하는 전문가입니다.  
+당신의 임무는 주어진 정보(책 제목, 책 분류, 챕터 제목)를 바탕으로 질문을 아래 분류 체계 중 하나로 정확하게 분류하는 것입니다.  
+
+## 분류 체계
+
+1. 금융기초
+- 경제: 미시경제, 거시경제, 국제경제, 계량경제
+- 경영: 인사/조직, 전략/마케팅, 재무기초
+- 회계: 중급회계, 고급회계, 원가관리회계
+- 세무: 세법, 상법, 민법
+- 노무: 노동법, 사회보험법
+- 통계: 기초 통계학
+
+2. 금융실무
+- 내부통제: 컴플라이언스, 법률, 규제, 협회규정
+- 영업: 세일즈, 화법, 고객관리
+- 디지털: 마이데이터, 가상자산, 블록체인, 핀테크
+- 자산운용: 트레이딩, 채권, 부동산PF, 퇴직연금, 신탁
+- 리스크관리: 채권수심, 신용리스크, 대체심사, 헷징
+- 보험계약: 장기보험, 자동차보험, 해상보험, 지급, 보전
+- 보상처리: 손해사정, 보험금 심사, 자동차 보상
+
+---
+
+## 분류 지침
+1. 반드시 위 체계 중 하나를 선택합니다.  
+2. 질문의 핵심 주제가 학문적 개념·이론이면 → 금융기초,  
+   실제 업무·규제·법률·실무 절차라면 → 금융실무로 분류합니다.  
+3. 모호한 경우 더 구체적인 문맥을 고려해 대분류와 세부 카테고리를 명확히 결정합니다.  
+4. 출력은 JSON 형식으로 작성합니다.
+
+---
+
+## 출력 형식
+{
+  "대분류": "금융기초 또는 금융실무",
+  "카테고리": "세부 카테고리명",
+  "근거": "간단한 분류 이유"
+}
+"""
+        user_prompt = f"""
+        책 제목: {qna_item['title']}
+        책 분류: {qna_item['cat1_domain']}/{qna_item['cat2_sub']}/{qna_item['cat3_specific']}
+        챕터: {qna_item['chapter']}
+        질문: {question}
+        """
+        domain = Openrouter.query_model_openrouter(system_prompt, user_prompt, llm_model)
+        print(question, domain)
+        qna_data[i]['qna_domain'] = domain
+        break
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(qna_data, f, ensure_ascii=False, indent=4)
+
+
+
 
 
 def merge_extracted_qna_files(input_dir: str, output_file: str = None) -> Dict[str, Any]:
@@ -360,6 +440,8 @@ def merge_extracted_qna_files(input_dir: str, output_file: str = None) -> Dict[s
         return {'merged_data': [], 'statistics': {}}
 
 
+
+
 def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any]:
     """
     Domain별로 extracted_qna 파일들을 분류하여 합치는 함수
@@ -424,4 +506,4 @@ def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any
         
     except Exception as e:
         print(f"Domain별 합치기 오류: {e}")
-        return {} 
+        return {}
