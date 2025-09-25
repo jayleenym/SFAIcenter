@@ -1,5 +1,7 @@
 import re
 import json
+import os
+import shutil
 from typing import List, Dict, Any
 
 
@@ -28,7 +30,7 @@ def analyze_extracted_qna(qna_info: dict):
 
 
 # 수정된 extract_qna_tags 함수 (정규식 패턴 수정)
-def extract_qna_tags(json_data: Dict[str, Any]) -> Dict[str, Any]:
+def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any]:
     """
     page_contents에서 {q_0000_0000} 형태의 태그를 추출하고,
     add_info에서 해당 태그를 찾아서 별도 리스트로 분리하는 함수
@@ -119,6 +121,9 @@ def extract_qna_tags(json_data: Dict[str, Any]) -> Dict[str, Any]:
                     # 질문 타입
                     qna_type = analyze_extracted_qna(qna_item)
 
+                    # Domain 찾기
+                    with_domain_dir = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/data/FIN_workbook/1C/with_domain"
+                    qna_domain = find_domain_for_qna(qna_item, file_name, with_domain_dir)
 
                     # 추출할 Q&A 정보 저장
                     qna_items_to_extract.append({
@@ -127,7 +132,7 @@ def extract_qna_tags(json_data: Dict[str, Any]) -> Dict[str, Any]:
                         'chapter': page_data.get('chapter'),
                         'page': page_data.get('page'),
                         "qna_type": qna_type,
-                        "qna_domain": "",
+                        "qna_domain": qna_domain,
                         'qna_data': qna_item,
                         'additional_tags_found': additional_tags,
                         'additional_tag_data': additional_tag_data
@@ -165,6 +170,50 @@ def extract_qna_tags(json_data: Dict[str, Any]) -> Dict[str, Any]:
         'extracted_qna': extracted_qna
     }
 
+def find_domain_for_qna(qna_item: Dict[str, Any], file_id: str, with_domain_dir: str) -> str:
+    """
+    with_domain 폴더에서 동일한 문제를 찾아서 domain을 반환하는 함수
+    
+    Args:
+        qna_item: 찾을 Q&A 아이템
+        file_id: 파일 ID
+        with_domain_dir: with_domain 폴더 경로
+        
+    Returns:
+        찾은 domain 또는 빈 문자열
+    """
+    try:
+        # with_domain 파일 경로 생성
+        with_domain_file = os.path.join(with_domain_dir, f"{file_id}_extracted_qna_with_domain.json")
+        
+        if not os.path.exists(with_domain_file):
+            print(f"with_domain 파일이 존재하지 않습니다: {with_domain_file}")
+            return ""
+        
+        # with_domain 파일 읽기
+        with open(with_domain_file, 'r', encoding='utf-8') as f:
+            with_domain_data = json.load(f)
+        
+        # 현재 Q&A의 질문과 정답으로 매칭
+        current_question = qna_item.get('description', {}).get('question', '')
+        current_answer = qna_item.get('description', {}).get('answer', '')
+        
+        for domain_item in with_domain_data:
+            domain_qna = domain_item.get('qna_data', {})
+            domain_question = domain_qna.get('description', {}).get('question', '')
+            domain_answer = domain_qna.get('description', {}).get('answer', '')
+            
+            # 질문과 정답이 일치하면 domain 반환
+            if (current_question == domain_question and 
+                current_answer == domain_answer):
+                return domain_item.get('qna_domain', '')
+        
+        return ""
+        
+    except Exception as e:
+        print(f"Domain 매칭 오류: {e}")
+        return ""
+
 def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
     """
     JSON 파일을 처리하여 Q&A 태그를 추출하고 분리하는 함수
@@ -181,10 +230,24 @@ def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
         json_data = json.load(f)
     
     # Q&A 태그 추출 및 분리
-    result = extract_qna_tags(json_data)
+    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0])
     
     # 수정된 JSON 저장
     output_file = output_path if output_path else file_path
+    
+    # 파일이 존재하면 백업 생성
+    if os.path.exists(output_file):
+        # extract_backup 폴더 생성 (존재하지 않는 경우)
+        backup_dir = os.path.join(os.path.dirname(output_file), 'extract_backup')
+        os.makedirs(backup_dir, exist_ok=True)
+        
+        # 백업 파일명 생성 (.bak 확장자 추가)
+        backup_filename = os.path.basename(output_file) + '.bak'
+        backup_path = os.path.join(backup_dir, backup_filename)
+        
+        # 기존 파일을 백업 폴더로 복사
+        shutil.copy2(output_file, backup_path)
+        print(f"기존 파일을 백업했습니다: {backup_path}")
     
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(result['modified_json'], f, ensure_ascii=False, indent=4)
@@ -209,3 +272,156 @@ def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
     
     return result
 
+
+def merge_extracted_qna_files(input_dir: str, output_file: str = None) -> Dict[str, Any]:
+    """
+    지정된 경로의 모든 extracted_qna 파일을 하나로 합치는 함수
+    
+    Args:
+        input_dir: extracted_qna 파일들이 있는 디렉토리 경로
+        output_file: 출력 파일 경로 (None이면 input_dir/merged_extracted_qna.json)
+        
+    Returns:
+        합쳐진 Q&A 데이터와 통계 정보
+    """
+    try:
+        # 모든 extracted_qna 파일 찾기
+        extracted_files = []
+        for root, dirs, files in os.walk(input_dir):
+            for file in files:
+                if file.endswith('_extracted_qna.json') and file != 'merged_extracted_qna.json':
+                    extracted_files.append(os.path.join(root, file))
+        
+        if not extracted_files:
+            print(f"extracted_qna 파일을 찾을 수 없습니다: {input_dir}")
+            return {'merged_data': [], 'statistics': {}}
+        
+        print(f"발견된 extracted_qna 파일 개수: {len(extracted_files)}")
+        
+        # 모든 Q&A 데이터를 합칠 리스트
+        merged_qna_data = []
+        file_stats = {}
+        
+        # 각 파일을 읽어서 합치기
+        for file_path in extracted_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    qna_data = json.load(f)
+                
+                # Q&A 데이터가 리스트인지 확인
+                if isinstance(qna_data, list):
+                    merged_qna_data.extend(qna_data)
+                    file_stats[os.path.basename(file_path)] = len(qna_data)
+                    print(f"  - {os.path.basename(file_path)}: {len(qna_data)}개 Q&A 추가")
+                else:
+                    print(f"  - {os.path.basename(file_path)}: 잘못된 형식 (리스트가 아님)")
+                    
+            except Exception as e:
+                print(f"  - {os.path.basename(file_path)}: 읽기 오류 - {e}")
+        
+        # 출력 파일 경로 설정
+        if output_file is None:
+            output_file = os.path.join(input_dir, 'merged_extracted_qna.json')
+        
+        # 합쳐진 데이터 저장
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(merged_qna_data, f, ensure_ascii=False, indent=4)
+        
+        # 통계 정보 생성
+        statistics = {
+            'total_files_processed': len(extracted_files),
+            'total_qna_count': len(merged_qna_data),
+            'files_stats': file_stats,
+            'output_file': output_file
+        }
+        
+        # Domain별 통계
+        domain_stats = {}
+        for qna_item in merged_qna_data:
+            domain = qna_item.get('qna_domain', 'Unknown')
+            domain_stats[domain] = domain_stats.get(domain, 0) + 1
+        
+        statistics['domain_stats'] = domain_stats
+        
+        print(f"\n합치기 완료:")
+        print(f"- 총 Q&A 개수: {len(merged_qna_data)}")
+        print(f"- 출력 파일: {output_file}")
+        print(f"- Domain별 통계:")
+        for domain, count in sorted(domain_stats.items()):
+            print(f"  {domain}: {count}개")
+        
+        return {
+            'merged_data': merged_qna_data,
+            'statistics': statistics
+        }
+        
+    except Exception as e:
+        print(f"파일 합치기 오류: {e}")
+        return {'merged_data': [], 'statistics': {}}
+
+
+def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any]:
+    """
+    Domain별로 extracted_qna 파일들을 분류하여 합치는 함수
+    
+    Args:
+        input_dir: extracted_qna 파일들이 있는 디렉토리 경로
+        output_dir: 출력 디렉토리 (None이면 input_dir/domain_merged)
+        
+    Returns:
+        Domain별로 합쳐진 결과
+    """
+    try:
+        # 모든 extracted_qna 파일 찾기
+        extracted_files = []
+        for root, dirs, files in os.walk(input_dir):
+            for file in files:
+                if file.endswith('_extracted_qna.json'):
+                    extracted_files.append(os.path.join(root, file))
+        
+        if not extracted_files:
+            print(f"extracted_qna 파일을 찾을 수 없습니다: {input_dir}")
+            return {}
+        
+        # Domain별로 데이터 분류
+        domain_data = {}
+        
+        for file_path in extracted_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    qna_data = json.load(f)
+                
+                if isinstance(qna_data, list):
+                    for qna_item in qna_data:
+                        domain = qna_item.get('qna_domain', 'Unknown')
+                        if domain not in domain_data:
+                            domain_data[domain] = []
+                        domain_data[domain].append(qna_item)
+                        
+            except Exception as e:
+                print(f"파일 읽기 오류 {os.path.basename(file_path)}: {e}")
+        
+        # 출력 디렉토리 설정
+        if output_dir is None:
+            output_dir = os.path.join(input_dir, 'domain_merged')
+        
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Domain별로 파일 저장
+        domain_results = {}
+        for domain, qna_list in domain_data.items():
+            output_file = os.path.join(output_dir, f"{domain}_merged_qna.json")
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(qna_list, f, ensure_ascii=False, indent=4)
+            
+            domain_results[domain] = {
+                'file_path': output_file,
+                'count': len(qna_list)
+            }
+            print(f"{domain}: {len(qna_list)}개 Q&A -> {output_file}")
+        
+        return domain_results
+        
+    except Exception as e:
+        print(f"Domain별 합치기 오류: {e}")
+        return {} 
