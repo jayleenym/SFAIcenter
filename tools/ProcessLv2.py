@@ -1,4 +1,4 @@
-import os, re
+import os, re, json
 from typing import List, Dict, Any
 import tools.ProcessFiles as pf
 
@@ -66,7 +66,8 @@ def extract_chapter(c, n):
     # c['page_contents'] = re.sub(title+str(page)+'\n', "", c['page_contents'])
     return c
 
-def fill_chapter(pages):
+def fill_chapter(file):
+    pages = file["contents"]
     new_pages = []
     for i in range(len(pages)):
         c = pages[i]
@@ -77,169 +78,68 @@ def fill_chapter(pages):
         if len(c['page_contents']) > 0:
                 new_pages.append(c)
 
-    return new_pages
+    output = file.copy()
+    output["contents"] = new_pages
+    return output
 
 
 
-
-# def extract_qna(c):
-#     print('---------------------')
-#     print(c['page'])
-# # for i in range(len())
-#     # 문제추출
-#     # qn_re = r'\[문제\d+\]\s'
-#     qn_re = r'\s?문제 [0-9]+:'
-#     # qn_re = r'\s?[0-9][0-9]'
-#     # info_re = r'\[\w+[.]?\d+\w\]\s'
-#     # q_re = r"\s*[^?]*\?"
-#     # ans_re = r"\[정답\]"
-#     ans_re = r"\s?정답:"
-#     # exp_re = r"\s\[해설\]"
-#     exp_re = r"\s?해설:"
-#     option_re = r"\s?①"
+def extract_footnote(file):
+    pages = file["contents"]
     
-#     base_add_info = {
-#                         'tag': "",
-#                         'type': "question",
-#                         "description": {
-#                             "number": "",
-#                             "question": "",
-#                             "options": [],
-#                             'answer' : "",
-#                             "explanation": ""
-#                         },
-#                         "caption":[],
-#                         "file_path": 0,
-#                         "bbox": 0
-#                         }
+    # # 각주 처리
+    # for fn in range(1, 43):
+    #     if f"\n{fn} " in c['page_contents']:
+    #         start = c['page_contents'].find(f"\n{fn} ")
+    #         tag = f"note_{c['page']}_{len(c['add_info'])+1:04}"
 
-#     # 문제는 있음
-#     if re.search(qn_re, c['page_contents']) is not None:
-
-#         base_add_info['tag'] = f"q_{c['page']}_0001"
-
-#         start = re.search(qn_re, c['page_contents']).span()[0]
-#         try:
-#             end = re.search(ans_re, c['page_contents']).span()[1]
-#             # 한 페이지에 문제~정답 모두 있음
-#             # qna = [qa for qa in re.split(fr"({qn_re}|{info_re}|{q_re}|{exp_re}|{ans_re})", c['page_contents'][start:]) if qa !=""]
-#             qna = [qa for qa in re.split(fr"({qn_re}|{option_re}|{exp_re}|{ans_re})", c['page_contents'][start:]) if qa !=""]
-#             # 태그처리
-#             c['page_contents'] = c['page_contents'].replace(c['page_contents'][start:end+2], "\n{"+f"q_{c['page']}_0001"+"}")
-        
-#         except:
-#             # 다음페이지 살펴보기
-#             c2 = origin['contents'][i+1]
-#             if re.search(ans_re, c2['page_contents']) is not None:
-#                 end = re.search(ans_re, c2['page_contents']).span()[1]
-
-#                 qna = [qa 
-#                     # for qa in re.split(fr"({qn_re}|{info_re}|{q_re}|{exp_re}|{ans_re})", 
-#                     for qa in re.split(fr"({qn_re}|{option_re}|{exp_re}|{ans_re})", 
-#                                         c['page_contents'][start:]+c2['page_contents'][:end+2])
-#                     if qa !=""
-#                     ]
-                
-#                 # 태그처리
-#                 c['page_contents'] = c['page_contents'].replace(c['page_contents'][start:], "\n{"+f"q_{c['page']}_0001"+"}")
-#                 c2['page_contents'] = c2['page_contents'].replace(c2['page_contents'][:end+2], "")
-            
-#             # 그 다음 페이지도 살펴보기
-#             elif re.search(ans_re, c2['page_contents']) is None:
-#                 c3 = origin['contents'][i+2]
-#                 if re.search(ans_re, c3['page_contents']) is not None:
-#                     end = re.search(ans_re, c3['page_contents']).span()[1]
-#                     qna = [qa 
-#                         # for qa in re.split(fr"({qn_re}|{info_re}|{q_re}|{exp_re}|{ans_re})", 
-#                         for qa in re.split(fr"({qn_re}|{option_re}|{exp_re}|{ans_re})", 
-#                                             c['page_contents'][start:]+c2['page_contents']+c3['page_contents'][:end+2])
-#                         if qa !=""
-#                         ]
-                    
-#                     # 태그처리
-#                     c['page_contents'] = c['page_contents'].replace(c['page_contents'][start:], "\n{"+f"q_{c['page']}_0001"+"}")
-#                     c2['page_contents'] = c2['page_contents'].replace(c2['page_contents'], "")
-#                     c3['page_contents'] = c3['page_contents'].replace(c3['page_contents'][:end+2], "")
-#             else:
-#                 print("못찾겟다..")
-
-#         print(qna)
-#         for x in range(len(qna)):
-#             if re.search(qn_re, qna[x]) is not None:
-#                 # number = re.search(r'\[문제(\d+)*\]', qna[x]).group(1)
-#                 number = qna[x].strip()
-#                 print('number:', number)
-#                 # if int(number) < 10:
-#                 #     number = f"{int(number):02}"
-#                 base_add_info['description']['number'] = number
-#                 try:
-#                     question = qna[x+1]
-#                     question = question.strip()
-
-#                     base_add_info['description']['question'] = question
-#                 except:
-#                     print("(ERROR) question:", question)
-
-#             # if re.search(info_re, qna[x]) is not None:
-#             #     base_add_info['caption'].append(re.search(r'\[(\w+[.]?\d+\w)\]', qna[x]).group(1))
-#             #     if base_add_info['caption'][0].startswith("문제"):
-#             #         base_add_info['caption'].pop(0)
-
-#             # if re.search(q_re, qna[x]) is not None:
-#             #     question = re.search(r'\s*([^?]*\?)', qna[x]).group(1)
-#             #     options = [ca.strip() for ca in n_split(qna[x+1].replace("❑",""), "\n") if ca != ""]
-#             #     for ct in range(len(options)):
-#             #         if '①' not in options[0]:
-#             #             question += " "+options[0]
-#                         # options = options[1:]
-                
-#             if re.search(option_re, qna[x]) is not None:
-#                 try:
-#                     options = [qna[x]+qna[x+1]]
-#                 except:
-#                     print("(ERROR) options:", options)
-#                 if len(options) == 1:
-#                     options = extract_options(options[0])
-#                 print("options_re:", options)
-#                 base_add_info['description']['options'] = options
-
-#             if re.search(exp_re, qna[x]) is not None:
-#                 explanation = qna[x+1].strip()
-#                 print("explanation:", explanation)
-#                 base_add_info['description']['explanation'] = explanation
-
-#             if re.search(ans_re, qna[x]) is not None:
-#                 answer = qna[x+1].strip()
-#                 print("answer:", answer)
-#                 if answer in "①②③④⑤":
-#                     base_add_info['description']['answer'] = answer
-#                 elif answer.isnumeric():
-#                     answer = replace_number(answer)
-#                     base_add_info['description']['answer'] = answer
-#                 else:
-#                     print(c['page'], end, answer)
-            
-#             # base_add_info['caption'].append("매경 TEST 기출 문제")
-
-#         c['add_info'].append(base_add_info)
-#     return c
-
-def extract_footnote(c):
-    # 각주 처리
-    for fn in range(1, 43):
-        if f"\n{fn} " in c['page_contents']:
-            start = c['page_contents'].find(f"\n{fn} ")
-            tag = f"note_{c['page']}_{len(c['add_info'])+1:04}"
-
-            c['add_info'].append(
-                {
-                    "tag": tag,
-                    "type": "footnote",
-                    "description": c['page_contents'][start+1:], # 두개 겹쳐있으면 그대로..
-                    "caption": 0,
-                    "file_path": 0,
-                    "bbox": 0
-                }
-            )
-            c['page_contents'] = c['page_contents'].replace(c['page_contents'][start:], "{"+tag+"}")
+    #         c['add_info'].append(
+    #             {
+    #                 "tag": tag,
+    #                 "type": "footnote",
+    #                 "description": c['page_contents'][start+1:], # 두개 겹쳐있으면 그대로..
+    #                 "caption": 0,
+    #                 "file_path": 0,
+    #                 "bbox": 0
+    #             }
+    #         )
+    #         c['page_contents'] = c['page_contents'].replace(c['page_contents'][start:], "{"+tag+"}")
     return c
+
+
+def merge_paragraphs(file):
+    pages = file["contents"]
+    merged_pages = []
+    buffer = ""
+
+    for i, page in enumerate(pages):
+        text = page["page_contents"]
+
+        # 이전 페이지의 문단이 끊겼다면 이어 붙임
+        if buffer:
+            text = buffer.rstrip("\n") + " " + text.lstrip("\n")
+            buffer = ""
+
+        # 줄 단위로 분리
+        lines = text.split("\n")
+
+        # 현재 페이지 마지막 줄 확인
+        last_line = lines[-1].strip()
+
+        # 마지막 줄이 완전한 문단이 아니라면 → buffer에 저장
+        if last_line and not last_line.endswith(("다.", "다.”", "다.\"","?", "!", ".", "…")):
+            buffer = lines.pop(-1)
+
+        # 다시 합쳐 저장
+        page["page_contents"] = "\n".join(lines)
+        merged_pages.append(page)
+
+    # 마지막 buffer 남아있으면 마지막 페이지에 합침
+    if buffer and merged_pages:
+        merged_pages[-1]["page_contents"] += " " + buffer
+
+    # 새로운 JSON 저장
+    output = file.copy()
+    output["contents"] = merged_pages
+
+    return output

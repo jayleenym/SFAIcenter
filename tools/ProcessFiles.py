@@ -17,12 +17,17 @@ CYCLE_PATH = {
 FINAL_DATA_PATH = os.path.join(BASE_PATH, 'data', 'FINAL')
 
 
-def get_excel_data(i: int):
+def get_excel_data(i: int, base_path = None):
+    if base_path:
+        base_path
+    else:
+        base_path = BASE_PATH
+
     analysis = {1:'1차 분석', 2:'2차 분석', 3: '3차 분석'}
     buy = {1:'1차 구매', 2:'2차 구매', 3: '3차 구매'}
 
-    excel_analy = pd.read_excel(os.path.join(BASE_PATH, '도서목록_전체통합.xlsx'), sheet_name=analysis[i], header=3)[['관리번호', 'ISBN', '도서명', '분류']]
-    excel_buy = pd.read_excel(os.path.join(BASE_PATH, '도서목록_전체통합.xlsx'), sheet_name=buy[i], header=4)[['ISBN', '도서명', '출판일', '코퍼스 1분류', '코퍼스 2분류', '비고']]
+    excel_analy = pd.read_excel(os.path.join(base_path, '도서목록_전체통합.xlsx'), sheet_name=analysis[i], header=3)[['관리번호', 'ISBN', '도서명', '분류']]
+    excel_buy = pd.read_excel(os.path.join(base_path, '도서목록_전체통합.xlsx'), sheet_name=buy[i], header=4)[['ISBN', '도서명', '출판일', '코퍼스 1분류', '코퍼스 2분류', '비고']]
     excel_buy.fillna("", inplace=True)
 
     merge_excel = pd.merge(excel_analy, excel_buy, on=['ISBN', '도서명'], how='inner')
