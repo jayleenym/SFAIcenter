@@ -39,8 +39,8 @@ def n_split(txt, sep):
     return result.split(sep)
 
 def remove_enter(txt):
-    # 문장 내 엔터 처리 (안함)
-    return re.sub(r'(?<![.?!\]])\n(?!\n)', ' ', txt)
+    # 문장 내 엔터 처리 (문장 끝 뒤의 엔터는 유지)
+    return re.sub(r'(?<![.?!\]])\n(?!\n)(?![.?!])', ' ', txt)
 
 def extract_options(txt):
     pattern = r'([①②③④⑤]\s*[^①②③④⑤]*)'

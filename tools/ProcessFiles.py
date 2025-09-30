@@ -9,7 +9,7 @@ BASE_PATH = "/Users/jinym/Library/CloudStorage/OneDrive-개인/데�
 ORIGINAL_DATA_PATH = os.path.join(BASE_PATH, 'data', 'ORIGINAL', '1C')
 
 CYCLE_PATH = {
-    1 : '1C_0910',
+    1 : '1C',
     2 : '2C_0902',
     3 : '3C_0902' 
     }
@@ -37,14 +37,16 @@ def get_excel_data(i: int, base_path = None):
 
 
 
-# for (isbn, id) in zip(cycle1_isbn_id['ISBN'], cycle1_isbn_id['관리번호']):
-#     # print(isbn, id)
-#     # 복사할 파일 경로
-#     source_file = os.path.join(data_dir, '1C_0902', str(isbn)+'.json')
-#     # 복사할 목적지 경로
-#     destination_path = os.path.join(data_dir, '1C_0902')
-#     # 이름변경
-#     shutil.copy2(source_file, os.path.join(destination_path, str(id)+".json"))
+def change_names(excel, from_name: str, to_name: str, file_path):
+    for (fn, tn) in zip(excel[from_name], excel[to_name]):
+        print(fn, tn)
+        # 복사할 파일 경로
+        # source_file = os.path.join(data_dir, '1C_0902', str(isbn)+'.json')
+        # 복사할 목적지 경로
+        # destination_path = os.path.join(data_dir, '1C_0902')
+        # 이름변경
+        shutil.copy2(file_path, file_path.replace(fn, tn))
+        break
 
 
 def move_jsons(i):
