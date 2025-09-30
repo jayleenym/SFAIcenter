@@ -131,7 +131,7 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any
                     # 추출할 Q&A 정보 저장
                     qna_items_to_extract.append({
                         # 'file_id': json_data.get("file_id"),
-                        'book_id': file_name,
+                        'file_id': file_name,
                         'title': json_data.get('title'),
                         'cat1_domain': json_data.get('cat1_domain'),
                         'cat2_sub': json_data.get('cat2_sub'),
