@@ -8,30 +8,28 @@ ORIGINAL_DATA_PATH = pf.ORIGINAL_DATA_PATH
 FINAL_DATA_PATH = pf.FINAL_DATA_PATH
 
 def format_change(i: int, pages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    # merge_excel = pf.get_excel_data(i)
-
-    # revision = {
-    #     'file_id': str(merge_excel.loc[id, 'ISBN']),
-    #     'title': merge_excel.loc[id, '도서명'],
-    #     'cat1_domain': merge_excel.loc[id, '코퍼스 1분류'],
-    #     'cat2_sub': merge_excel.loc[id, '코퍼스 2분류'],
-    #     'cat3_specific': merge_excel.loc[id, '비고'],
-    #     'pub_date': str(merge_excel.loc[id, '출판일'])[:10],
-    #     'contents': [],
-    # }
-    # if 
-    # for c in contents:
-    #     if len(c) > 0:
-    #         contents_base = {
-    #         'page': f"{int(origin[i]['page']):04d}",
-    #         'chapter': "",
-    #         'page_contents': origin[i]['content'],
-    #             "add_info": []
-    #         }
-    # revision['contents'].append(contents_base)
+    merge_excel = pf.get_excel_data(i)
+    id = 'SS0299'
+    revision = {
+        'file_id': str(merge_excel.loc[id, 'ISBN']),
+        'title': merge_excel.loc[id, '도서명'],
+        'cat1_domain': merge_excel.loc[id, '코퍼스 1분류'],
+        'cat2_sub': merge_excel.loc[id, '코퍼스 2분류'],
+        'cat3_specific': merge_excel.loc[id, '비고'],
+        'pub_date': str(merge_excel.loc[id, '출판일'])[:10],
+        'contents': [],
+    }
+    for c in pages:
+        if len(c) > 0:
+            contents_base = {
+            'page': f"{int(c['page']):04d}",
+            'chapter': "",
+            'page_contents': c['content'],
+                "add_info": []
+            }
+            revision['contents'].append(contents_base)
     # break
-    return 0
-
+    return revision
 
 
 def n_split(txt, sep):
@@ -142,4 +140,25 @@ def merge_paragraphs(file):
     output = file.copy()
     output["contents"] = merged_pages
 
+    return output
+
+
+def erase_page(file, page_num):
+    pages = file["contents"]
+    
+    title = file['title']
+    
+    new_pages = []
+    for i in range(len(pages)):
+        c = pages[i]
+        chapter = c['chapter']
+        real_page = int(c['page']) - page_num
+        # print(real_page)
+        c['page_contents'] = c['page_contents'].replace(f"{chapter} {real_page:03d}", "")
+    
+        if len(c['page_contents']) > 0:
+            new_pages.append(c)
+
+    output = file.copy()
+    output["contents"] = new_pages
     return output

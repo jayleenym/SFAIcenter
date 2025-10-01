@@ -6,12 +6,12 @@ import shutil
 # warnings.filterwarnings('ignore')
 
 BASE_PATH = "/Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar"
-ORIGINAL_DATA_PATH = os.path.join(BASE_PATH, 'data', 'ORIGINAL', '1C')
+ORIGINAL_DATA_PATH = os.path.join(BASE_PATH, 'data', 'ORIGINAL')
 
 CYCLE_PATH = {
     1 : '1C',
-    2 : '2C_0902',
-    3 : '3C_0902' 
+    2 : '2C',
+    3 : '3C' 
     }
 
 FINAL_DATA_PATH = os.path.join(BASE_PATH, 'data', 'FINAL')
@@ -49,10 +49,10 @@ def change_names(excel, from_name: str, to_name: str, file_path):
         break
 
 
-def move_jsons(i):
+def move_jsons(i, final_data_path = FINAL_DATA_PATH):
     # 폴더 만들어 옮기기
     excel = get_excel_data(i)
-    FINAL_DATA_PATH = os.path.join(FINAL_DATA_PATH, CYCLE_PATH[i])
+    FINAL_DATA_PATH = os.path.join(final_data_path, CYCLE_PATH[i])
 
     Lv2_isbn_id = [str(d) for d in excel[excel['분류'] == 'Lv2'].index]
     Lv3_isbn_id = [str(d) for d in excel[excel['분류'] == 'Lv3/4'].index]
