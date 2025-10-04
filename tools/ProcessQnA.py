@@ -33,7 +33,7 @@ def analyze_extracted_qna(qna_info: dict):
 
 
 # 수정된 extract_qna_tags 함수 (정규식 패턴 수정)
-def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any]:
+def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str = None) -> Dict[str, Any]:
     """
     page_contents에서 {q_0000_0000} 형태의 태그를 추출하고,
     add_info에서 해당 태그를 찾아서 별도 리스트로 분리하는 함수
@@ -130,7 +130,6 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any
 
                     # Domain 추가
                     qna_domain = add_qna_domain_onebyone(json_data, page_data, llm_model)
-                    print(page_data)
 
                     # 추출할 Q&A 정보 저장
                     qna_items_to_extract.append({
@@ -183,7 +182,7 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any
     }
 
 
-def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
+def get_qna_datas(file_path: str, output_path: str = None, llm_model: str = None) -> Dict[str, Any]:
     """
     JSON 파일을 처리하여 Q&A 태그를 추출하고 분리하는 함수
     
@@ -199,7 +198,7 @@ def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
         json_data = json.load(f)
     
     # Q&A 태그 추출 및 분리
-    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0])    
+    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0], llm_model)    
 
     # 추출된 Q&A를 별도 파일로 저장
     if len(result['extracted_qna']) != 0:
@@ -581,7 +580,6 @@ def add_qna_domain_onebyone(qna_data: dict, page_data: dict, model: str = None) 
     Returns:
         Domain이 추가된 Q&A 데이터
     """
-    print(qna_data)
     system_prompt = """
 당신은 금융 문제지를 분류하는 전문가입니다.  
 당신의 임무는 주어진 정보(책 제목, 책 분류, 챕터 제목)를 바탕으로 질문을 아래 분류 체계 중 하나로 정확하게 분류하는 것입니다.  
@@ -630,18 +628,18 @@ def add_qna_domain_onebyone(qna_data: dict, page_data: dict, model: str = None) 
 }]
 """
     user_prompt = ''
-    for i in range(len(qna_data['add_info'])):
-        if qna_data['add_info'][i]['type'] == 'question':
+    for i in range(len(page_data['add_info'])):
+        if page_data['add_info'][i]['type'] == 'question':
             single_prompt = f"""
             책 제목: {qna_data['title']}
             책 분류: {qna_data['cat1_domain']}/{qna_data['cat2_sub']}/{qna_data['cat3_specific']}
             챕터: {page_data['chapter']}
-            질문: {qna_data['add_info'][i]['description']['question']}
-            답변: {qna_data['add_info'][i]['description']['answer']}
-            해설: {qna_data['add_info'][i]['description']['explanation']}
+            질문: {page_data['add_info'][i]['description']['question']}
+            답변: {page_data['add_info'][i]['description']['answer']}
+            해설: {page_data['add_info'][i]['description']['explanation']}
             ===================="""
             user_prompt += single_prompt
-                    
+    
     # API 호출 및 도메인 분류
     print(f"  - API 호출 중... (모델: {model})")
     domain_response = Openrouter.query_model_openrouter(system_prompt, user_prompt, model)
