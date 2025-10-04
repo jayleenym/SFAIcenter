@@ -119,28 +119,32 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any
                                 break
                     
                     # Q&A 항목도 제거 대상에 추가
-                    indices_to_remove.add(qna_item_index)
+                    # indices_to_remove.add(qna_item_index)
 
                     # 질문 타입
                     qna_type = analyze_extracted_qna(qna_item)
 
-                    # # Domain 찾기
+                    # Domain 찾기
                     # with_domain_dir = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/data/FIN_workbook/1C/with_domain"
                     # qna_domain = find_domain_for_qna(qna_item, file_name, with_domain_dir)
+
+                    # Domain 추가
+                    qna_domain = add_qna_domain_onebyone(json_data, page_data, llm_model)
+                    print(page_data)
 
                     # 추출할 Q&A 정보 저장
                     qna_items_to_extract.append({
                         # 'file_id': json_data.get("file_id"),
                         'file_id': file_name,
-                        'title': json_data.get('title'),
+                        'title': json_data['title'],
                         'cat1_domain': json_data.get('cat1_domain'),
                         'cat2_sub': json_data.get('cat2_sub'),
                         'cat3_specific': json_data.get('cat3_specific'),
                         'chapter': page_data.get('chapter'),
                         'page': page_data.get('page'),
                         "qna_type": qna_type,
-                        # "qna_domain": qna_domain,
-                        "qna_domain": "",
+                        "qna_domain": qna_domain,
+                        # "qna_domain": "",
                         'qna_data': qna_item,
                         'additional_tags_found': additional_tags,
                         'additional_tag_data': additional_tag_data
@@ -149,10 +153,10 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str) -> Dict[str, Any
 
             
             # 인덱스를 역순으로 정렬하여 제거 (뒤에서부터 제거)
-            sorted_indices = sorted(indices_to_remove, reverse=True)
-            for idx in sorted_indices:
-                if 0 <= idx < len(add_info):
-                    add_info.pop(idx)
+            # sorted_indices = sorted(indices_to_remove, reverse=True)
+            # for idx in sorted_indices:
+            #     if 0 <= idx < len(add_info):
+            #         add_info.pop(idx)
             
             # 추출된 Q&A들을 리스트에 추가
             extracted_qna.extend(qna_items_to_extract)
@@ -195,31 +199,30 @@ def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
         json_data = json.load(f)
     
     # Q&A 태그 추출 및 분리
-    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0])
-    
-    # 수정된 JSON 저장
-    output_file = output_path if output_path else file_path
-    
-    # 파일이 존재하면 백업 생성
-    if os.path.exists(output_file):
-        # extract_backup 폴더 생성 (존재하지 않는 경우)
-        backup_dir = os.path.join(os.path.dirname(output_file), '_backup')
-        os.makedirs(backup_dir, exist_ok=True)
-        
-        # 백업 파일명 생성 (.bak 확장자 추가)
-        backup_filename = os.path.basename(output_file) + '.bak'
-        backup_path = os.path.join(backup_dir, backup_filename)
-        
-        # 기존 파일을 백업 폴더로 복사
-        shutil.copy2(output_file, backup_path)
-        print(f"기존 파일을 백업했습니다: {backup_path}")
-    
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(result['modified_json'], f, ensure_ascii=False, indent=4)
-    
+    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0])    
 
     # 추출된 Q&A를 별도 파일로 저장
     if len(result['extracted_qna']) != 0:
+        # 수정된 JSON 저장
+        output_file = output_path if output_path else file_path
+        
+        # 파일이 존재하면 백업 생성
+        if os.path.exists(output_file):
+            # extract_backup 폴더 생성 (존재하지 않는 경우)
+            backup_dir = os.path.join(os.path.dirname(output_file), '_backup')
+            os.makedirs(backup_dir, exist_ok=True)
+            
+            # 백업 파일명 생성 (.bak 확장자 추가)
+            backup_filename = os.path.basename(output_file) + '.bak'
+            backup_path = os.path.join(backup_dir, backup_filename)
+            
+            # 기존 파일을 백업 폴더로 복사
+            shutil.copy2(output_file, backup_path)
+            print(f"기존 파일을 백업했습니다: {backup_path}")
+        
+        # with open(output_file, 'w', encoding='utf-8') as f:
+            # json.dump(result['modified_json'], f, ensure_ascii=False, indent=4)
+
         qna_output_path = output_path.replace('.json', '_extracted_qna.json')
         with open(qna_output_path, 'w', encoding='utf-8') as f:
             json.dump(result['extracted_qna'], f, ensure_ascii=False, indent=4)
@@ -227,6 +230,7 @@ def get_qna_datas(file_path: str, output_path: str = None) -> Dict[str, Any]:
         # analyze_extracted_qna(qna_output_path)
         return result
     else:
+        output_file = ""
         qna_output_path = ""
     
     print(f"처리 완료:")
@@ -563,3 +567,82 @@ def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any
     except Exception as e:
         print(f"Domain별 합치기 오류: {e}")
         return {}
+    
+
+
+def add_qna_domain_onebyone(qna_data: dict, page_data: dict, model: str = None) -> list:
+    """
+    Q&A 데이터에 Domain을 추가하는 함수
+    
+    Args:
+        qna_data: Q&A 데이터
+        model: 사용할 모델
+        
+    Returns:
+        Domain이 추가된 Q&A 데이터
+    """
+    print(qna_data)
+    system_prompt = """
+당신은 금융 문제지를 분류하는 전문가입니다.  
+당신의 임무는 주어진 정보(책 제목, 책 분류, 챕터 제목)를 바탕으로 질문을 아래 분류 체계 중 하나로 정확하게 분류하는 것입니다.  
+
+## 분류 체계
+
+1. 금융기초
+- 경제 (미시경제, 거시경제, 국제경제, 계량경제 등)
+- 경영 (인사/조직, 전략/마케팅, 재무기초 등)
+- 회계 (회계사 관련 자격증 및 회계 관련 학문적 내용)
+- 세무 (세무사 관련 자격증 및 세법 관련 학문적 내용)
+- 노무 (노무사 관련 자격증 및 노동법, 사회보험법 관련 학문적 내용)
+- 통계 (통계 관련 자격증 및 통계학 관련 학문적 내용)
+
+2. 금융실무
+- 내부통제 (컴플라이언스, 법률, 규제, 협회규정 등)
+- 영업 (세일즈, 화법, 고객관리 등)
+- 디지털 (마이데이터, 가상자산, 블록체인, 핀테크 등)
+- 자산운용 (트레이딩, 채권, 부동산PF, 퇴직연금, 신탁 등)
+- 리스크관리 (채권수심, 신용리스크, 대체심사, 헷징 등)
+- 보험계약 (장기보험, 자동차보험, 해상보험, 지급, 보전 등)
+- 보상처리 (손해사정, 보험금 심사, 자동차 보상 등)
+
+---
+
+## 분류 지침
+1. 반드시 위 체계 중 하나를 선택합니다.  
+2. 질문의 핵심 주제가 학문적 개념·이론이면 → 금융기초,  
+   실제 업무·규제·법률·실무 절차라면 → 금융실무로 분류합니다.  
+3. 모호한 경우 더 구체적인 문맥을 고려해 대분류와 세부 카테고리를 명확히 결정합니다.  
+4. 출력은 분류 결과만 JSON 형식으로 작성합니다.
+5. 출력에는 코드 블록 표시(```json, ```)를 절대 포함하지 않습니다.  
+
+---
+
+## 출력 형식
+[{
+  "대분류": "금융기초 또는 금융실무",
+  "카테고리": "세부 카테고리명",
+  "근거": "간단한 분류 이유"
+},
+{
+  "대분류": "금융기초 또는 금융실무",
+  "카테고리": "세부 카테고리명",
+  "근거": "간단한 분류 이유"
+}]
+"""
+    user_prompt = ''
+    for i in range(len(qna_data['add_info'])):
+        if qna_data['add_info'][i]['type'] == 'question':
+            single_prompt = f"""
+            책 제목: {qna_data['title']}
+            책 분류: {qna_data['cat1_domain']}/{qna_data['cat2_sub']}/{qna_data['cat3_specific']}
+            챕터: {page_data['chapter']}
+            질문: {qna_data['add_info'][i]['description']['question']}
+            답변: {qna_data['add_info'][i]['description']['answer']}
+            해설: {qna_data['add_info'][i]['description']['explanation']}
+            ===================="""
+            user_prompt += single_prompt
+                    
+    # API 호출 및 도메인 분류
+    print(f"  - API 호출 중... (모델: {model})")
+    domain_response = Openrouter.query_model_openrouter(system_prompt, user_prompt, model)
+    return domain_response
