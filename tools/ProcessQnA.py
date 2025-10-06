@@ -50,6 +50,14 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str =
 
     # 각 페이지를 순회
     for page_data in json_data.get('contents', []):
+        # 페이지별 상태 초기화
+        if hasattr(add_qna_domain_onebyone, '_page_processed'):
+            delattr(add_qna_domain_onebyone, '_page_processed')
+        if hasattr(add_qna_domain_onebyone, '_page_domains'):
+            delattr(add_qna_domain_onebyone, '_page_domains')
+        if hasattr(add_qna_domain_onebyone, '_domain_index'):
+            delattr(add_qna_domain_onebyone, '_domain_index')
+            
         page_contents = page_data.get('page_contents', '')
         if page_contents != "":
             add_info = page_data.get('add_info', [])
@@ -128,8 +136,26 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str =
                     # with_domain_dir = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/data/FIN_workbook/1C/with_domain"
                     # qna_domain = find_domain_for_qna(qna_item, file_name, with_domain_dir)
 
-                    # Domain 추가
-                    qna_domain = add_qna_domain_onebyone(json_data, page_data, llm_model)
+                    # Domain 추가 (페이지의 모든 Q&A에 대해 한 번만 호출)
+                    if not hasattr(add_qna_domain_onebyone, '_page_processed'):
+                        page_domains = add_qna_domain_onebyone(json_data, page_data, llm_model)
+                        # JSON 파싱 시도
+                        try:
+                            if isinstance(page_domains, str):
+                                page_domains = json.loads(page_domains)
+                        except json.JSONDecodeError:
+                            page_domains = []
+                        # 페이지별 domain 정보를 저장
+                        add_qna_domain_onebyone._page_processed = True
+                        add_qna_domain_onebyone._page_domains = page_domains
+                        add_qna_domain_onebyone._domain_index = 0
+                    
+                    # 현재 Q&A에 해당하는 domain 할당
+                    if hasattr(add_qna_domain_onebyone, '_page_domains') and add_qna_domain_onebyone._domain_index < len(add_qna_domain_onebyone._page_domains):
+                        qna_domain = add_qna_domain_onebyone._page_domains[add_qna_domain_onebyone._domain_index]
+                        add_qna_domain_onebyone._domain_index += 1
+                    else:
+                        qna_domain = {"카테고리": ""}
 
                     # 추출할 Q&A 정보 저장
                     qna_items_to_extract.append({
