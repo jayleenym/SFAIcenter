@@ -1,0 +1,2711 @@
+{
+    "file_id": "SS0129",
+    "ISBN": "9791172483449",
+    "title": "퀴즈로 배우는 거시경제학",
+    "cat1_domain": "금융",
+    "cat2_sub": "수험서",
+    "cat3_specific": "기타",
+    "pub_date": "2024-06-26",
+    "contents": [
+        {
+            "page": "0004",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0004_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0004_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "거시경제학에서 GDP의 정의로 옳지 않은 것은?",
+                        "options": [
+                            "① 한 나라의 일정 기간 동안 생산된 모든 최종 재화와 서비스의 시장 가치",
+                            "② 실질 GDP는 명목 GDP를 인플레이션 조정한 것",
+                            "③ GDP는 국가 간 생활수준을 비교하는 척도로 사용될 수 있다",
+                            "④ 수입품의 가격 상승은 GDP에 영향을 미치지 않는다",
+                            "⑤ GDP는 정부 지출을 포함하지 않는다"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "GDP는 정부 지출을 포함한다. GDP는 한 나라의 모든 경제 활동을 포괄하기 위해 소비, 투자, 정부 지출, 순수출 등을 포함한다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0005",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0005_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0005_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "국민소득 회계 항등식에서 저축이 포함되지 않는 것은?",
+                        "options": [
+                            "① S = I",
+                            "② Y = C + I + G + NX",
+                            "③ Y = C + S + T",
+                            "④ T = G",
+                            "⑤ I = S + (T - G) + (X – M)"
+                        ],
+                        "answer": "④",
+                        "explanation": "국민소득 회계 항등식에서 T=G는 정부의 재정 상태를 나타내는 것으로 저축과 관련이 없다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0006",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0006_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0006_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "국내에서 생산된 최종 재화와 서비스를 측정하는 GDP 계산 방식으로 적절하지 않은 것은?",
+                        "options": [
+                            "① 생산 접근법",
+                            "② 지출 접근법",
+                            "③ 소득 접근법",
+                            "④ 자본 접근법",
+                            "⑤ 물가 접근법"
+                        ],
+                        "answer": "④",
+                        "explanation": "자본 접근법은 GDP 계산 방식으로 사용되지 않는다. GDP는 생산, 지출, 소득 접근법을 통해 측정된다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0007",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0007_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0007_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "거시경제 변수 중 주기에 민감하게 반응하는 것은?",
+                        "options": [
+                            "① 물가 수준",
+                            "② 명목 이자율",
+                            "③ 실질 이자율",
+                            "④ 실업률",
+                            "⑤ 명목 임금"
+                        ],
+                        "answer": "④",
+                        "explanation": "실업률은 경기 변동에 민감하게 반응하는 주요 거시경제 변수 중 하나이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0008",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0008_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0008_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "명목 GDP와 실질 GDP의 차이에 대한 설명으로 옳지 않은 것은?",
+                        "options": [
+                            "① 명목 GDP는 생산된 재화와 서비스의 현재 가격을 사용해 계산된다",
+                            "② 실질 GDP는 기준 연도의 가격을 사용해 계산된다",
+                            "③ 명목 GDP는 인플레이션의 영향을 포함하지 않는다",
+                            "④ 실질 GDP는 인플레이션의 영향을 제거한다",
+                            "⑤ 명목 GDP와 실질 GDP는 동일한 경제적 가치를 나타내지 않는다"
+                        ],
+                        "answer": "③",
+                        "explanation": "명목 GDP는 인플레이션의 영향을 포함하지만, 실질 GDP는 인플레이션의 영향을 제거하여 계산된다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0009",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0009_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0009_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "GDP 디플레이터의 정의로 옳은 것은?",
+                        "options": [
+                            "① 명목 GDP와 실질 GDP의 비율",
+                            "② 물가 수준의 평균치",
+                            "③ 모든 재화와 서비스의 가격지수",
+                            "④ 실업률과 물가 상승률의 비율",
+                            "⑤ 명목 이자율과 실질 이자율의 차이"
+                        ],
+                        "answer": "①",
+                        "explanation": "GDP 디플레이터는 명목 GDP와 실질 GDP의 비율로, 물가 수준의 변화를 측정하는 지표이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0010",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0010_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0010_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "거시경제학에서 '순수 민간 저축'의 정의로 옳은 것은?",
+                        "options": [
+                            "① 모든 국민의 저축액",
+                            "② 정부의 저축액",
+                            "③ 기업의 저축액",
+                            "④ 가계의 저축액",
+                            "⑤ 총 저축액에서 정부 저축을 제외한 것"
+                        ],
+                        "answer": "④",
+                        "explanation": "순수 민간 저축은 총 저축액에서 정부 저축을 제외한 것이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0011",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0011_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0011_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "순수 민간 저축과 가장 관련이 깊은 변수는?",
+                        "options": [
+                            "① 정부 지출",
+                            "② 수출",
+                            "③ 기업 투자",
+                            "④ 가계 소비",
+                            "⑤ 순수 민간 저축은 가계 소비와 밀접하게 관련 있다"
+                        ],
+                        "answer": "④",
+                        "explanation": "가계 소비는 순수 민간 저축과 밀접하게 관련이 있다. 저축은 소비와 반비례 관계에 있다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0012",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0012_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0012_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "국민소득 3면 등가의 원칙에서 나타나지 않는 것은?",
+                        "options": [
+                            "① 생산 측면",
+                            "② 지출 측면",
+                            "③ 소득 측면",
+                            "④ 투자 측면",
+                            "⑤ 위의 모든 측면이 국민소득 3면 등가의 원칙에 포함된다"
+                        ],
+                        "answer": "④",
+                        "explanation": "투자 측면은 국민소득 3면 등가의 원칙에 포함되지 않는다. 3면 등가는 생산, 지출, 소득 측면을 포함한다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0013",
+            "chapter": "Theme 1: 거시경제학의 기초 개념",
+            "page_contents": "{q_0013_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0013_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "순수 민간 저축에 영향을 미치는 요인이 아닌 것은?",
+                        "options": [
+                            "① 가계 소득",
+                            "② 실질 이자율",
+                            "③ 정부 지출",
+                            "④ 물가 수준",
+                            "⑤ 중앙은행의 금리 정책"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "중앙은행의 금리 정책은 순수 민간 저축에 직접적인 영향을 미치지 않는다. 이는 주로 가계 소득, 실질 이자율 등이 영향을 미친다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0015",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0015_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0015_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "국민소득 균형 조건으로 옳지 않은 것은?",
+                        "options": [
+                            "① Y = C + I + G",
+                            "② I = S",
+                            "③ S = I",
+                            "④ Y = C + S + T",
+                            "⑤ T = G"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "T=G는 국민소득 균형 조건이 아니다. 이는 정부의 재정 상태를 나타내는 것이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0016",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0016_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0016_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "소비 함수 C = a + bY에서 b가 의미하는 것은?",
+                        "options": [
+                            "① 한계 소비 성향",
+                            "② 절대 소비 성향",
+                            "③ 자율 소비",
+                            "④ 국민소득",
+                            "⑤ 저축 성향"
+                        ],
+                        "answer": "①",
+                        "explanation": "b는 한계 소비 성향을 의미하며, 이는 소득 증가분 중 소비되는 비율을 나타낸다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0017",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0017_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0017_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "승수 효과와 관련이 없는 것은?",
+                        "options": [
+                            "① 정부 지출 승수",
+                            "② 세금 승수",
+                            "③ 투자 승수",
+                            "④ 수출 승수",
+                            "⑤ 인플레이션 승수"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "인플레이션 승수는 승수 효과와 직접적으로 관련이 없다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0018",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0018_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0018_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "케인즈의 소비 이론에 따르면 소비가 증가하는 요인은?",
+                        "options": [
+                            "① 세금 증가",
+                            "② 국민소득 증가",
+                            "③ 이자율 증가",
+                            "④ 정부 지출 감소",
+                            "⑤ 물가 상승"
+                        ],
+                        "answer": "②",
+                        "explanation": "국민소득 증가가 소비를 증가시키는 주요 요인이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0019",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0019_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0019_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "완전 고용 국민소득과 관련이 없는 것은?",
+                        "options": [
+                            "① 잠재 GDP",
+                            "② 자연 실업률",
+                            "③ 생산 가능성 곡선",
+                            "④ 수요 충격",
+                            "⑤ 구조적 실업"
+                        ],
+                        "answer": "④",
+                        "explanation": "수요 충격은 완전 고용 국민소득과 직접 관련이 없다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0020",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0020_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0020_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "투자 함수 I = f(r, Y)에서 r이 의미하는 것은?",
+                        "options": [
+                            "① 국민소득",
+                            "② 정부 지출",
+                            "③ 실질 이자율",
+                            "④ 자본 축적",
+                            "⑤ 투자 승수"
+                        ],
+                        "answer": "③",
+                        "explanation": "r은 실질 이자율을 의미한다. 이는 투자의 중요한 결정 요인이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0021",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0021_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0021_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "유량변수와 저량변수의 구분에서 저량변수에 속하지 않는 것은?",
+                        "options": [
+                            "① 자본",
+                            "② 부채",
+                            "③ 재고",
+                            "④ 투입량",
+                            "⑤ 저축"
+                        ],
+                        "answer": "④",
+                        "explanation": "투입량은 유량변수에 해당한다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0022",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0022_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0022_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "국민소득 균형에서 순수출이 증가할 때 나타나는 경제 현상은?",
+                        "options": [
+                            "① 총수요 증가",
+                            "② 총공급 감소",
+                            "③ 인플레이션 상승",
+                            "④ 실업률 상승",
+                            "⑤ 이자율 하락"
+                        ],
+                        "answer": "①",
+                        "explanation": "순수출 증가로 인해 총수요가 증가한다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0023",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0023_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0023_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "한계 소비 성향이 0.8일 때 정부 지출 승수는?",
+                        "options": [
+                            "① 1",
+                            "② 2",
+                            "③ 4",
+                            "④ 5",
+                            "⑤ 10"
+                        ],
+                        "answer": "③",
+                        "explanation": "정부 지출 승수는 1/(1-한계소비성향)으로 계산된다. 한계소비성향이 0.8이면 승수는 1/0.2 = 5이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0024",
+            "chapter": "Theme 2: 국민소득 결정 이론",
+            "page_contents": "{q_0024_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0024_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "재정정책의 목표로 옳지 않은 것은?",
+                        "options": [
+                            "① 경기 안정화",
+                            "② 완전 고용 달성",
+                            "③ 인플레이션 억제",
+                            "④ 국제 수지 흑자",
+                            "⑤ 세율 인상"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "재정정책의 목표는 세율 인상이 아니다. 이는 정책 수단일 수 있다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0026",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0026_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0026_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "경기 변동의 주요 원인이 아닌 것은?",
+                        "options": [
+                            "① 수요 충격",
+                            "② 공급 충격",
+                            "③ 정부 정책 변화",
+                            "④ 계절적 요인",
+                            "⑤ 기술 혁신"
+                        ],
+                        "answer": "④",
+                        "explanation": "계절적 요인은 경기 변동의 주요 원인이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0027",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0027_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0027_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "경기 순환의 4단계에 속하지 않는 것은?",
+                        "options": [
+                            "① 확장",
+                            "② 정점",
+                            "③ 수축",
+                            "④ 저점",
+                            "⑤ 재조정"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "재조정은 경기 순환의 4단계에 포함되지 않는다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0028",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0028_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0028_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "경기 변동 이론 중 실물적 경기 변동 이론(RBC)의 주요 요인은?",
+                        "options": [
+                            "① 통화 정책",
+                            "② 정부 지출",
+                            "③ 기술 변화",
+                            "④ 소비 성향",
+                            "⑤ 재정 정책"
+                        ],
+                        "answer": "③",
+                        "explanation": "실물적 경기 변동 이론은 기술 변화를 주요 요인으로 본다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0029",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0029_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0029_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "경제 성장을 촉진시키는 요인이 아닌 것은?",
+                        "options": [
+                            "① 인적 자본 증가",
+                            "② 기술 혁신",
+                            "③ 노동 생산성 증가",
+                            "④ 인플레이션 상승",
+                            "⑤ 자본 축적"
+                        ],
+                        "answer": "④",
+                        "explanation": "인플레이션 상승은 경제 성장을 촉진시키는 요인이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0030",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0030_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0030_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "솔로우 성장 모형에서 장기 성장에 가장 큰 영향을 미치는 것은?",
+                        "options": [
+                            "① 노동의 증가",
+                            "② 자본의 증가",
+                            "③ 기술 진보",
+                            "④ 인플레이션 억제",
+                            "⑤ 정부 지출 증가"
+                        ],
+                        "answer": "③",
+                        "explanation": "기술 진보가 솔로우 성장 모형에서 장기 성장에 가장 큰 영향을 미친다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0031",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0031_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0031_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "내생적 성장 이론의 특징이 아닌 것은?",
+                        "options": [
+                            "① 기술 혁신의 내생성",
+                            "② 정부 정책의 역할 강조",
+                            "③ 자본 축적의 중요성",
+                            "④ 외생적 요소의 중요성",
+                            "⑤ 인적 자본의 중요성"
+                        ],
+                        "answer": "④",
+                        "explanation": "외생적 요소의 중요성은 내생적 성장 이론의 특징이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0032",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0032_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0032_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "경기 변동의 주요 특징이 아닌 것은?",
+                        "options": [
+                            "① 반복성",
+                            "② 불규칙성",
+                            "③ 예측 가능성",
+                            "④ 지속성",
+                            "⑤ 변동성"
+                        ],
+                        "answer": "③",
+                        "explanation": "경기 변동은 예측 가능하지 않다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0033",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0033_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0033_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "경제 성장률이 감소할 때 나타날 수 있는 현상은?",
+                        "options": [
+                            "① 실업률 감소",
+                            "② 투자 증가",
+                            "③ 소비 증가",
+                            "④ 정부 지출 증가",
+                            "⑤ 실업률 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "경제 성장률이 감소하면 실업률이 증가할 수 있다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0034",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0034_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0034_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "신고전파 성장 이론의 주요 가정이 아닌 것은?",
+                        "options": [
+                            "① 완전 경쟁 시장",
+                            "② 외생적 기술 진보",
+                            "③ 규모의 경제",
+                            "④ 인적 자본의 중요성",
+                            "⑤ 균형 성장 경로"
+                        ],
+                        "answer": "④",
+                        "explanation": "신고전파 성장 이론은 규모의 경제를 주요 가정으로 하지 않는다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0035",
+            "chapter": "Theme 3: 경기 변동과 경제 성장",
+            "page_contents": "{q_0035_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0035_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "장기 경제 성장의 측정 지표로 적절하지 않은 것은?",
+                        "options": [
+                            "① GDP 성장률",
+                            "② 1인당 GDP",
+                            "③ 실업률",
+                            "④ 생산성 증가율",
+                            "⑤ 기술 혁신 지수"
+                        ],
+                        "answer": "③",
+                        "explanation": "실업률은 장기 경제 성장의 측정 지표로 적절하지 않다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0037",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0037_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0037_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "실업의 유형 중 구조적 실업의 원인이 아닌 것은?",
+                        "options": [
+                            "① 기술 변화",
+                            "② 산업 구조 변화",
+                            "③ 계절적 요인",
+                            "④ 교육과 기술 불일치",
+                            "⑤ 해외 경쟁 증가"
+                        ],
+                        "answer": "③",
+                        "explanation": "계절적 요인은 구조적 실업의 원인이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0038",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0038_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0038_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "인플레이션의 유형 중 수요 견인 인플레이션의 원인은?",
+                        "options": [
+                            "① 임금 상승",
+                            "② 원자재 가격 상승",
+                            "③ 총수요 증가",
+                            "④ 공급 부족",
+                            "⑤ 세율 인상"
+                        ],
+                        "answer": "③",
+                        "explanation": "총수요 증가가 수요 견인 인플레이션의 원인이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0039",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0039_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0039_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "필립스 곡선의 단기 관계로 옳은 것은?",
+                        "options": [
+                            "① 실업률과 인플레이션 간의 역의 상관관계",
+                            "② 실업률과 인플레이션 간의 양의 상관관계",
+                            "③ 실업률과 물가 상승률 간의 역의 상관관계",
+                            "④ 인플레이션과 물가 상승률 간의 양의 상관관계",
+                            "⑤ 실업률과 인플레이션 간의 무관계"
+                        ],
+                        "answer": "①",
+                        "explanation": "필립스 곡선의 단기 관계는 실업률과 인플레이션 간의 역의 상관관계를 나타낸다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0040",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0040_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0040_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "자연 실업률과 관련이 없는 것은?",
+                        "options": [
+                            "① 구조적 실업",
+                            "② 마찰적 실업",
+                            "③ 경기적 실업",
+                            "④ 장기 실업",
+                            "⑤ 전환적 실업"
+                        ],
+                        "answer": "③",
+                        "explanation": "경기적 실업은 자연 실업률과 관련이 없다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0041",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0041_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0041_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "코스트 푸시 인플레이션의 원인이 아닌 것은?",
+                        "options": [
+                            "① 임금 상승",
+                            "② 원자재 가격 상승",
+                            "③ 생산성 감소",
+                            "④ 정부의 재정 정책",
+                            "⑤ 환율 하락"
+                        ],
+                        "answer": "④",
+                        "explanation": "정부의 재정 정책은 코스트 푸시 인플레이션의 원인이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0042",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0042_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0042_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "장기 필립스 곡선에 대한 설명으로 옳은 것은?",
+                        "options": [
+                            "① 수직선 형태로 나타난다",
+                            "② 수평선 형태로 나타난다",
+                            "③ 우하향 곡선 형태로 나타난다",
+                            "④ 우상향 곡선 형태로 나타난다",
+                            "⑤ 실업률과 물가 상승률 간의 무관계"
+                        ],
+                        "answer": "①",
+                        "explanation": "장기 필립스 곡선은 수직선 형태로 나타난다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0043",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0043_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0043_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "총공급 충격으로 인해 나타나는 현상은?",
+                        "options": [
+                            "① 총수요 증가",
+                            "② 총수요 감소",
+                            "③ 인플레이션 상승",
+                            "④ 인플레이션 하락",
+                            "⑤ 실업률 하락"
+                        ],
+                        "answer": "③",
+                        "explanation": "총공급 충격으로 인플레이션이 상승할 수 있다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0044",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0044_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0044_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "잠재 GDP와 관련이 없는 것은?",
+                        "options": [
+                            "① 완전 고용 수준의 생산량",
+                            "② 자연 실업률 하의 생산량",
+                            "③ 실업률이 0%인 상태의 생산량",
+                            "④ 장기적으로 지속 가능한 생산량",
+                            "⑤ 경제의 최대 생산 능력"
+                        ],
+                        "answer": "③",
+                        "explanation": "실업률이 0%인 상태의 생산량은 잠재 GDP와 관련이 없다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0045",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0045_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0045_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "마찰적 실업의 특징이 아닌 것은?",
+                        "options": [
+                            "① 단기적 실업",
+                            "② 자발적 실업",
+                            "③ 구직 활동 중 발생하는 실업",
+                            "④ 기술 변화로 인한 실업",
+                            "⑤ 일시적 실업"
+                        ],
+                        "answer": "④",
+                        "explanation": "기술 변화로 인한 실업은 마찰적 실업의 특징이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0046",
+            "chapter": "Theme 4: 실업과 인플레이션",
+            "page_contents": "{q_0046_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0046_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "인플레이션을 측정하는 대표적인 지표가 아닌 것은?",
+                        "options": [
+                            "① 소비자물가지수(CPI)",
+                            "② 생산자물가지수(PPI)",
+                            "③ GDP 디플레이터",
+                            "④ 실질 GDP",
+                            "⑤ 수입물가지수"
+                        ],
+                        "answer": "④",
+                        "explanation": "실질 GDP는 인플레이션을 측정하는 지표가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0048",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0048_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0048_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "화폐의 기능 중 거래의 매개체로서의 기능을 설명하는 것은?",
+                        "options": [
+                            "① 가치 저장의 수단",
+                            "② 가치 척도의 수단",
+                            "③ 거래의 단위",
+                            "④ 미래 가치의 표준",
+                            "⑤ 거래의 매개체"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "화폐의 거래의 매개체로서의 기능을 설명하는 것은 거래의 매개체이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0049",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0049_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0049_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "중앙은행의 통화 정책 도구가 아닌 것은?",
+                        "options": [
+                            "① 공개시장 조작",
+                            "② 재할인율 조정",
+                            "③ 지급준비율 조정",
+                            "④ 정부 지출 조정",
+                            "⑤ 외환 시장 개입"
+                        ],
+                        "answer": "④",
+                        "explanation": "정부 지출 조정은 중앙은행의 통화 정책 도구가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0050",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0050_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0050_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "통화 정책의 목표로 적절하지 않은 것은?",
+                        "options": [
+                            "① 물가 안정",
+                            "② 완전 고용",
+                            "③ 경제 성장",
+                            "④ 통화량 조절",
+                            "⑤ 무역 수지 흑자"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "무역 수지 흑자는 통화 정책의 목표가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0051",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0051_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0051_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "이자율의 결정 요인으로 옳지 않은 것은?",
+                        "options": [
+                            "① 화폐 수요와 화폐 공급",
+                            "② 중앙은행의 정책",
+                            "③ 정부의 재정 정책",
+                            "④ 국제 원자재 가격",
+                            "⑤ 기대 인플레이션"
+                        ],
+                        "answer": "④",
+                        "explanation": "국제 원자재 가격은 이자율의 직접적인 결정 요인이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0052",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0052_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0052_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "금융 중개 기관의 역할로 옳지 않은 것은?",
+                        "options": [
+                            "① 자금의 효율적 분배",
+                            "② 위험의 분산",
+                            "③ 정보의 제공",
+                            "④ 금융 시장의 규제",
+                            "⑤ 유동성 제공"
+                        ],
+                        "answer": "④",
+                        "explanation": "금융 시장의 규제는 금융 중개 기관의 역할이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0053",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0053_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0053_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "M1에 포함되지 않는 것은?",
+                        "options": [
+                            "① 현금",
+                            "② 요구불 예금",
+                            "③ 여행자 수표",
+                            "④ 저축성 예금",
+                            "⑤ 양도성 예금증서"
+                        ],
+                        "answer": "④",
+                        "explanation": "저축성 예금은 M1에 포함되지 않는다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0054",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0054_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0054_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "금융 시장에서 채권의 가격과 이자율의 관계로 옳은 것은?",
+                        "options": [
+                            "① 가격과 이자율은 정비례 관계이다",
+                            "② 가격과 이자율은 반비례 관계이다",
+                            "③ 가격이 상승하면 이자율도 상승한다",
+                            "④ 이자율이 하락하면 가격도 하락한다",
+                            "⑤ 가격과 이자율은 무관하다"
+                        ],
+                        "answer": "②",
+                        "explanation": "채권의 가격과 이자율은 반비례 관계이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0055",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0055_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0055_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "중앙은행이 통화 공급을 늘리는 정책 수단으로 적절하지 않은 것은?",
+                        "options": [
+                            "① 재할인율 인하",
+                            "② 공개시장 매입",
+                            "③ 지급준비율 인상",
+                            "④ 외환 시장 개입",
+                            "⑤ 금리 인하"
+                        ],
+                        "answer": "③",
+                        "explanation": "지급준비율 인상은 통화 공급을 늘리는 정책 수단이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0056",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0056_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0056_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "유동성 함정 상황에서 효과가 적은 정책은?",
+                        "options": [
+                            "① 재정 정책",
+                            "② 통화 정책",
+                            "③ 금융 정책",
+                            "④ 수출 촉진 정책",
+                            "⑤ 환율 정책"
+                        ],
+                        "answer": "②",
+                        "explanation": "유동성 함정 상황에서 통화 정책은 효과가 적다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0057",
+            "chapter": "Theme 5: 화폐와 금융 시스템",
+            "page_contents": "{q_0057_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0057_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "인플레이션을 억제하기 위한 긴축적 통화 정책 수단이 아닌 것은?",
+                        "options": [
+                            "① 금리 인상",
+                            "② 지급준비율 인상",
+                            "③ 재할인율 인상",
+                            "④ 공개시장 매각",
+                            "⑤ 재정 지출 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "재정 지출 증가는 인플레이션을 억제하기 위한 긴축적 통화 정책 수단이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0059",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0059_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0059_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "재정 정책의 목표로 옳지 않은 것은?",
+                        "options": [
+                            "① 경기 안정화",
+                            "② 소득 재분배",
+                            "③ 경제 성장 촉진",
+                            "④ 무역 수지 흑자",
+                            "⑤ 완전 고용 달성"
+                        ],
+                        "answer": "④",
+                        "explanation": "무역 수지 흑자는 재정 정책의 목표가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0060",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0060_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0060_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "확장적 재정 정책의 예로 옳지 않은 것은?",
+                        "options": [
+                            "① 정부 지출 증가",
+                            "② 세율 인하",
+                            "③ 공공지출 확대",
+                            "④ 사회복지 지출 증가",
+                            "⑤ 지급준비율 인상"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "지급준비율 인상은 확장적 재정 정책의 예가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0061",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0061_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0061_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "재정 적자의 원인이 아닌 것은?",
+                        "options": [
+                            "① 정부 지출 증가",
+                            "② 세수 감소",
+                            "③ 경기 침체",
+                            "④ 수출 증가",
+                            "⑤ 감세 정책"
+                        ],
+                        "answer": "④",
+                        "explanation": "수출 증가는 재정 적자의 원인이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0062",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0062_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0062_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "재정 정책의 도구가 아닌 것은?",
+                        "options": [
+                            "① 정부 지출",
+                            "② 세금 조정",
+                            "③ 이자율 조정",
+                            "④ 공공지출",
+                            "⑤ 사회복지 지출"
+                        ],
+                        "answer": "③",
+                        "explanation": "이자율 조정은 재정 정책의 도구가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0063",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0063_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0063_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "균형 재정의 정의로 옳은 것은?",
+                        "options": [
+                            "① 정부 지출이 세입보다 많은 상태",
+                            "② 정부 지출이 세입보다 적은 상태",
+                            "③ 정부 지출이 세입과 일치하는 상태",
+                            "④ 정부 지출이 GDP보다 많은 상태",
+                            "⑤ 정부 지출이 GDP보다 적은 상태"
+                        ],
+                        "answer": "③",
+                        "explanation": "균형 재정은 정부 지출이 세입과 일치하는 상태를 말한다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0064",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0064_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0064_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "자동 안정화 장치의 예로 옳지 않은 것은?",
+                        "options": [
+                            "① 실업 보험",
+                            "② 누진 소득세",
+                            "③ 사회보장 연금",
+                            "④ 국채 발행",
+                            "⑤ 사회복지 지출"
+                        ],
+                        "answer": "④",
+                        "explanation": "국채 발행은 자동 안정화 장치의 예가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0065",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0065_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0065_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "재정 정책의 한계로 옳지 않은 것은?",
+                        "options": [
+                            "① 시차 문제",
+                            "② 예산 제약",
+                            "③ 민간 부문 자금 대체",
+                            "④ 통화 공급 조절",
+                            "⑤ 정치적 압력"
+                        ],
+                        "answer": "④",
+                        "explanation": "통화 공급 조절은 재정 정책의 한계가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0066",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0066_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0066_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "재정 정책의 승수 효과가 크지 않은 경우는?",
+                        "options": [
+                            "① 마찰적 실업이 큰 경우",
+                            "② 공급 측 요인이 큰 경우",
+                            "③ 투자 승수가 작은 경우",
+                            "④ 자본 축적이 큰 경우",
+                            "⑤ 세금 승수가 큰 경우"
+                        ],
+                        "answer": "④",
+                        "explanation": "자본 축적이 큰 경우 재정 정책의 승수 효과는 크지 않다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0067",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0067_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0067_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "재정 지출 증가가 경제에 미치는 영향으로 옳지 않은 것은?",
+                        "options": [
+                            "① 총수요 증가",
+                            "② 총공급 감소",
+                            "③ 인플레이션 상승",
+                            "④ 실업률 하락",
+                            "⑤ GDP 증가"
+                        ],
+                        "answer": "②",
+                        "explanation": "재정 지출 증가는 총공급을 감소시키지 않는다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0068",
+            "chapter": "Theme 6: 재정 정책과 정부의 역할",
+            "page_contents": "{q_0068_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0068_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "공공부채가 지속 가능하지 않은 상태는?",
+                        "options": [
+                            "① GDP 대비 부채 비율이 증가하는 경우",
+                            "② 부채 서비스 비용이 GDP 증가율보다 낮은 경우",
+                            "③ 정부 수입이 증가하는 경우",
+                            "④ 재정 적자가 줄어드는 경우",
+                            "⑤ 정부 지출이 증가하는 경우"
+                        ],
+                        "answer": "①",
+                        "explanation": "GDP 대비 부채 비율이 증가하는 경우 공공부채가 지속 가능하지 않다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0070",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0070_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0070_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "자유 무역의 이론적 근거로 옳지 않은 것은?",
+                        "options": [
+                            "① 비교우위 이론",
+                            "② 절대우위 이론",
+                            "③ 경제적 규모",
+                            "④ 관세 및 비관세 장벽",
+                            "⑤ 소비자 선택의 다양성"
+                        ],
+                        "answer": "④",
+                        "explanation": "관세 및 비관세 장벽은 자유 무역의 이론적 근거가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0071",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0071_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0071_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "보호무역의 주요 수단이 아닌 것은?",
+                        "options": [
+                            "① 관세 부과",
+                            "② 수입 쿼터",
+                            "③ 수출 보조금",
+                            "④ 환율 조정",
+                            "⑤ 반덤핑 조치"
+                        ],
+                        "answer": "④",
+                        "explanation": "환율 조정은 보호무역의 주요 수단이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0072",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0072_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0072_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "국제 수지의 구성 요소가 아닌 것은?",
+                        "options": [
+                            "① 경상수지",
+                            "② 자본수지",
+                            "③ 금융수지",
+                            "④ 상품수지",
+                            "⑤ 공식 준비자산"
+                        ],
+                        "answer": "④",
+                        "explanation": "상품수지는 국제 수지의 구성 요소가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0073",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0073_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0073_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "환율 상승의 경제적 효과로 옳지 않은 것은?",
+                        "options": [
+                            "① 수출 증가",
+                            "② 수입 감소",
+                            "③ 해외 여행 비용 증가",
+                            "④ 외채 상환 부담 감소",
+                            "⑤ 물가 상승"
+                        ],
+                        "answer": "④",
+                        "explanation": "외채 상환 부담 감소는 환율 상승의 경제적 효과가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0074",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0074_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0074_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "PPP(구매력 평가) 이론의 설명으로 옳은 것은?",
+                        "options": [
+                            "① 환율은 국가 간 인플레이션 차이에 의해 결정된다",
+                            "② 환율은 국가 간 금리 차이에 의해 결정된다",
+                            "③ 환율은 무역 수지에 의해 결정된다",
+                            "④ 환율은 외환 보유고에 의해 결정된다",
+                            "⑤ 환율은 자본 이동에 의해 결정된다"
+                        ],
+                        "answer": "①",
+                        "explanation": "PPP 이론은 환율이 국가 간 인플레이션 차이에 의해 결정된다고 설명한다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0075",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0075_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0075_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "고정 환율 제도의 단점으로 옳지 않은 것은?",
+                        "options": [
+                            "① 외환 보유고의 변동",
+                            "② 자국 통화의 평가 절하 위험",
+                            "③ 중앙은행의 외환 시장 개입 필요",
+                            "④ 수출업체의 경쟁력 확보",
+                            "⑤ 통화 정책의 자율성 제한"
+                        ],
+                        "answer": "④",
+                        "explanation": "수출업체의 경쟁력 확보는 고정 환율 제도의 단점이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0076",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0076_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0076_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "국제 무역에서 무역 장벽을 제거하려는 협정은?",
+                        "options": [
+                            "① NATO",
+                            "② NAFTA",
+                            "③ OPEC",
+                            "④ WTO",
+                            "⑤ IMF"
+                        ],
+                        "answer": "④",
+                        "explanation": "WTO는 무역 장벽을 제거하려는 협정이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0077",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0077_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0077_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "자유 무역 협정(FTA)의 특징으로 옳지 않은 것은?",
+                        "options": [
+                            "① 무역 장벽 철폐",
+                            "② 회원국 간 무역 자유화",
+                            "③ 관세 및 비관세 장벽 제거",
+                            "④ 통화 통합",
+                            "⑤ 투자 자유화"
+                        ],
+                        "answer": "④",
+                        "explanation": "통화 통합은 자유 무역 협정(FTA)의 특징이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0078",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0078_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0078_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "국제 금융 시장에서 채권을 발행할 때 발생하는 리스크가 아닌 것은?",
+                        "options": [
+                            "① 환율 리스크",
+                            "② 신용 리스크",
+                            "③ 금리 리스크",
+                            "④ 유동성 리스크",
+                            "⑤ 정책 리스크"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "정책 리스크는 국제 금융 시장에서 채권 발행 시 발생하는 리스크가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0079",
+            "chapter": "Theme 7: 국제 무역과 금융",
+            "page_contents": "{q_0079_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0079_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "자본 유출입의 영향으로 옳지 않은 것은?",
+                        "options": [
+                            "① 환율 변동",
+                            "② 금리 변동",
+                            "③ 외환 보유고 변동",
+                            "④ 물가 수준 변동",
+                            "⑤ 정부 지출 변동"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "정부 지출 변동은 자본 유출입의 영향이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0081",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0081_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0081_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "환율 변동의 원인으로 옳지 않은 것은?",
+                        "options": [
+                            "① 무역 수지 변화",
+                            "② 금리 차이",
+                            "③ 인플레이션 차이",
+                            "④ 중앙은행의 통화 정책",
+                            "⑤ 실업률 변화"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "실업률 변화는 환율 변동의 주요 원인이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0082",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0082_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0082_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "절상된 통화가 경제에 미치는 영향으로 옳지 않은 것은?",
+                        "options": [
+                            "① 수출 증가",
+                            "② 수입 증가",
+                            "③ 해외 여행 비용 감소",
+                            "④ 해외 자산의 가치 하락",
+                            "⑤ 외채 상환 부담 증가"
+                        ],
+                        "answer": "①",
+                        "explanation": "절상된 통화는 수출을 감소시킨다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0083",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0083_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0083_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "실질 환율의 정의로 옳은 것은?",
+                        "options": [
+                            "① 명목 환율에 물가 수준을 조정한 것",
+                            "② 명목 환율과 실질 이자율의 비율",
+                            "③ 환율과 물가 상승률의 곱",
+                            "④ 명목 환율과 인플레이션의 합",
+                            "⑤ 환율 변동성과 금리의 차이"
+                        ],
+                        "answer": "①",
+                        "explanation": "실질 환율은 명목 환율에 물가 수준을 조정한 것이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0084",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0084_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0084_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "국제 수지에서 경상수지 흑자가 의미하는 것은?",
+                        "options": [
+                            "① 자본수지 흑자",
+                            "② 자본수지 적자",
+                            "③ 금융수지 흑자",
+                            "④ 외환 보유고 감소",
+                            "⑤ 외환 보유고 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "외환 보유고 증가는 경상수지 흑자가 의미하는 것이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0085",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0085_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0085_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "자국 통화의 평가 절하가 미치는 효과로 옳지 않은 것은?",
+                        "options": [
+                            "① 수출 증가",
+                            "② 수입 감소",
+                            "③ 경상수지 개선",
+                            "④ 외채 상환 부담 감소",
+                            "⑤ 물가 상승"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "자국 통화의 평가 절하는 물가 상승을 초래할 수 있다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0086",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0086_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0086_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "구매력 평가(PPP) 이론에 따르면, 장기적으로 환율이 결정되는 요인은?",
+                        "options": [
+                            "① 실질 GDP",
+                            "② 명목 이자율",
+                            "③ 물가 수준",
+                            "④ 경제 성장률",
+                            "⑤ 무역 수지"
+                        ],
+                        "answer": "③",
+                        "explanation": "PPP 이론에 따르면, 장기적으로 환율은 물가 수준에 의해 결정된다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0087",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0087_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0087_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "변동 환율제도의 장점으로 옳지 않은 것은?",
+                        "options": [
+                            "① 자동 조정 기능",
+                            "② 통화 정책의 자율성",
+                            "③ 외환 보유고의 안정성",
+                            "④ 환율 변동성",
+                            "⑤ 수출 경쟁력"
+                        ],
+                        "answer": "③",
+                        "explanation": "외환 보유고의 안정성은 변동 환율제도의 장점이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0088",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0088_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0088_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "고정 환율제도에서 환율을 유지하기 위한 수단이 아닌 것은?",
+                        "options": [
+                            "① 외환 보유고 사용",
+                            "② 금리 인상",
+                            "③ 외환 시장 개입",
+                            "④ 수입 제한",
+                            "⑤ 정부 지출 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "정부 지출 증가는 고정 환율제도에서 환율을 유지하기 위한 수단이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0089",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0089_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0089_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "환율 조작국으로 지정되었을 때 나타날 수 있는 결과는?",
+                        "options": [
+                            "① 무역 보복",
+                            "② 외환 보유고 증가",
+                            "③ 수출 감소",
+                            "④ 수입 증가",
+                            "⑤ 경제 성장률 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "경제 성장률 증가가 환율 조작국으로 지정되었을 때 나타날 결과는 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0090",
+            "chapter": "Theme 8: 환율과 국제 경제",
+            "page_contents": "{q_0090_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0090_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "국제 금융 기구의 역할로 옳지 않은 것은?",
+                        "options": [
+                            "① 무역 분쟁 해결",
+                            "② 금융 위기 대응",
+                            "③ 국제 금융 규제",
+                            "④ 개발도상국 지원",
+                            "⑤ 국제 환율 조정"
+                        ],
+                        "answer": "①",
+                        "explanation": "무역 분쟁 해결은 국제 금융 기구의 역할이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0092",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0092_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0092_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "재정 정책의 단기 효과로 옳지 않은 것은?",
+                        "options": [
+                            "① 총수요 증가",
+                            "② 실업률 감소",
+                            "③ 물가 상승",
+                            "④ 경제 성장 촉진",
+                            "⑤ 통화량 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "재정 정책은 통화량을 증가시키지 않는다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0093",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0093_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0093_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "통화 정책의 단기 효과로 옳지 않은 것은?",
+                        "options": [
+                            "① 이자율 하락",
+                            "② 투자 증가",
+                            "③ 소비 증가",
+                            "④ 수출 감소",
+                            "⑤ 환율 하락"
+                        ],
+                        "answer": "④",
+                        "explanation": "수출 감소는 통화 정책의 단기 효과가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0094",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0094_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0094_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "경제 정책의 시간적 지체로 인해 발생할 수 있는 문제는?",
+                        "options": [
+                            "① 정책의 예상 효과 증가",
+                            "② 정책의 예상 효과 감소",
+                            "③ 정책의 효과가 늦게 나타남",
+                            "④ 정책의 효과가 일찍 나타남",
+                            "⑤ 정책의 효과가 정확하게 나타남"
+                        ],
+                        "answer": "③",
+                        "explanation": "정책의 시간적 지체로 인해 정책 효과가 늦게 나타날 수 있다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0095",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0095_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0095_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "확장적 재정 정책의 부작용으로 옳지 않은 것은?",
+                        "options": [
+                            "① 인플레이션 상승",
+                            "② 재정 적자 증가",
+                            "③ 이자율 하락",
+                            "④ 정부 부채 증가",
+                            "⑤ 민간 투자 감소"
+                        ],
+                        "answer": "③",
+                        "explanation": "이자율 하락은 확장적 재정 정책의 부작용이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0096",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0096_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0096_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "통화 정책의 한계로 옳지 않은 것은?",
+                        "options": [
+                            "① 유동성 함정",
+                            "② 시간적 지체",
+                            "③ 금리 하한선",
+                            "④ 재정 정책과의 상충",
+                            "⑤ 무역 수지 개선"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "무역 수지 개선은 통화 정책의 한계가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0097",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0097_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0097_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "재정 정책과 통화 정책의 조합을 의미하는 용어는?",
+                        "options": [
+                            "① 정책 혼합",
+                            "② 정책 충돌",
+                            "③ 정책 분리",
+                            "④ 정책 연계",
+                            "⑤ 정책 조율"
+                        ],
+                        "answer": "①",
+                        "explanation": "정책 혼합은 재정 정책과 통화 정책의 조합을 의미한다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0098",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0098_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0098_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "통화 정책의 유효성을 감소시키는 요인은?",
+                        "options": [
+                            "① 유동성 함정",
+                            "② 예상 인플레이션",
+                            "③ 재정 정책",
+                            "④ 국제 무역",
+                            "⑤ 환율 변동"
+                        ],
+                        "answer": "①",
+                        "explanation": "유동성 함정은 통화 정책의 유효성을 감소시킨다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0099",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0099_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0099_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "경기 과열을 방지하기 위한 정책으로 옳지 않은 것은?",
+                        "options": [
+                            "① 긴축 재정 정책",
+                            "② 긴축 통화 정책",
+                            "③ 세율 인상",
+                            "④ 정부 지출 증가",
+                            "⑤ 금리 인상"
+                        ],
+                        "answer": "④",
+                        "explanation": "정부 지출 증가는 경기 과열을 방지하기 위한 정책이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0100",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0100_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0100_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "정부의 시장 개입이 불필요한 경우는?",
+                        "options": [
+                            "① 시장 실패 발생 시",
+                            "② 외부 효과 존재 시",
+                            "③ 공공재 제공 시",
+                            "④ 완전 경쟁 시장 시",
+                            "⑤ 정보 비대칭 시"
+                        ],
+                        "answer": "④",
+                        "explanation": "완전 경쟁 시장에서는 정부의 시장 개입이 불필요하다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0101",
+            "chapter": "Theme 9: 경제 정책의 효과와 한계",
+            "page_contents": "{q_0101_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0101_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "경제 정책의 목표로 옳지 않은 것은?",
+                        "options": [
+                            "① 완전 고용",
+                            "② 물가 안정",
+                            "③ 경제 성장",
+                            "④ 소득 분배 개선",
+                            "⑤ 무역 적자 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "무역 적자 증가는 경제 정책의 목표가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0103",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0103_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0103_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "현대 거시경제학에서 논쟁이 되는 주제가 아닌 것은?",
+                        "options": [
+                            "① 재정 정책의 유효성",
+                            "② 통화 정책의 유효성",
+                            "③ 경기 변동의 원인",
+                            "④ 무역 정책의 유효성",
+                            "⑤ 경제 성장의 필요성"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "경제 성장의 필요성은 현대 거시경제학에서 논쟁이 되는 주제가 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0104",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0104_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0104_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "신자유주의 경제 이론이 강조하지 않는 것은?",
+                        "options": [
+                            "① 시장의 자율성",
+                            "② 정부의 개입 최소화",
+                            "③ 자유 무역",
+                            "④ 규제 강화",
+                            "⑤ 민영화"
+                        ],
+                        "answer": "④",
+                        "explanation": "규제 강화는 신자유주의 경제 이론이 강조하지 않는 것이다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0105",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0105_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0105_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "대침체(Great Recession)의 원인으로 거론되지 않는 것은?",
+                        "options": [
+                            "① 주택 시장 붕괴",
+                            "② 금융 규제 완화",
+                            "③ 소비 지출 증가",
+                            "④ 부실 채권 증가",
+                            "⑤ 신용 경색"
+                        ],
+                        "answer": "③",
+                        "explanation": "소비 지출 증가는 대침체의 원인이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0106",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0106_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0106_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "현대 거시경제학에서 중요하게 다루는 정책 수단이 아닌 것은?",
+                        "options": [
+                            "① 통화 정책",
+                            "② 재정 정책",
+                            "③ 산업 정책",
+                            "④ 무역 정책",
+                            "⑤ 노동 시장 정책"
+                        ],
+                        "answer": "③",
+                        "explanation": "산업 정책은 현대 거시경제학에서 중요하게 다루는 정책 수단이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0107",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0107_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0107_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "불평등이 경제 성장에 미치는 부정적인 영향으로 옳지 않은 것은?",
+                        "options": [
+                            "① 사회적 갈등 증가",
+                            "② 자원의 비효율적 분배",
+                            "③ 경제적 불안정성 증가",
+                            "④ 투자 기회 감소",
+                            "⑤ 기술 혁신 촉진"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "기술 혁신 촉진은 불평등이 경제 성장에 미치는 부정적인 영향이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0108",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0108_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0108_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "기후 변화가 경제에 미치는 영향으로 옳지 않은 것은?",
+                        "options": [
+                            "① 생산성 감소",
+                            "② 자원 고갈",
+                            "③ 인프라 손상",
+                            "④ 기술 발전",
+                            "⑤ 이주 증가"
+                        ],
+                        "answer": "④",
+                        "explanation": "기술 발전은 기후 변화가 경제에 미치는 부정적인 영향이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0109",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0109_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0109_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "현대 거시경제학에서 디지털 경제의 특징으로 옳지 않은 것은?",
+                        "options": [
+                            "① 정보의 중요성 증가",
+                            "② 네트워크 효과 강화",
+                            "③ 생산성 저하",
+                            "④ 데이터 기반 경제 활동",
+                            "⑤ 플랫폼 경제의 성장"
+                        ],
+                        "answer": "③",
+                        "explanation": "생산성 저하는 디지털 경제의 특징이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0110",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0110_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0110_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "핀테크(Fintech)의 발달이 금융 시장에 미친 영향으로 옳지 않은 것은?",
+                        "options": [
+                            "① 금융 서비스 접근성 확대",
+                            "② 금융 거래의 안전성 강화",
+                            "③ 전통 금융 기관의 역할 감소",
+                            "④ 금융 비용 증가",
+                            "⑤ 금융 혁신 촉진"
+                        ],
+                        "answer": "④",
+                        "explanation": "금융 비용 증가는 핀테크가 금융 시장에 미친 영향이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0111",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0111_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0111_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "현대 거시경제학에서 실업 문제 해결을 위해 거론되는 정책이 아닌 것은?",
+                        "options": [
+                            "① 적극적 노동 시장 정책",
+                            "② 기술 교육 강화",
+                            "③ 기본 소득 도입",
+                            "④ 보호무역 강화",
+                            "⑤ 창업 지원"
+                        ],
+                        "answer": "④",
+                        "explanation": "보호무역 강화는 현대 거시경제학에서 실업 문제 해결을 위해 거론되는 정책이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0112",
+            "chapter": "Theme 10: 현대 거시경제학의 이슈와 논쟁",
+            "page_contents": "{q_0112_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0112_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "경제 성장이 환경에 미치는 부정적 영향으로 옳지 않은 것은?",
+                        "options": [
+                            "① 자원 고갈",
+                            "② 환경 오염",
+                            "③ 생태계 파괴",
+                            "④ 기후 변화",
+                            "⑤ 생물 다양성 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "생물 다양성 증가는 경제 성장이 환경에 미치는 부정적인 영향이 아니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        }
+    ]
+}

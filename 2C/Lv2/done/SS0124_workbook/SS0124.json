@@ -1,0 +1,2711 @@
+{
+    "file_id": "SS0124",
+    "ISBN": "9791172483371",
+    "title": "퀴즈로 배우는 회계학",
+    "cat1_domain": "금융",
+    "cat2_sub": "수험서",
+    "cat3_specific": "기타",
+    "pub_date": "2024-06-03",
+    "contents": [
+        {
+            "page": "0004",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0004_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0004_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 회계의 목적에 해당하지 않는 것은?",
+                        "options": [
+                            "① 경제적 자원의 관리와 통제",
+                            "② 재무상태와 경영성과 보고",
+                            "③ 세금 납부와 절세",
+                            "④ 의사결정 지원",
+                            "⑤ 이해관계자 간의 소통 강화"
+                        ],
+                        "answer": "③",
+                        "explanation": "회계의 목적은 경제적 자원의 관리와 통제, 재무상태와 경영성과 보고, 의사결정 지원, 이해관계자 간의 소통 강화 등이 포함됩니다. 세금 납부와 절세는\n회계의 목적이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0005",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0005_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0005_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 거래의 이중 기록에 해당하는 것은?",
+                        "options": [
+                            "① 자산 증가와 비용 증가",
+                            "② 부채 증가와 자산 감소",
+                            "③ 수익 증가와 자산 증가",
+                            "④ 자본 증가와 자산 증가",
+                            "⑤ 비용 감소와 자산 증가"
+                        ],
+                        "answer": "②",
+                        "explanation": "거래의 이중 기록은 자산 증가와 비용 증가, 수익\n증가와 자산 증가 등이 포함됩니다. 부채 증가와 자산 감소는 이중 기록에 해당하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0006",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0006_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0006_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "회계의 기본 가정 중 \"회계기간\"에 대한 설명으로\n옳은 것은?",
+                        "options": [
+                            "① 기업은 영구적으로 지속된다.",
+                            "② 기업의 자산은 역사적 원가로 기록된다.",
+                            "③ 기업의 회계는 일정한 기간으로 나누어 보고된다.",
+                            "④ 거래는 화폐 단위로 측정된다.",
+                            "⑤ 회계 정보는 신뢰성과 관련성이 있어야 한다."
+                        ],
+                        "answer": "③",
+                        "explanation": "회계기간은 기업의 회계를 일정한 기간으로 나누어 보고하는 것을 의미합니다. 다른 선택지는 회계의 다른 기본 가정에 해당합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0007",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0007_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0007_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 자산의 정의에 가장 부합하는 것은?",
+                        "options": [
+                            "① 기업이 통제할 수 있는 자본",
+                            "② 미래의 경제적 효익이 있는 자원",
+                            "③ 현재의 재무 상태를 나타내는 항목",
+                            "④ 경영 활동의 결과로 발생한 수익",
+                            "⑤ 기업의 부채를 상쇄하는 항목"
+                        ],
+                        "answer": "②",
+                        "explanation": "자산은 미래의 경제적 효익이 있는 자원입니다. 다른 선택지는 자산의 정의에 부합하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0008",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0008_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0008_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "회계 등식은 다음 중 어떤 것인가?",
+                        "options": [
+                            "① 자산 = 자본 + 비용",
+                            "② 자산 = 자본 - 부채",
+                            "③ 자산 = 부채 + 자본",
+                            "④ 자산 = 수익 + 비용",
+                            "⑤ 자산 = 부채 – 자본"
+                        ],
+                        "answer": "③",
+                        "explanation": "회계 등식은 자산 = 부채 + 자본입니다. 다른 선택지는 잘못된 회계 등식입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0009",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0009_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0009_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 자본의 정의로 옳지 않은 것은?",
+                        "options": [
+                            "① 소유주 지분",
+                            "② 자산에서 부채를 뺀 금액",
+                            "③ 기업의 순자산",
+                            "④ 미래의 경제적 효익",
+                            "⑤ 재무 상태표의 일부"
+                        ],
+                        "answer": "④",
+                        "explanation": "자본은 소유주 지분이며, 자산에서 부채를 뺀 금액입니다. 미래의 경제적 효익은 자산에 해당합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0010",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0010_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0010_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 비용에 해당하는 항목은?",
+                        "options": [
+                            "① 상품 판매 대금",
+                            "② 임대료 수익",
+                            "③ 급여 지급",
+                            "④ 차입금 상환",
+                            "⑤ 매출 채권"
+                        ],
+                        "answer": "③",
+                        "explanation": "비용은 기업의 경영활동에서 발생하는 자금의 유출을 의미합니다. 상품 판매 대금은 수익에 해당합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0011",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0011_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0011_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "수익 인식 기준에 해당하는 것은?",
+                        "options": [
+                            "① 수익은 현금이 수령될 때 인식한다.",
+                            "② 수익은 발생주의에 따라 인식한다.",
+                            "③ 수익은 발생주의와 현금주의 중 선택 가능하다.",
+                            "④ 수익은 비용이 발생했을 때 인식한다.",
+                            "⑤ 수익은 비용을 초과했을 때 인식한다."
+                        ],
+                        "answer": "②",
+                        "explanation": "수익은 발생주의에 따라 인식됩니다. 다른 선택지는\n수익 인식 기준에 부합하지 않습니다.\n"
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0012",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0012_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0012_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 재무제표의 요소가 아닌 것은?",
+                        "options": [
+                            "① 자산",
+                            "② 부채",
+                            "③ 수익",
+                            "④ 비용",
+                            "⑤ 배당금"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "재무제표의 요소는 자산, 부채, 수익, 비용입니다.\n배당금은 재무제표의 요소가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0013",
+            "chapter": "Theme 1: 회계의\n기초",
+            "page_contents": "{q_0013_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0013_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "회계 정보의 질적 특성 중 가장 중요한 두 가지는?",
+                        "options": [
+                            "① 관련성과 신뢰성",
+                            "② 비교가능성과 검증가능성",
+                            "③ 이해가능성과 적시성",
+                            "④ 중요성과 경제성",
+                            "⑤ 정합성과 체계성"
+                        ],
+                        "answer": "①",
+                        "explanation": "회계 정보의 질적 특성 중 가장 중요한 것은 관련성과 신뢰성입니다. 다른 선택지는 회계 정보의 질적 특성으로 중요하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0015",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0015_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0015_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "재무상태표에서 자산 항목이 아닌 것은?",
+                        "options": [
+                            "① 현금",
+                            "② 매출채권",
+                            "③ 매입채무",
+                            "④ 유형자산",
+                            "⑤ 재고자산"
+                        ],
+                        "answer": "③",
+                        "explanation": "재무상태표에서 매입채무는 부채 항목입니다. 나머지는 자산 항목에 해당합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0016",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0016_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0016_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "포괄손익계산서의 구성 요소가 아닌 것은?",
+                        "options": [
+                            "① 매출",
+                            "② 매출원가",
+                            "③ 영업이익",
+                            "④ 법인세비용",
+                            "⑤ 배당금"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "포괄손익계산서의 구성 요소는 매출, 매출원가, 영업이익, 법인세비용 등입니다. 배당금은 포괄손익계산서의 구성 요소가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0017",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0017_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0017_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "현금흐름표의 구성 요소가 아닌 것은?",
+                        "options": [
+                            "① 영업활동 현금흐름",
+                            "② 투자활동 현금흐름",
+                            "③ 재무활동 현금흐름",
+                            "④ 자본활동 현금흐름",
+                            "⑤ 현금의 순증가"
+                        ],
+                        "answer": "④",
+                        "explanation": "현금흐름표의 구성 요소는 영업활동 현금흐름, 투자활동 현금흐름, 재무활동 현금흐름, 현금의 순증가입니다. 자본활동 현금흐름은 없습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0018",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0018_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0018_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "재무제표 분석 시 사용하는 비율이 아닌 것은?",
+                        "options": [
+                            "① 유동비율",
+                            "② 부채비율",
+                            "③ 매출총이익률",
+                            "④ 주당이익",
+                            "⑤ 현금비율"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "재무제표 분석 시 사용하는 비율은 유동비율, 부채비율, 매출총이익률, 주당이익 등입니다. 현금비율은 사용되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0019",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0019_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0019_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 자기자본이익률(ROE)을 계산하는 방법으로\n옳은 것은?",
+                        "options": [
+                            "① 순이익 / 총자산",
+                            "② 순이익 / 자기자본",
+                            "③ 영업이익 / 총자산",
+                            "④ 영업이익 / 자기자본",
+                            "⑤ 총자산 / 자기자본"
+                        ],
+                        "answer": "②",
+                        "explanation": "자기자본이익률(ROE)은 순이익을 자기자본으로 나눈 값입니다. 다른 선택지는 잘못된 계산 방법입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0020",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0020_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0020_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "유동성 비율이 높은 기업은 어떤 특성을 가지는가?",
+                        "options": [
+                            "① 수익성이 높다.",
+                            "② 자산이 많다.",
+                            "③ 부채가 적다.",
+                            "④ 단기 부채를 상환할 능력이 높다.",
+                            "⑤ 장기 부채가 많다."
+                        ],
+                        "answer": "④",
+                        "explanation": "유동성 비율이 높은 기업은 단기 부채를 상환할 능력이 높습니다. 다른 선택지는 유동성 비율과 직접적인 관련이 없습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0021",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0021_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0021_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 재무상태표의 자산 항목에 포함되지 않는\n것은?",
+                        "options": [
+                            "① 현금",
+                            "② 매출채권",
+                            "③ 매입채무",
+                            "④ 유형자산",
+                            "⑤ 재고자산"
+                        ],
+                        "answer": "③",
+                        "explanation": "재무상태표의 자산 항목에는 현금, 매출채권, 유형자산, 재고자산 등이 포함됩니다. 매입채무는 부채항목입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0022",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0022_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0022_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 손익계산서에 포함되는 항목이 아닌 것은?",
+                        "options": [
+                            "① 매출",
+                            "② 매출원가",
+                            "③ 판매관리비",
+                            "④ 감가상각비",
+                            "⑤ 배당금"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "손익계산서에는 매출, 매출원가, 판매관리비, 감가상각비 등이 포함됩니다. 배당금은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0023",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0023_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0023_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "재무제표에서 자산과 부채를 비교하여 기업의 재무\n건전성을 평가하는 데 사용되는 비율은?",
+                        "options": [
+                            "① 유동비율",
+                            "② 부채비율",
+                            "③ 이익률",
+                            "④ 현금흐름비율",
+                            "⑤ 자산회전율"
+                        ],
+                        "answer": "①",
+                        "explanation": "재무제표에서 자산과 부채를 비교하여 기업의 재무\n건전성을 평가하는 데 사용되는 비율은 유동비율입니다. 다른 선택지는 다른 목적으로 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0024",
+            "chapter": "Theme 2:\n재무제표 이해하기",
+            "page_contents": "{q_0024_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0024_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 포괄손익계산서에 포함되지 않는 항목은?",
+                        "options": [
+                            "① 매출",
+                            "② 매출원가",
+                            "③ 영업이익",
+                            "④ 법인세비용",
+                            "⑤ 자본잉여금"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "포괄손익계산서에 포함되지 않는 항목은 자본잉여금입니다. 다른 선택지는 포괄손익계산서에 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0026",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0026_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0026_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 유동자산에 해당하지 않는 것은?",
+                        "options": [
+                            "① 현금",
+                            "② 매출채권",
+                            "③ 재고자산",
+                            "④ 유형자산",
+                            "⑤ 단기금융상품"
+                        ],
+                        "answer": "④",
+                        "explanation": "유동자산에는 현금, 매출채권, 재고자산, 단기금융상품 등이 포함됩니다. 유형자산은 비유동자산입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0027",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0027_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0027_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 유동부채에 해당하지 않는 것은?",
+                        "options": [
+                            "① 매입채무",
+                            "② 단기차입금",
+                            "③ 미지급금",
+                            "④ 장기차입금",
+                            "⑤ 미지급비용"
+                        ],
+                        "answer": "④",
+                        "explanation": "유동부채에는 매입채무, 단기차입금, 미지급금, 미지급비용 등이 포함됩니다. 장기차입금은 비유동부채입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0028",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0028_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0028_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "유형자산의 감가상각 방법 중 가장 많이 사용되는 방법은?",
+                        "options": [
+                            "① 정액법",
+                            "② 정률법",
+                            "③ 연수합계법",
+                            "④ 생산량비례법",
+                            "⑤ 이중체감법"
+                        ],
+                        "answer": "①",
+                        "explanation": "유형자산의 감가상각 방법 중 가장 많이 사용되는 방법은 정액법입니다. 다른 방법들은 특정 상황에서 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0029",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0029_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0029_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 무형자산에 해당하지 않는 것은?",
+                        "options": [
+                            "① 상표권",
+                            "② 특허권",
+                            "③ 컴퓨터 소프트웨어",
+                            "④ 영업권",
+                            "⑤ 건물"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "무형자산에는 상표권, 특허권, 컴퓨터 소프트웨어, 영업권 등이 포함됩니다. 건물은 유형자산입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0030",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0030_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0030_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 부채의 정의에 가장 부합하는 것은?",
+                        "options": [
+                            "① 자산에서 자본을 뺀 것",
+                            "② 미래에 경제적 자원을 사용해야 할 의무",
+                            "③ 자산의 감소",
+                            "④ 자본의 증가",
+                            "⑤ 수익의 감소"
+                        ],
+                        "answer": "②",
+                        "explanation": "부채는 미래에 경제적 자원을 사용해야 할 의무입니다. 다른 선택지는 부채의 정의에 부합하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0031",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0031_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0031_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 감가상각비가 발생하지 않는 자산은?",
+                        "options": [
+                            "① 건물",
+                            "② 기계장치",
+                            "③ 토지",
+                            "④ 차량",
+                            "⑤ 컴퓨터"
+                        ],
+                        "answer": "③",
+                        "explanation": "토지는 감가상각비가 발생하지 않는 자산입니다. 다른 자산은 감가상각비가 발생합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0032",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0032_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0032_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 자산의 취득 원가에 포함되지 않는 것은?",
+                        "options": [
+                            "① 구입 가격",
+                            "② 설치 비용",
+                            "③ 운송 비용",
+                            "④ 수리 비용",
+                            "⑤ 세금"
+                        ],
+                        "answer": "④",
+                        "explanation": "자산의 취득 원가에는 구입 가격, 설치 비용, 운송\n비용, 세금 등이 포함됩니다. 수리 비용은 포함되지\n않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0033",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0033_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0033_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "부채비율을 계산하는 방법으로 옳은 것은?",
+                        "options": [
+                            "① 부채 / 자산",
+                            "② 자산 / 부채",
+                            "③ 부채 / 자본",
+                            "④ 자본 / 부채",
+                            "⑤ 자산 / 자본"
+                        ],
+                        "answer": "①",
+                        "explanation": "부채비율은 부채를 자산으로 나눈 값입니다. 다른\n선택지는 부채비율 계산 방법이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0034",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0034_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0034_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 기업의 유동성 비율을 높이는 데 가장 효과적인 방법은?",
+                        "options": [
+                            "① 장기 차입금을 증가시킨다.",
+                            "② 단기 차입금을 증가시킨다.",
+                            "③ 매출채권을 현금화한다.",
+                            "④ 유형자산을 매각한다.",
+                            "⑤ 재고자산을 증가시킨다."
+                        ],
+                        "answer": "③",
+                        "explanation": "기업의 유동성 비율을 높이는 가장 효과적인 방법은 매출채권을 현금화하는 것입니다. 다른 선택지는\n유동성 비율을 높이는 데 적절하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0035",
+            "chapter": "Theme 3: 자산과\n부채",
+            "page_contents": "{q_0035_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0035_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 비유동자산에 해당하는 것은?",
+                        "options": [
+                            "① 현금",
+                            "② 매출채권",
+                            "③ 재고자산",
+                            "④ 건물",
+                            "⑤ 단기금융상품"
+                        ],
+                        "answer": "④",
+                        "explanation": "비유동자산에는 건물이 포함됩니다. 다른 선택지는\n유동자산입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0037",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0037_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0037_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "수익 인식 기준으로 옳지 않은 것은?",
+                        "options": [
+                            "① 수익은 거래가 완료되었을 때 인식한다.",
+                            "② 수익은 현금이 수령될 때 인식한다.",
+                            "③ 수익은 발생주의에 따라 인식한다.",
+                            "④ 수익은 기업의 경영활동과 관련된 것이다.",
+                            "⑤ 수익은 비용과 관련하여 인식된다."
+                        ],
+                        "answer": "②",
+                        "explanation": "수익은 현금이 수령될 때가 아니라 발생주의에 따라 인식됩니다. 다른 선택지는 수익 인식 기준에 부합합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0038",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0038_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0038_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 비용으로 인식되지 않는 항목은?",
+                        "options": [
+                            "① 급여 지급",
+                            "② 광고비",
+                            "③ 연구개발비",
+                            "④ 설비 구입",
+                            "⑤ 임대료"
+                        ],
+                        "answer": "④",
+                        "explanation": "설비 구입은 자산으로 인식됩니다. 다른 선택지는\n비용으로 인식됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0039",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0039_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0039_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "다음 중 발생주의에 따른 수익 인식 시점으로 적절한 것은?",
+                        "options": [
+                            "① 계약 체결 시점",
+                            "② 계약 금액의 절반 수령 시점",
+                            "③ 거래가 실질적으로 완료된 시점",
+                            "④ 현금 수령 시점",
+                            "⑤ 거래 종료 후 일정 기간 경과 시점"
+                        ],
+                        "answer": "③",
+                        "explanation": "발생주의에 따르면 수익은 거래가 실질적으로 완료된 시점에 인식됩니다. 다른 선택지는 수익 인식 시점에 적절하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0040",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0040_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0040_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 매출원가에 포함되는 항목은?",
+                        "options": [
+                            "① 급여",
+                            "② 재료비",
+                            "③ 광고비",
+                            "④ 감가상각비",
+                            "⑤ 이자비용"
+                        ],
+                        "answer": "②",
+                        "explanation": "매출원가에는 재료비가 포함됩니다. 다른 선택지는\n매출원가에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0041",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0041_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0041_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "수익의 정의에 가장 부합하는 것은?",
+                        "options": [
+                            "① 자산의 증가",
+                            "② 자본의 증가",
+                            "③ 부채의 감소",
+                            "④ 비용의 감소",
+                            "⑤ 매출의 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "수익은 매출의 증가를 의미합니다. 다른 선택지는\n수익의 정의에 부합하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0042",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0042_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0042_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 관리비용에 해당하지 않는 것은?",
+                        "options": [
+                            "① 급여",
+                            "② 사무용품비",
+                            "③ 광고비",
+                            "④ 연구개발비",
+                            "⑤ 매출원가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "매출원가는 관리비용에 해당하지 않습니다. 다른 선택지는 관리비용에 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0043",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0043_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0043_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 영업 외 비용에 해당하는 항목은?",
+                        "options": [
+                            "① 매출원가",
+                            "② 감가상각비",
+                            "③ 급여",
+                            "④ 이자비용",
+                            "⑤ 임대료"
+                        ],
+                        "answer": "④",
+                        "explanation": "영업 외 비용에는 이자비용이 포함됩니다. 다른 선택지는 영업 외 비용에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0044",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0044_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0044_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "비용의 정의에 가장 부합하는 것은?",
+                        "options": [
+                            "① 자산의 증가",
+                            "② 부채의 감소",
+                            "③ 자산의 감소",
+                            "④ 자본의 증가",
+                            "⑤ 매출의 증가"
+                        ],
+                        "answer": "③",
+                        "explanation": "비용은 자산의 감소를 의미합니다. 다른 선택지는\n비용의 정의에 부합하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0045",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0045_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0045_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 포괄손익계산서에 포함되지 않는 항목은?",
+                        "options": [
+                            "① 매출",
+                            "② 매출원가",
+                            "③ 이익잉여금",
+                            "④ 영업이익",
+                            "⑤ 법인세비용"
+                        ],
+                        "answer": "③",
+                        "explanation": "포괄손익계산서에는 이익잉여금이 포함되지 않습니다. 다른 선택지는 포괄손익계산서에 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0046",
+            "chapter": "Theme 4: 수익과\n비용",
+            "page_contents": "{q_0046_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0046_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 수익 인식 시점으로 적절하지 않은 것은?",
+                        "options": [
+                            "① 재화가 인도되었을 때",
+                            "② 용역이 제공되었을 때",
+                            "③ 계약이 체결되었을 때",
+                            "④ 대금을 수령했을 때",
+                            "⑤ 거래가 실질적으로 완료되었을 때"
+                        ],
+                        "answer": "③",
+                        "explanation": "수익 인식 시점으로 계약이 체결되었을 때는 적절하지 않습니다. 다른 선택지는 수익 인식 시점에 적절합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0048",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0048_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0048_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 회계 사이클의 첫 번째 단계는?",
+                        "options": [
+                            "① 거래의 인식",
+                            "② 거래의 기록",
+                            "③ 시산표 작성",
+                            "④ 재무제표 작성",
+                            "⑤ 결산 정리"
+                        ],
+                        "answer": "①",
+                        "explanation": "회계 사이클의 첫 번째 단계는 거래의 인식입니다.\n다른 선택지는 회계 사이클의 다른 단계에 해당합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0049",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0049_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0049_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 분개장에 기록되지 않는 항목은?",
+                        "options": [
+                            "① 거래일자",
+                            "② 거래내용",
+                            "③ 차변 계정",
+                            "④ 대변 계정",
+                            "⑤ 자본계정"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "분개장에 자본계정은 기록되지 않습니다. 다른 선택지는 분개장에 기록됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0050",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0050_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0050_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "시산표 작성의 목적에 해당하지 않는 것은?",
+                        "options": [
+                            "① 계정의 정확성 확인",
+                            "② 부정 행위의 발견",
+                            "③ 재무제표 작성의 기초",
+                            "④ 계정 잔액의 집계",
+                            "⑤ 거래의 분개"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "시산표 작성의 목적은 계정 잔액의 집계입니다. 다른 선택지는 시산표 작성의 목적이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0051",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0051_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0051_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 결산 정리 작업에 해당하는 것은?",
+                        "options": [
+                            "① 자산의 취득",
+                            "② 부채의 증가",
+                            "③ 수익의 인식",
+                            "④ 비용의 인식",
+                            "⑤ 감가상각비의 계상"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "결산 정리 작업에는 감가상각비의 계상이 포함됩니다. 다른 선택지는 결산 정리 작업에 해당하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0052",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0052_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0052_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 재무제표 작성 시 가장 중요한 단계는?",
+                        "options": [
+                            "① 거래의 기록",
+                            "② 시산표 작성",
+                            "③ 결산 정리",
+                            "④ 분개장 기록",
+                            "⑤ 원장 정리"
+                        ],
+                        "answer": "③",
+                        "explanation": "재무제표 작성 시 가장 중요한 단계는 결산 정리입니다. 다른 선택지는 중요하지만 결산 정리보다 우선하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0053",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0053_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0053_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 결산 작업의 일환이 아닌 것은?",
+                        "options": [
+                            "① 수익과 비용의 인식",
+                            "② 자산의 평가",
+                            "③ 부채의 평가",
+                            "④ 자본의 평가",
+                            "⑤ 거래의 기록"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "결산 작업에는 거래의 기록이 포함되지 않습니다.\n다른 선택지는 결산 작업의 일환입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0054",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0054_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0054_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 회계 사이클의 마지막 단계는?",
+                        "options": [
+                            "① 분개장 작성",
+                            "② 원장 기록",
+                            "③ 시산표 작성",
+                            "④ 결산 정리",
+                            "⑤ 재무제표 작성"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "회계 사이클의 마지막 단계는 재무제표 작성입니다.\n다른 선택지는 회계 사이클의 중간 단계입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0055",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0055_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0055_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 시산표에 포함되지 않는 항목은?",
+                        "options": [
+                            "① 자산 계정",
+                            "② 부채 계정",
+                            "③ 자본 계정",
+                            "④ 수익 계정",
+                            "⑤ 현금 흐름"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "시산표에 현금 흐름은 포함되지 않습니다. 다른 선택지는 시산표에 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0056",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0056_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0056_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "결산 정리 시 가장 중요한 작업은?",
+                        "options": [
+                            "① 감가상각비 계상",
+                            "② 거래의 기록",
+                            "③ 시산표 작성",
+                            "④ 분개장 기록",
+                            "⑤ 원장 정리"
+                        ],
+                        "answer": "①",
+                        "explanation": "결산 정리 시 가장 중요한 작업은 감가상각비 계상입니다. 다른 선택지는 결산 정리 작업의 일부분입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0057",
+            "chapter": "Theme 5: 회계\n사이클",
+            "page_contents": "{q_0057_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0057_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 회계 사이클에 포함되지 않는 단계는?",
+                        "options": [
+                            "① 거래의 인식",
+                            "② 거래의 기록",
+                            "③ 원장 기록",
+                            "④ 재무제표 감사",
+                            "⑤ 시산표 작성"
+                        ],
+                        "answer": "④",
+                        "explanation": "회계 사이클에는 재무제표 감사가 포함되지 않습니다. 다른 선택지는 회계 사이클의 단계에 해당합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0059",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0059_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0059_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 원가 회계의 목적이 아닌 것은?",
+                        "options": [
+                            "① 원가의 계산",
+                            "② 원가의 통제",
+                            "③ 재무 상태의 보고",
+                            "④ 원가의 분석",
+                            "⑤ 가격 결정 지원"
+                        ],
+                        "answer": "③",
+                        "explanation": "원가 회계의 목적은 원가의 계산, 통제, 분석, 가격\n결정 지원입니다. 재무 상태의 보고는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0060",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0060_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0060_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 제조간접비에 해당하지 않는 것은?",
+                        "options": [
+                            "① 임금",
+                            "② 전기료",
+                            "③ 감가상각비",
+                            "④ 유지보수비",
+                            "⑤ 임대료"
+                        ],
+                        "answer": "①",
+                        "explanation": "제조간접비에는 전기료, 감가상각비, 유지보수비, 임대료 등이 포함됩니다. 임금은 직접 원가입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0061",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0061_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0061_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "다음 중 고정원가에 해당하는 것은?",
+                        "options": [
+                            "① 재료비",
+                            "② 전기료",
+                            "③ 임금",
+                            "④ 감가상각비",
+                            "⑤ 운송비"
+                        ],
+                        "answer": "④",
+                        "explanation": "고정원가에는 감가상각비가 포함됩니다. 다른 선택지는 변동원가에 해당합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0062",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0062_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0062_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 변동원가에 해당하는 것은?",
+                        "options": [
+                            "① 임대료",
+                            "② 감가상각비",
+                            "③ 보험료",
+                            "④ 운송비",
+                            "⑤ 급여"
+                        ],
+                        "answer": "④",
+                        "explanation": "변동원가에는 운송비가 포함됩니다. 다른 선택지는\n고정원가에 해당합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0063",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0063_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0063_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 원가 배분 기준이 아닌 것은?",
+                        "options": [
+                            "① 직접 배분법",
+                            "② 단계 배분법",
+                            "③ 상호 배분법",
+                            "④ 정액 배분법",
+                            "⑤ 활동 기준 배분법"
+                        ],
+                        "answer": "④",
+                        "explanation": "원가 배분 기준에는 직접 배분법, 단계 배분법, 상호 배분법, 활동 기준 배분법 등이 포함됩니다. 정액 배분법은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0064",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0064_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0064_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 원가 회계에서 제조원가에 포함되지 않는\n항목은?",
+                        "options": [
+                            "① 재료비",
+                            "② 인건비",
+                            "③ 제조간접비",
+                            "④ 판매관리비",
+                            "⑤ 감가상각비"
+                        ],
+                        "answer": "④",
+                        "explanation": "원가 회계에서 제조원가에는 재료비, 인건비, 제조간접비, 감가상각비 등이 포함됩니다. 판매관리비는\n포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0065",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0065_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0065_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 제품 원가를 계산할 때 포함되지 않는 항목은?",
+                        "options": [
+                            "① 재료비",
+                            "② 인건비",
+                            "③ 제조간접비",
+                            "④ 판매비",
+                            "⑤ 감가상각비"
+                        ],
+                        "answer": "④",
+                        "explanation": "제품 원가를 계산할 때 판매비는 포함되지 않습니다. 다른 선택지는 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0066",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0066_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0066_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 원가 회계에서 변동원가가 아닌 것은?",
+                        "options": [
+                            "① 재료비",
+                            "② 임금",
+                            "③ 전기료",
+                            "④ 감가상각비",
+                            "⑤ 운송비"
+                        ],
+                        "answer": "④",
+                        "explanation": "변동원가에는 재료비, 임금, 전기료, 운송비 등이\n포함됩니다. 감가상각비는 변동원가에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0067",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0067_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0067_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 제조원가를 구성하는 요소가 아닌 것은?",
+                        "options": [
+                            "① 재료비",
+                            "② 인건비",
+                            "③ 제조간접비",
+                            "④ 판매관리비",
+                            "⑤ 감가상각비"
+                        ],
+                        "answer": "④",
+                        "explanation": "제조원가를 구성하는 요소에는 재료비, 인건비, 제조간접비, 감가상각비 등이 포함됩니다. 판매관리비는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0068",
+            "chapter": "Theme 6: 원가\n회계",
+            "page_contents": "{q_0068_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0068_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 제품의 완성품 원가를 계산할 때 고려되지\n않는 항목은?",
+                        "options": [
+                            "① 재료비",
+                            "② 인건비",
+                            "③ 제조간접비",
+                            "④ 운송비",
+                            "⑤ 감가상각비"
+                        ],
+                        "answer": "④",
+                        "explanation": "제품의 완성품 원가를 계산할 때 운송비는 고려되지 않습니다. 다른 선택지는 고려됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0070",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0070_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0070_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 관리 회계의 주요 목적이 아닌 것은?",
+                        "options": [
+                            "① 원가 절감",
+                            "② 의사결정 지원",
+                            "③ 재무제표 작성",
+                            "④ 성과 평가",
+                            "⑤ 예산 편성"
+                        ],
+                        "answer": "③",
+                        "explanation": "관리 회계의 주요 목적에는 원가 절감, 의사결정 지원, 성과 평가, 예산 편성 등이 포함됩니다. 재무제표 작성은 관리 회계의 목적이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0071",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0071_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0071_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 예산 편성의 목적이 아닌 것은?",
+                        "options": [
+                            "① 자원의 효율적 배분",
+                            "② 경영 계획 수립",
+                            "③ 비용 통제",
+                            "④ 자산 평가",
+                            "⑤ 성과 평가"
+                        ],
+                        "answer": "④",
+                        "explanation": "예산 편성의 목적은 자원의 효율적 배분, 경영 계획\n수립, 비용 통제, 성과 평가 등이 포함됩니다. 자산\n평가는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0072",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0072_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0072_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "다음 중 관리 회계에서 사용하는 기법이 아닌 것은?",
+                        "options": [
+                            "① CVP 분석",
+                            "② 차이 분석",
+                            "③ 자본 예산",
+                            "④ 원가 회계",
+                            "⑤ 자산 평가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "관리 회계에서 사용하는 기법에는 CVP 분석, 차이\n분석, 자본 예산, 원가 회계 등이 포함됩니다. 자산\n평가는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0073",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0073_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0073_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 CVP 분석에서 고정비가 증가하면 나타날\n수 있는 현상은?",
+                        "options": [
+                            "① 이익이 증가한다.",
+                            "② 이익이 감소한다.",
+                            "③ 고정비와 변동비가 모두 증가한다.",
+                            "④ 매출액이 감소한다.",
+                            "⑤ 매출원가가 증가한다."
+                        ],
+                        "answer": "②",
+                        "explanation": "고정비가 증가하면 이익이 감소합니다. 다른 선택지는 고정비 증가의 결과가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0074",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0074_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0074_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 관리 회계에서 성과 평가의 지표로 사용되지 않는 것은?",
+                        "options": [
+                            "① ROI",
+                            "② EVA",
+                            "③ 매출액",
+                            "④ ROE",
+                            "⑤ ROS"
+                        ],
+                        "answer": "③",
+                        "explanation": "관리 회계에서 성과 평가의 지표로 사용되지 않는\n것은 매출액입니다. 다른 선택지는 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0075",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0075_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0075_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 관리 회계에서 사용하는 예산의 종류가 아닌 것은?",
+                        "options": [
+                            "① 영업 예산",
+                            "② 투자 예산",
+                            "③ 자본 예산",
+                            "④ 재무 예산",
+                            "⑤ 자산 예산"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "관리 회계에서 사용하는 예산의 종류에는 영업 예산, 투자 예산, 자본 예산, 재무 예산 등이 포함됩니다. 자산 예산은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0076",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0076_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0076_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 관리 회계에서 중요하게 고려해야 할 요소가 아닌 것은?",
+                        "options": [
+                            "① 비용 절감",
+                            "② 재무 상태",
+                            "③ 생산성 향상",
+                            "④ 시장 점유율",
+                            "⑤ 직원 만족도"
+                        ],
+                        "answer": "②",
+                        "explanation": "관리 회계에서 중요하게 고려해야 할 요소에는 비용 절감, 생산성 향상, 시장 점유율, 직원 만족도 등이 포함됩니다. 재무 상태는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0077",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0077_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0077_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 성과 평가에서 사용되지 않는 지표는?",
+                        "options": [
+                            "① 매출액",
+                            "② 이익률",
+                            "③ 부채 비율",
+                            "④ 자본 회전율",
+                            "⑤ 비용 비율"
+                        ],
+                        "answer": "③",
+                        "explanation": "성과 평가에서 사용되지 않는 지표는 부채 비율입니다. 다른 선택지는 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0078",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0078_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0078_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 관리 회계에서 사용하는 기법으로 올바르지 않은 것은?",
+                        "options": [
+                            "① CVP 분석",
+                            "② 차이 분석",
+                            "③ 자본 예산",
+                            "④ 재무 상태 분석",
+                            "⑤ 활동 기준 원가 계산"
+                        ],
+                        "answer": "④",
+                        "explanation": "관리 회계에서 사용하는 기법으로 재무 상태 분석은 포함되지 않습니다. 다른 선택지는 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0079",
+            "chapter": "Theme 7: 관리\n회계",
+            "page_contents": "{q_0079_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0079_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 관리 회계에서 주로 다루지 않는 정보는?",
+                        "options": [
+                            "① 예산 편성",
+                            "② 성과 평가",
+                            "③ 원가 분석",
+                            "④ 자산 평가",
+                            "⑤ 경영 계획"
+                        ],
+                        "answer": "④",
+                        "explanation": "관리 회계에서 주로 다루지 않는 정보는 자산 평가입니다. 다른 선택지는 다룹니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0081",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0081_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0081_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 세무 회계의 목적에 해당하지 않는 것은?",
+                        "options": [
+                            "① 세금 계산",
+                            "② 세금 신고",
+                            "③ 세금 납부",
+                            "④ 세금 절감",
+                            "⑤ 재무 상태 분석"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "세무 회계의 목적은 세금 계산, 세금 신고, 세금 납부, 세금 절감입니다. 재무 상태 분석은 포함되지\n않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0082",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0082_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0082_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 법인세 계산 시 공제되지 않는 항목은?",
+                        "options": [
+                            "① 급여",
+                            "② 기부금",
+                            "③ 접대비",
+                            "④ 감가상각비",
+                            "⑤ 이자비용"
+                        ],
+                        "answer": "③",
+                        "explanation": "법인세 계산 시 공제되지 않는 항목은 접대비입니다. 다른 선택지는 공제됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0083",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0083_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0083_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "다음 중 소득세 신고 시 과세 대상이 아닌 항목은?",
+                        "options": [
+                            "① 급여",
+                            "② 이자소득",
+                            "③ 배당소득",
+                            "④ 재산세",
+                            "⑤ 사업소득"
+                        ],
+                        "answer": "④",
+                        "explanation": "소득세 신고 시 과세 대상이 아닌 항목은 재산세입니다. 다른 선택지는 과세 대상입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0084",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0084_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0084_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 부가가치세(VAT)의 특징이 아닌 것은?",
+                        "options": [
+                            "① 소비세의 일종이다.",
+                            "② 매출세액에서 매입세액을 차감한다.",
+                            "③ 최종 소비자가 부담한다.",
+                            "④ 법인세와 동일하게 적용된다.",
+                            "⑤ 모든 사업자가 납부해야 한다."
+                        ],
+                        "answer": "④",
+                        "explanation": "부가가치세는 법인세와 동일하게 적용되지 않습니다. 다른 선택지는 부가가치세의 특징입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0085",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0085_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0085_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 소득세의 과세표준이 아닌 것은?",
+                        "options": [
+                            "① 근로소득",
+                            "② 사업소득",
+                            "③ 이자소득",
+                            "④ 배당소득",
+                            "⑤ 비과세소득"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "소득세의 과세표준은 근로소득, 사업소득, 이자소득,\n배당소득 등입니다. 비과세소득은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0086",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0086_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0086_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 법인세 신고 시 필요하지 않은 서류는?",
+                        "options": [
+                            "① 재무제표",
+                            "② 부가가치세 신고서",
+                            "③ 법인세 신고서",
+                            "④ 원천징수영수증",
+                            "⑤ 납세증명서"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "법인세 신고 시 필요한 서류는 재무제표, 부가가치세 신고서, 법인세 신고서, 원천징수영수증 등입니다. 납세증명서는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0087",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0087_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0087_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 세무 회계에서 사용하는 기법이 아닌 것은?",
+                        "options": [
+                            "① 세액 공제",
+                            "② 소득 공제",
+                            "③ 세무조정",
+                            "④ 원가 배분",
+                            "⑤ 감가상각"
+                        ],
+                        "answer": "④",
+                        "explanation": "세무 회계에서 사용하는 기법에는 세액 공제, 소득\n공제, 세무조정, 감가상각 등이 포함됩니다. 원가\n배분은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0088",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0088_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0088_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 세금 계산 시 고려하지 않아도 되는 항목은?",
+                        "options": [
+                            "① 과세 소득",
+                            "② 공제 항목",
+                            "③ 세율",
+                            "④ 납세자 거주지",
+                            "⑤ 납세자 나이"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "세금 계산 시 고려하지 않아도 되는 항목은 납세자\n나이입니다. 다른 선택지는 고려됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0089",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0089_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0089_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 법인세 절감 방법이 아닌 것은?",
+                        "options": [
+                            "① 연구개발비 증가",
+                            "② 기부금 증가",
+                            "③ 감가상각비 증가",
+                            "④ 매출 증가",
+                            "⑤ 접대비 증가"
+                        ],
+                        "answer": "④",
+                        "explanation": "법인세 절감 방법으로 매출 증가는 포함되지 않습니다. 다른 선택지는 절감 방법입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0090",
+            "chapter": "Theme 8: 세무\n회계",
+            "page_contents": "{q_0090_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0090_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 부가가치세의 매입세액 공제를 받을 수 없는 경우는?",
+                        "options": [
+                            "① 사업에 사용하는 재화",
+                            "② 사업에 사용하는 용역",
+                            "③ 개인용으로 사용한 재화",
+                            "④ 사업에 사용하는 차량",
+                            "⑤ 사업에 사용하는 건물"
+                        ],
+                        "answer": "③",
+                        "explanation": "부가가치세의 매입세액 공제를 받을 수 없는 경우는 개인용으로 사용한 재화입니다. 다른 선택지는\n공제 받을 수 있습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0092",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0092_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0092_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 국제회계기준(IFRS)의 특징이 아닌 것은?",
+                        "options": [
+                            "① 원칙 중심의 회계 기준",
+                            "② 글로벌 표준 적용",
+                            "③ 투명성 향상",
+                            "④ 복잡한 규제",
+                            "⑤ 이해관계자 보호"
+                        ],
+                        "answer": "④",
+                        "explanation": "국제회계기준(IFRS)은 원칙 중심의 회계 기준, 글로벌 표준 적용, 투명성 향상, 이해관계자 보호 등이\n특징입니다. 복잡한 규제는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0093",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0093_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0093_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 회계 윤리의 기본 원칙이 아닌 것은?",
+                        "options": [
+                            "① 정직",
+                            "② 공정",
+                            "③ 책임",
+                            "④ 이익 극대화",
+                            "⑤ 투명성"
+                        ],
+                        "answer": "④",
+                        "explanation": "회계 윤리의 기본 원칙에는 정직, 공정, 책임, 투명성 등이 포함됩니다. 이익 극대화는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0094",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0094_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0094_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "다음 중 회계사 윤리 강령에 포함되지 않는 항목은?",
+                        "options": [
+                            "① 정직",
+                            "② 객관성",
+                            "③ 기밀 유지",
+                            "④ 법 준수",
+                            "⑤ 이익 극대화"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "회계사 윤리 강령에 포함되지 않는 항목은 이익 극대화입니다. 다른 선택지는 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0095",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0095_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0095_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 재무보고의 목적이 아닌 것은?",
+                        "options": [
+                            "① 투자자에게 정보 제공",
+                            "② 경영진의 의사결정 지원",
+                            "③ 법인세 계산",
+                            "④ 채권자에게 정보 제공",
+                            "⑤ 정부의 정책 결정 지원"
+                        ],
+                        "answer": "③",
+                        "explanation": "재무보고의 목적은 투자자에게 정보 제공, 경영진의\n의사결정 지원, 채권자에게 정보 제공, 정부의 정책\n결정 지원입니다. 법인세 계산은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0096",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0096_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0096_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 회계 정보의 질적 특성이 아닌 것은?",
+                        "options": [
+                            "① 관련성",
+                            "② 신뢰성",
+                            "③ 비교가능성",
+                            "④ 경제성",
+                            "⑤ 이해가능성"
+                        ],
+                        "answer": "④",
+                        "explanation": "회계 정보의 질적 특성에는 관련성, 신뢰성, 비교가능성, 이해가능성 등이 포함됩니다. 경제성은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0097",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0097_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0097_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 회계사의 윤리적 의무가 아닌 것은?",
+                        "options": [
+                            "① 정직성 유지",
+                            "② 공정성 유지",
+                            "③ 책임감 유지",
+                            "④ 이익 극대화",
+                            "⑤ 기밀성 유지"
+                        ],
+                        "answer": "④",
+                        "explanation": "회계사의 윤리적 의무에는 정직성 유지, 공정성 유지, 책임감 유지, 기밀성 유지 등이 포함됩니다. 이익 극대화는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0098",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0098_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0098_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 재무제표의 투명성을 높이기 위한 방법이\n아닌 것은?",
+                        "options": [
+                            "① 외부 감사 도입",
+                            "② 내부 통제 강화",
+                            "③ 회계 기준 준수",
+                            "④ 부정행위 은폐",
+                            "⑤ 정확한 기록 유지"
+                        ],
+                        "answer": "④",
+                        "explanation": "재무제표의 투명성을 높이기 위한 방법에는 외부\n감사 도입, 내부 통제 강화, 회계 기준 준수, 정확한 기록 유지 등이 포함됩니다. 부정행위 은폐는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0099",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0099_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0099_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 국제회계기준(IFRS)의 채택 효과가 아닌\n것은?",
+                        "options": [
+                            "① 글로벌 투자자 유치",
+                            "② 기업의 재무상태 투명성 증가",
+                            "③ 회계 처리의 일관성 증가",
+                            "④ 회계 처리의 복잡성 증가",
+                            "⑤ 국제적 비교 가능성 향상"
+                        ],
+                        "answer": "④",
+                        "explanation": "국제회계기준(IFRS)의 채택 효과에는 글로벌 투자자 유치, 기업의 재무상태 투명성 증가, 회계 처리의 일관성 증가, 국제적 비교 가능성 향상 등이 포함됩니다. 회계 처리의 복잡성 증가는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0100",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0100_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0100_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 회계 윤리 강령의 필요성에 대한 설명으로\n옳지 않은 것은?",
+                        "options": [
+                            "① 회계 부정 방지",
+                            "② 투명한 정보 제공",
+                            "③ 이해관계자 보호",
+                            "④ 회계 기준 단순화",
+                            "⑤ 기업 신뢰성 증대"
+                        ],
+                        "answer": "④",
+                        "explanation": "회계 윤리 강령의 필요성에 대한 설명으로 회계 기준 단순화는 포함되지 않습니다. 다른 선택지는 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0101",
+            "chapter": "Theme 9: 회계\n기준 및 윤리",
+            "page_contents": "{q_0101_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0101_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 회계 정보의 신뢰성을 높이기 위한 방법으로 적절하지 않은 것은?",
+                        "options": [
+                            "① 엄격한 회계 기준 적용",
+                            "② 내부 감사 강화",
+                            "③ 회계 기록의 투명성 유지",
+                            "④ 이해관계자와의 정보 공유",
+                            "⑤ 회계 처리의 유연성 확대"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "회계 정보의 신뢰성을 높이기 위한 방법으로 회계\n처리의 유연성 확대는 적절하지 않습니다. 다른 선택지는 적절합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0103",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0103_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0103_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 회계 실무에서 사용하는 문서가 아닌 것은?",
+                        "options": [
+                            "① 전표",
+                            "② 분개장",
+                            "③ 원장",
+                            "④ 시산표",
+                            "⑤ 예산서"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "회계 실무에서 사용하는 문서에는 전표, 분개장, 원장, 시산표 등이 포함됩니다. 예산서는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0104",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0104_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0104_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 회계 실무에서 재고 관리를 위한 방법으로\n옳지 않은 것은?",
+                        "options": [
+                            "① 선입선출법",
+                            "② 후입선출법",
+                            "③ 가중평균법",
+                            "④ 특정원가법",
+                            "⑤ 자산배분법"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "재고 관리를 위한 방법으로 자산배분법은 포함되지\n않습니다. 선입선출법, 후입선출법, 가중평균법, 특정원가법은 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0105",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0105_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0105_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "다음 중 회계 실무에서 가장 많이 사용하는 감가상각 방법은?",
+                        "options": [
+                            "① 정액법",
+                            "② 정률법",
+                            "③ 연수합계법",
+                            "④ 생산량비례법",
+                            "⑤ 이중체감법"
+                        ],
+                        "answer": "①",
+                        "explanation": "회계 실무에서 가장 많이 사용하는 감가상각 방법은 정액법입니다. 다른 선택지는 특정 상황에서 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0106",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0106_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0106_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 회계 실무에서 부가가치세(VAT)를 계산하는 방법으로 옳지 않은 것은?",
+                        "options": [
+                            "① 매출세액에서 매입세액을 차감한다.",
+                            "② 매출액의 일정 비율을 세액으로 계산한다.",
+                            "③ 사업자의 매입금액을 기준으로 계산한다.",
+                            "④ 매출액과 매입액의 차이를 기준으로 한다.",
+                            "⑤ 최종 소비자가 부담한다."
+                        ],
+                        "answer": "③",
+                        "explanation": "부가가치세(VAT)를 계산하는 방법으로 사업자의 매입금액을 기준으로 계산하지 않습니다. 다른 선택지는 옳은 방법입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0107",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0107_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0107_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 회계 실무에서 사용하는 예산의 종류가 아닌 것은?",
+                        "options": [
+                            "① 운영 예산",
+                            "② 자본 예산",
+                            "③ 현금 예산",
+                            "④ 자산 예산",
+                            "⑤ 매출 예산"
+                        ],
+                        "answer": "④",
+                        "explanation": "회계 실무에서 사용하는 예산의 종류에는 운영 예산, 자본 예산, 현금 예산, 매출 예산 등이 포함됩니다. 자산 예산은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0108",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0108_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0108_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 회계 실무에서 현금흐름표 작성 시 포함되지 않는 항목은?",
+                        "options": [
+                            "① 영업활동 현금흐름",
+                            "② 투자활동 현금흐름",
+                            "③ 재무활동 현금흐름",
+                            "④ 자본활동 현금흐름",
+                            "⑤ 현금의 순증가"
+                        ],
+                        "answer": "④",
+                        "explanation": "현금흐름표 작성 시 자본활동 현금흐름은 포함되지\n않습니다. 다른 선택지는 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0109",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0109_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0109_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 회계 실무에서 사용하는 원가 계산 방법이\n아닌 것은?",
+                        "options": [
+                            "① 직접 원가법",
+                            "② 변동 원가법",
+                            "③ 활동 기준 원가법",
+                            "④ 총원가법",
+                            "⑤ 배분 원가법"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "회계 실무에서 사용하는 원가 계산 방법으로 배분 원가법은 포함되지 않습니다. 직접 원가법, 변동 원가법, 활동 기준 원가법, 총원가법은 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0110",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0110_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0110_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 회계 실무에서 자산을 평가할 때 사용하지\n않는 방법은?",
+                        "options": [
+                            "① 역사적 원가법",
+                            "② 현재가치법",
+                            "③ 공정가치법",
+                            "④ 대체 원가법",
+                            "⑤ 평균가치법"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "자산을 평가할 때 평균가치법은 사용되지 않습니다. 다른 선택지는 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0111",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0111_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0111_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 회계 실무에서 사용하는 계정이 아닌 것은?",
+                        "options": [
+                            "① 자산 계정",
+                            "② 부채 계정",
+                            "③ 자본 계정",
+                            "④ 비용 계정",
+                            "⑤ 손익 계정"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "회계 실무에서 사용하는 계정에는 자산 계정, 부채\n계정, 자본 계정, 비용 계정 등이 포함됩니다. 손익\n계정은 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0112",
+            "chapter": "Theme 10: 회계\n실무 적용",
+            "page_contents": "{q_0112_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0112_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 회계 실무에서 자산을 평가할 때 고려해야\n할 요소가 아닌 것은?",
+                        "options": [
+                            "① 취득 원가",
+                            "② 사용 기간",
+                            "③ 잔존 가치",
+                            "④ 감가상각 방법",
+                            "⑤ 시장 점유율"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "자산을 평가할 때 시장 점유율은 고려되지 않습니다. 다른 선택지는 고려됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        }
+    ]
+}

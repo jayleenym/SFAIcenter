@@ -1,0 +1,2711 @@
+{
+    "file_id": "SS0125",
+    "ISBN": "9791172483401",
+    "title": "퀴즈로 배우는 재무관리",
+    "cat1_domain": "금융",
+    "cat2_sub": "수험서",
+    "cat3_specific": "기타",
+    "pub_date": "2024-06-19",
+    "contents": [
+        {
+            "page": "0004",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0004_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0004_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "재무관리는 기업의 가치를 극대화하는 데 중점을 둔다. 다음 중 재무관리의 주요 기능이 아닌 것은?",
+                        "options": [
+                            "① 자금 조달",
+                            "② 자금 배분",
+                            "③ 현금 흐름 관리",
+                            "④ 인사 관리",
+                            "⑤ 위험 관리"
+                        ],
+                        "answer": "④",
+                        "explanation": "재무관리의 주요 기능에는 자금 조달, 자금 배분, 현금 흐름 관리, 위험 관리 등이 포함됩니다. 인사 관리는 재무관리의 주요 기능이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0005",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0005_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0005_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "기업의 목표는 주주 가치를 극대화하는 것이다. 이를 위해 고려해야 할 요소가 아닌 것은?",
+                        "options": [
+                            "① 시장 금리",
+                            "② 주주 배당",
+                            "③ 직원 복지",
+                            "④ 자본 비용",
+                            "⑤ 기업의 자산 구조"
+                        ],
+                        "answer": "③",
+                        "explanation": "기업의 목표는 주주 가치를 극대화하는 것으로, 직원 복지는 이에 직접적인 요소가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0006",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0006_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0006_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "재무제표 중 특정 시점의 재무 상태를 나타내는 것은?",
+                        "options": [
+                            "① 손익계산서",
+                            "② 대차대조표",
+                            "③ 현금흐름표",
+                            "④ 자본변동표",
+                            "⑤ 재무보고서"
+                        ],
+                        "answer": "②",
+                        "explanation": "대차대조표는 특정 시점의 재무 상태를 나타냅니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0007",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0007_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0007_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 재무 비율 분석의 유용성이 가장 적은 경우는?",
+                        "options": [
+                            "① 유동성 분석",
+                            "② 수익성 분석",
+                            "③ 활동성 분석",
+                            "④ 시장성 분석",
+                            "⑤ 인사 관리 분석"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "재무 비율 분석은 유동성, 수익성, 활동성, 시장성을 평가하는 데 유용합니다. 인사 관리는 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0008",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0008_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0008_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "자본 예산 결정 시 고려할 주요 요인이 아닌 것은?",
+                        "options": [
+                            "① 투자 프로젝트의 현금 흐름",
+                            "② 할인율",
+                            "③ 회사의 브랜드 가치",
+                            "④ 투자 기간",
+                            "⑤ 초기 투자 비용"
+                        ],
+                        "answer": "③",
+                        "explanation": "자본 예산 결정 시 회사의 브랜드 가치는 주요 고려 요소가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0009",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0009_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0009_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "기업이 자금 조달을 위해 발행할 수 있는 증권이 아닌 것은?",
+                        "options": [
+                            "① 회사채",
+                            "② 상환주",
+                            "③ 전환사채",
+                            "④ 옵션",
+                            "⑤ 우선주"
+                        ],
+                        "answer": "④",
+                        "explanation": "옵션은 증권 발행에 해당하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0010",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0010_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0010_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "현금흐름표는 다음 중 어느 것을 포함하지 않는가?",
+                        "options": [
+                            "① 영업활동으로 인한 현금흐름",
+                            "② 투자활동으로 인한 현금흐름",
+                            "③ 금융활동으로 인한 현금흐름",
+                            "④ 자본조달로 인한 현금흐름",
+                            "⑤ 비영업활동으로 인한 현금흐름"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "비영업활동으로 인한 현금흐름은 현금흐름표에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0011",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0011_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0011_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 현금 예산과 가장 관련이 깊은 것은?",
+                        "options": [
+                            "① 자산 평가",
+                            "② 자금 계획",
+                            "③ 자본 예산",
+                            "④ 비용 절감",
+                            "⑤ 세금 계획"
+                        ],
+                        "answer": "②",
+                        "explanation": "현금 예산은 자금 계획과 관련이 깊습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0012",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0012_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0012_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "재무관리에서 사용되는 할인율이 영향을 받지 않는 요인은?",
+                        "options": [
+                            "① 시장 금리",
+                            "② 기업의 신용도",
+                            "③ 인플레이션",
+                            "④ 정부의 재정 정책",
+                            "⑤ 회사의 브랜드 이미지"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "회사의 브랜드 이미지는 할인율에 영향을 미치지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0013",
+            "chapter": "Theme 1: 재무관리의 기초 개념",
+            "page_contents": "{q_0013_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0013_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 순현재가치(NPV)법의 특징이 아닌 것은?",
+                        "options": [
+                            "① 미래 현금흐름의 현재 가치를 계산한다.",
+                            "② 투자 수익률을 기준으로 평가한다.",
+                            "③ 할인율을 적용하여 평가한다.",
+                            "④ 투자 결정에 있어 중요한 역할을 한다.",
+                            "⑤ 초기 투자 비용을 고려한다."
+                        ],
+                        "answer": "②",
+                        "explanation": "NPV법은 투자 수익률이 아닌 미래 현금흐름의 현재 가치를 평가합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0015",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0015_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0015_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "대차대조표에서 자산이 500억 원이고 부채가 300억 원이라면 자본은 얼마인가?",
+                        "options": [
+                            "① 100억 원",
+                            "② 200억 원",
+                            "③ 300억 원",
+                            "④ 400억 원",
+                            "⑤ 500억 원"
+                        ],
+                        "answer": "②",
+                        "explanation": "자산 500억 원에서 부채 300억 원을 빼면 자본은 200억 원입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0016",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0016_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0016_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "손익계산서에서 매출액이 1000억 원이고 매출원가가 600억 원, 판매비와 관리비가 200억 원이라면 영업이익은 얼마인가?",
+                        "options": [
+                            "① 100억 원",
+                            "② 200억 원",
+                            "③ 300억 원",
+                            "④ 400억 원",
+                            "⑤ 500억 원"
+                        ],
+                        "answer": "②",
+                        "explanation": "매출액에서 매출원가와 판매비와 관리비를 뺀 영업이익은 200억 원입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0017",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0017_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0017_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "재무 비율 중 유동비율의 계산식으로 올바른 것은?",
+                        "options": [
+                            "① 당좌자산 / 유동부채",
+                            "② 유동자산 / 유동부채",
+                            "③ 총자산 / 총부채",
+                            "④ 자본 / 부채",
+                            "⑤ 매출액 / 자산"
+                        ],
+                        "answer": "②",
+                        "explanation": "유동비율은 유동자산을 유동부채로 나눈 비율입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0018",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0018_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0018_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "기업의 수익성을 평가하는 지표로 가장 적합한 것은?",
+                        "options": [
+                            "① 유동비율",
+                            "② 부채비율",
+                            "③ 자기자본이익률(ROE)",
+                            "④ 유동부채",
+                            "⑤ 자산회전율"
+                        ],
+                        "answer": "③",
+                        "explanation": "수익성을 평가하는 지표로는 자기자본이익률(ROE)이 가장 적합합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0019",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0019_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0019_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "현금흐름표에서 투자활동으로 인한 현금흐름 항목이 아닌 것은?",
+                        "options": [
+                            "① 설비 투자",
+                            "② 유가증권 매입",
+                            "③ 유가증권 매각",
+                            "④ 배당금 지급",
+                            "⑤ 부동산 매각"
+                        ],
+                        "answer": "④",
+                        "explanation": "배당금 지급은 투자활동이 아닌 금융활동에 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0020",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0020_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0020_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "대차대조표의 구성 요소가 아닌 것은?",
+                        "options": [
+                            "① 자산",
+                            "② 부채",
+                            "③ 자본",
+                            "④ 비용",
+                            "⑤ 수익"
+                        ],
+                        "answer": "④",
+                        "explanation": "대차대조표는 자산, 부채, 자본으로 구성됩니다. 비용은 손익계산서 항목입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0021",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0021_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0021_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 유동비율이 높은 기업이 반드시 가지지 않는 특징은?",
+                        "options": [
+                            "① 높은 현금 보유량",
+                            "② 높은 매출액",
+                            "③ 높은 유동자산",
+                            "④ 낮은 유동부채",
+                            "⑤ 양호한 단기 지급능력"
+                        ],
+                        "answer": "②",
+                        "explanation": "높은 유동비율은 높은 매출액을 반드시 나타내지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0022",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0022_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0022_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 재무제표 분석 시 기업의 장기 지급 능력을 평가하는 데 유용한 비율은?",
+                        "options": [
+                            "① 유동비율",
+                            "② 당좌비율",
+                            "③ 부채비율",
+                            "④ 순이익률",
+                            "⑤ 자산회전율"
+                        ],
+                        "answer": "③",
+                        "explanation": "부채비율은 기업의 장기 지급 능력을 평가하는 데 유용합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0023",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0023_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0023_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "기업의 영업활동 현금흐름을 평가하는 데 가장 중요한 요소는?",
+                        "options": [
+                            "① 영업 이익",
+                            "② 자본 지출",
+                            "③ 배당금 지급",
+                            "④ 부채 상환",
+                            "⑤ 주식 발행"
+                        ],
+                        "answer": "①",
+                        "explanation": "영업활동 현금흐름의 주요 요소는 영업 이익입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0024",
+            "chapter": "Theme 2: 재무제표 분석",
+            "page_contents": "{q_0024_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0024_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "손익계산서에서 나타나는 항목이 아닌 것은?",
+                        "options": [
+                            "① 매출액",
+                            "② 매출원가",
+                            "③ 영업이익",
+                            "④ 순이익",
+                            "⑤ 현금보유액"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "현금보유액은 대차대조표 항목입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0026",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0026_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0026_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 영업활동으로 인한 현금흐름에 포함되는 것은?",
+                        "options": [
+                            "① 장기투자 매각",
+                            "② 설비 자산 매입",
+                            "③ 이자 수익",
+                            "④ 배당금 수익",
+                            "⑤ 채권 발행"
+                        ],
+                        "answer": "③",
+                        "explanation": "영업활동 현금흐름에 포함되는 항목은 이자 수익입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0027",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0027_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0027_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "현금흐름표에서 금융활동으로 인한 현금흐름 항목이 아닌 것은?",
+                        "options": [
+                            "① 채권 발행",
+                            "② 채무 상환",
+                            "③ 자사주 매입",
+                            "④ 신규 주식 발행",
+                            "⑤ 영업이익"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "영업이익은 금융활동 현금흐름에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0028",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0028_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0028_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "현금흐름 관리에서 중요한 요소가 아닌 것은?",
+                        "options": [
+                            "① 매출액",
+                            "② 현금 유입",
+                            "③ 현금 유출",
+                            "④ 자본비용",
+                            "⑤ 현금 잔고"
+                        ],
+                        "answer": "①",
+                        "explanation": "현금흐름 관리에서는 매출액이 중요하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0029",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0029_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0029_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "기업이 현금흐름 관리를 통해 얻을 수 있는 주요 이점이 아닌 것은?",
+                        "options": [
+                            "① 지급 능력 향상",
+                            "② 자금 비용 절감",
+                            "③ 재무 건전성 강화",
+                            "④ 매출 증대",
+                            "⑤ 투자 기회 증가"
+                        ],
+                        "answer": "④",
+                        "explanation": "현금흐름 관리를 통해 매출이 직접적으로 증대되지는 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0030",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0030_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0030_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 기업의 영업활동 현금흐름에 포함되지 않는 것은?",
+                        "options": [
+                            "① 매출 채권 회수",
+                            "② 매입 채무 지급",
+                            "③ 급여 지급",
+                            "④ 설비 투자",
+                            "⑤ 재고 구매"
+                        ],
+                        "answer": "④",
+                        "explanation": "설비 투자는 영업활동이 아닌 투자활동에 포함됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0031",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0031_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0031_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "현금흐름 예측 시 가장 중요한 요소는?",
+                        "options": [
+                            "① 매출 예측",
+                            "② 재고 관리",
+                            "③ 자본비용 계산",
+                            "④ 세금 계획",
+                            "⑤ 인사 관리"
+                        ],
+                        "answer": "①",
+                        "explanation": "현금흐름 예측 시 가장 중요한 요소는 매출 예측입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0032",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0032_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0032_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "현금흐름표의 작성 목적 중 잘못된 것은?",
+                        "options": [
+                            "① 현금 유입과 유출을 기록",
+                            "② 재무 상태를 파악",
+                            "③ 자산과 부채를 평가",
+                            "④ 투자 의사결정을 지원",
+                            "⑤ 자금 조달 계획 수립"
+                        ],
+                        "answer": "③",
+                        "explanation": "현금흐름표는 자산과 부채를 평가하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0033",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0033_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0033_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 현금흐름의 불균형을 해소하기 위해 취할 수 있는 조치가 아닌 것은?",
+                        "options": [
+                            "① 자산 매각",
+                            "② 채무 상환 연기",
+                            "③ 추가 자본 조달",
+                            "④ 비용 절감",
+                            "⑤ 매출 감소"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "매출 감소는 현금흐름의 불균형을 해소하지 못합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0034",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0034_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0034_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "기업이 현금 유동성을 높이기 위해 사용할 수 있는 방법은?",
+                        "options": [
+                            "① 장기 부채 발행",
+                            "② 재고 자산 증가",
+                            "③ 매출 채권 회수 기간 단축",
+                            "④ 설비 투자 확대",
+                            "⑤ 배당금 지급 증가"
+                        ],
+                        "answer": "③",
+                        "explanation": "매출 채권 회수 기간 단축은 현금 유동성을 높이는 방법입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0035",
+            "chapter": "Theme 3: 현금흐름 관리",
+            "page_contents": "{q_0035_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0035_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "현금흐름 예측에서 예상치 못한 변수로 작용할 수 있는 요소는?",
+                        "options": [
+                            "① 정기적인 매출",
+                            "② 고정 비용",
+                            "③ 계절적 수요 변화",
+                            "④ 예측 가능한 세금",
+                            "⑤ 정기적인 이자 비용"
+                        ],
+                        "answer": "③",
+                        "explanation": "계절적 수요 변화는 현금흐름 예측에 변수로 작용할 수 있습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0037",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0037_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0037_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "자본 예산의 핵심 목표는?",
+                        "options": [
+                            "① 비용 절감",
+                            "② 매출 증가",
+                            "③ 최적 투자 결정",
+                            "④ 재무 건전성 유지",
+                            "⑤ 인사 관리 개선"
+                        ],
+                        "answer": "③",
+                        "explanation": "자본 예산의 핵심 목표는 최적 투자 결정입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0038",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0038_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0038_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 자본 예산 결정 시 가장 중요한 요소는?",
+                        "options": [
+                            "① 인플레이션",
+                            "② 경쟁사 전략",
+                            "③ 투자 프로젝트의 NPV",
+                            "④ 정부 규제",
+                            "⑤ 브랜드 가치"
+                        ],
+                        "answer": "③",
+                        "explanation": "NPV는 자본 예산 결정 시 중요한 요소입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0039",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0039_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0039_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "다음 중 자본 예산 기법에 포함되지 않는 것은?",
+                        "options": [
+                            "① 순현재가치법(NPV)",
+                            "② 내부수익률법(IRR)",
+                            "③ 회수기간법",
+                            "④ 배당할인모형",
+                            "⑤ 수익성지수법"
+                        ],
+                        "answer": "④",
+                        "explanation": "배당할인모형은 자본 예산 기법이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0040",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0040_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0040_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "투자 프로젝트의 내부수익률(IRR)이 자본비용보다 낮을 때 취해야 할 조치는?",
+                        "options": [
+                            "① 투자 승인",
+                            "② 투자 거절",
+                            "③ 투자 보류",
+                            "④ 추가 분석",
+                            "⑤ 자본비용 인하"
+                        ],
+                        "answer": "②",
+                        "explanation": "IRR이 자본비용보다 낮으면 투자를 거절해야 합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0041",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0041_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0041_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "순현재가치(NPV)법이 선호되는 이유가 아닌 것은?",
+                        "options": [
+                            "① 미래 현금흐름의 현재 가치 계산",
+                            "② 투자 위험 반영",
+                            "③ 명확한 투자 기준 제공",
+                            "④ 간단한 계산 방법",
+                            "⑤ 투자 수익률 고려"
+                        ],
+                        "answer": "④",
+                        "explanation": "NPV법은 간단한 계산 방법이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0042",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0042_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0042_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 자본 예산 결정에 사용되는 할인율로 가장 적합한 것은?",
+                        "options": [
+                            "① 무위험 이자율",
+                            "② 기대 인플레이션율",
+                            "③ 자본비용(WACC)",
+                            "④ 중앙은행 기준금리",
+                            "⑤ 기업의 부채비율"
+                        ],
+                        "answer": "③",
+                        "explanation": "자본비용(WACC)은 자본 예산에 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0043",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0043_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0043_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "회수기간법의 단점으로 적절한 것은?",
+                        "options": [
+                            "① 계산이 복잡하다",
+                            "② 현금흐름의 시간 가치를 고려하지 않는다",
+                            "③ 위험을 반영하지 않는다",
+                            "④ 투자 결정에 영향을 미치지 않는다",
+                            "⑤ 미래 현금흐름을 예측할 수 없다"
+                        ],
+                        "answer": "②",
+                        "explanation": "회수기간법은 현금흐름의 시간 가치를 고려하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0044",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0044_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0044_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 자본 예산에서 고려해야 할 주요 위험 요소가 아닌 것은?",
+                        "options": [
+                            "① 시장 위험",
+                            "② 신용 위험",
+                            "③ 운영 위험",
+                            "④ 인플레이션 위험",
+                            "⑤ 직원 복지"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "직원 복지는 자본 예산에서 고려해야 할 주요 위험 요소가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0045",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0045_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0045_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "자본 예산 프로젝트의 평가 시기에 대한 설명으로 옳지 않은 것은?",
+                        "options": [
+                            "① 투자 전 평가",
+                            "② 투자 중 평가",
+                            "③ 투자 후 평가",
+                            "④ 주기적 평가",
+                            "⑤ 평가 생략"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "자본 예산 프로젝트는 평가를 생략할 수 없습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0046",
+            "chapter": "Theme 4: 자본 예산",
+            "page_contents": "{q_0046_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0046_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "기업이 새로운 프로젝트에 투자할 때 자본비용이 중요한 이유가 아닌 것은?",
+                        "options": [
+                            "① 투자 위험 평가",
+                            "② 자금 조달 비용 반영",
+                            "③ 프로젝트의 수익성 결정",
+                            "④ 현금흐름 분석",
+                            "⑤ 직원 사기 증진"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "직원 사기는 자본비용 결정에 영향을 미치지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0048",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0048_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0048_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 자본 구조의 결정 요소로 가장 적절한 것은?",
+                        "options": [
+                            "① 제품 가격",
+                            "② 시장 점유율",
+                            "③ 자본 비용",
+                            "④ 광고 예산",
+                            "⑤ 직원 수"
+                        ],
+                        "answer": "③",
+                        "explanation": "자본 비용은 자본 구조의 결정 요소입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0049",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0049_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0049_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "기업의 자본비용(WACC)을 낮추기 위한 방법이 아닌 것은?",
+                        "options": [
+                            "① 부채 비율 증가",
+                            "② 자본 조달 비용 절감",
+                            "③ 주식 발행",
+                            "④ 이자율 낮은 부채 조달",
+                            "⑤ 배당금 지급 확대"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "배당금 지급 확대는 자본비용을 낮추지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0050",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0050_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0050_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "자본구조 이론 중 MM이론(Modigliani-Miller)이 주장한 내용이 아닌 것은?",
+                        "options": [
+                            "① 자본 구조는 기업 가치에 영향을 미치지 않는다",
+                            "② 자본비용은 기업의 자본 구조에 따라 달라진다",
+                            "③ 무위험 부채 사용 시 기업 가치는 상승한다",
+                            "④ 법인세가 없을 경우 자본 구조는 무의미하다",
+                            "⑤ 자본구조는 기업의 시장 위험을 반영한다"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "자본구조는 기업의 시장 위험을 반영하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0051",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0051_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0051_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "자본 비용(WACC)을 계산할 때 고려되지 않는 항목은?",
+                        "options": [
+                            "① 부채 비용",
+                            "② 자본비용",
+                            "③ 세후 이자율",
+                            "④ 주식 시장 위험 프리미엄",
+                            "⑤ 매출원가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "매출원가는 WACC 계산에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0052",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0052_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0052_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "자본 구조에서 부채 비율이 높을 때 발생할 수 있는 위험이 아닌 것은?",
+                        "options": [
+                            "① 파산 위험 증가",
+                            "② 이자 비용 증가",
+                            "③ 주주 가치 증가",
+                            "④ 재무적 유연성 감소",
+                            "⑤ 신용등급 하락"
+                        ],
+                        "answer": "③",
+                        "explanation": "주주 가치는 부채 비율이 높아질 때 증가하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0053",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0053_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0053_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 자본구조가 기업에 미치는 영향으로 적절치 않은 것은?",
+                        "options": [
+                            "① 자본 조달 비용",
+                            "② 투자 결정",
+                            "③ 배당 정책",
+                            "④ 직원 채용",
+                            "⑤ 재무 위험"
+                        ],
+                        "answer": "④",
+                        "explanation": "직원 채용은 자본 구조에 영향을 미치지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0054",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0054_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0054_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "자본구조 결정 시 고려해야 할 외부 요인은?",
+                        "options": [
+                            "① 기업의 자산 구조",
+                            "② 시장 금리",
+                            "③ 내부 이익 잉여금",
+                            "④ 직원 복지",
+                            "⑤ 브랜드 가치"
+                        ],
+                        "answer": "②",
+                        "explanation": "시장 금리는 자본구조 결정 시 고려해야 할 외부 요인입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0055",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0055_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0055_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다음 중 자본비용(WACC)을 낮추기 위해 사용될 수 있는 전략은?",
+                        "options": [
+                            "① 고이자 부채 상환",
+                            "② 고배당 정책 유지",
+                            "③ 주식 발행 증가",
+                            "④ 재고 자산 증가",
+                            "⑤ 설비 투자 축소"
+                        ],
+                        "answer": "①",
+                        "explanation": "고이자 부채 상환은 WACC를 낮추는 전략입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0056",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0056_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0056_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "기업의 자본 구조가 변경될 때 가장 직접적으로 영향을 받을 수 있는 요소는?",
+                        "options": [
+                            "① 매출액",
+                            "② 순이익",
+                            "③ 주가",
+                            "④ 제품 가격",
+                            "⑤ 고객 만족도"
+                        ],
+                        "answer": "③",
+                        "explanation": "자본 구조 변경은 주가에 직접적으로 영향을 미칩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0057",
+            "chapter": "Theme 5: 자본 구조와 자본 비용",
+            "page_contents": "{q_0057_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0057_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 자본비용의 계산에 포함되지 않는 요소는?",
+                        "options": [
+                            "① 부채비용",
+                            "② 자본비용",
+                            "③ 배당금",
+                            "④ 세금 절감 효과",
+                            "⑤ 운영 비용"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "운영 비용은 자본비용 계산에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0059",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0059_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0059_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "배당 정책 결정 시 고려해야 할 요소가 아닌 것은?",
+                        "options": [
+                            "① 기업의 수익성",
+                            "② 주주의 기대 수익률",
+                            "③ 기업의 성장 기회",
+                            "④ 경영진의 인사 정책",
+                            "⑤ 자금 유동성"
+                        ],
+                        "answer": "④",
+                        "explanation": "인사 정책은 배당 정책 결정 시 고려 요소가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0060",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0060_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0060_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 배당 정책의 유형이 아닌 것은?",
+                        "options": [
+                            "① 안정 배당 정책",
+                            "② 잔여 배당 정책",
+                            "③ 가변 배당 정책",
+                            "④ 주식 배당 정책",
+                            "⑤ 채권 배당 정책"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "채권 배당 정책은 존재하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0061",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0061_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0061_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "잔여 배당 정책의 장점으로 적절한 것은?",
+                        "options": [
+                            "① 예측 가능한 배당",
+                            "② 투자 기회 반영",
+                            "③ 배당 안정성",
+                            "④ 주주 만족도 증가",
+                            "⑤ 기업의 신용도 상승"
+                        ],
+                        "answer": "②",
+                        "explanation": "잔여 배당 정책은 투자 기회를 반영합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0062",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0062_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0062_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 배당 성향이 낮을 때 나타날 수 있는 결과는?",
+                        "options": [
+                            "① 주주 만족도 증가",
+                            "② 현금 유동성 증가",
+                            "③ 주가 상승",
+                            "④ 재투자 자금 감소",
+                            "⑤ 배당수익률 증가"
+                        ],
+                        "answer": "②",
+                        "explanation": "현금 유동성이 증가할 수 있습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0063",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0063_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0063_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 고배당 정책이 기업에 미칠 수 있는 부정적인 영향은?",
+                        "options": [
+                            "① 자본 비용 절감",
+                            "② 현금 유동성 부족",
+                            "③ 주가 하락",
+                            "④ 투자 기회 감소",
+                            "⑤ 이익 재투자 감소"
+                        ],
+                        "answer": "②",
+                        "explanation": "고배당 정책은 현금 유동성 부족을 초래할 수 있습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0064",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0064_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0064_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "배당정책이 주가에 미치는 영향으로 올바른 것은?",
+                        "options": [
+                            "① 배당 증가 시 주가는 항상 상승한다",
+                            "② 배당 감소 시 주가는 항상 하락한다",
+                            "③ 배당은 주가에 영향을 미치지 않는다",
+                            "④ 배당 정책은 주가의 변동성을 줄인다",
+                            "⑤ 배당 정책은 기업의 미래 가치를 반영한다"
+                        ],
+                        "answer": "④",
+                        "explanation": "배당 정책은 기업의 미래 가치를 반영합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0065",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0065_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0065_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 주식 배당의 특징으로 옳지 않은 것은?",
+                        "options": [
+                            "① 주식 수 증가",
+                            "② 현금 유출 감소",
+                            "③ 주당 배당금 증가",
+                            "④ 주가 희석 가능성",
+                            "⑤ 자본 증가"
+                        ],
+                        "answer": "②",
+                        "explanation": "주당 배당금은 증가하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0066",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0066_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0066_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "기업이 배당을 지급하지 않는 이유로 적절치 않은 것은?",
+                        "options": [
+                            "① 재투자 기회가 많음",
+                            "② 현금 흐름 부족",
+                            "③ 주주 가치 극대화",
+                            "④ 부채 상환 필요",
+                            "⑤ 운영 자금 부족"
+                        ],
+                        "answer": "①",
+                        "explanation": "주주 가치 극대화는 배당 미지급 이유가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0067",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0067_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0067_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "배당수익률의 계산식으로 올바른 것은?",
+                        "options": [
+                            "① 배당금 / 주당 순이익",
+                            "② 배당금 / 주가",
+                            "③ 배당금 / 자산",
+                            "④ 배당금 / 매출액",
+                            "⑤ 배당금 / 자본"
+                        ],
+                        "answer": "③",
+                        "explanation": "배당수익률은 배당금을 주가로 나눈 값입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0068",
+            "chapter": "Theme 6: 배당 정책",
+            "page_contents": "{q_0068_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0068_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 배당 정책에 영향을 미치는 외부 요인은?",
+                        "options": [
+                            "① 경영진의 배당 선호도",
+                            "② 주주의 배당 요구",
+                            "③ 시장 금리",
+                            "④ 기업의 자산 구조",
+                            "⑤ 직원의 만족도"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "시장 금리는 배당 정책에 영향을 미칩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0070",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0070_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0070_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "기업 가치를 평가하는 방법 중 할인된 현금흐름(DCF)법의 주요 개념은?",
+                        "options": [
+                            "① 과거 실적을 기준으로 평가",
+                            "② 현재 자산 가치를 기준으로 평가",
+                            "③ 미래 현금흐름의 현재 가치 평가",
+                            "④ 시장 가격을 기준으로 평가",
+                            "⑤ 상대적 가치 평가"
+                        ],
+                        "answer": "③",
+                        "explanation": "DCF법은 미래 현금흐름의 현재 가치를 평가합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0071",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0071_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0071_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 기업의 시장 가치를 반영하는 지표는?",
+                        "options": [
+                            "① 자산 가치",
+                            "② 부채 비율",
+                            "③ 주가",
+                            "④ 순이익",
+                            "⑤ 매출액"
+                        ],
+                        "answer": "③",
+                        "explanation": "주가는 기업의 시장 가치를 반영합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0072",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0072_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0072_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "순자산가치(NAV)를 계산할 때 포함되지 않는 항목은?",
+                        "options": [
+                            "① 유동자산",
+                            "② 비유동자산",
+                            "③ 유동부채",
+                            "④ 비유동부채",
+                            "⑤ 영업이익"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "영업이익은 NAV 계산에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0073",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0073_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0073_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 상대가치 평가법에 해당하는 것은?",
+                        "options": [
+                            "① DCF 방법",
+                            "② 배당 할인 모형",
+                            "③ 자산 기반 평가",
+                            "④ PER(주가수익비율) 방법",
+                            "⑤ 잔여 이익 모형"
+                        ],
+                        "answer": "④",
+                        "explanation": "PER 방법은 상대가치 평가법입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0074",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0074_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0074_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "기업의 미래 현금흐름을 예측하는 데 중요한 요소가 아닌 것은?",
+                        "options": [
+                            "① 매출 성장률",
+                            "② 영업이익률",
+                            "③ 자본비용",
+                            "④ 부채 상환 일정",
+                            "⑤ 경영진의 인사 정책"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "인사 정책은 미래 현금흐름 예측에 중요하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0075",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0075_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0075_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "다음 중 기업 가치 평가 시 사용되지 않는 재무 비율은?",
+                        "options": [
+                            "① PER",
+                            "② PBR(주가순자산비율)",
+                            "③ ROE(자기자본이익률)",
+                            "④ ROA(총자산이익률)",
+                            "⑤ LTV(담보대출비율)"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "LTV는 재무 비율에 포함되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0076",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0076_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0076_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "기업의 영업가치를 평가하는 방법 중 자주 사용되는 지표는?",
+                        "options": [
+                            "① 매출액",
+                            "② 순이익",
+                            "③ EBITDA(법인세·이자·감가상각비 차감 전 영업이익)",
+                            "④ 자본",
+                            "⑤ 부채"
+                        ],
+                        "answer": "③",
+                        "explanation": "EBITDA는 영업가치 평가에 자주 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0077",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0077_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0077_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "할인된 현금흐름(DCF)법의 단점으로 적절한 것은?",
+                        "options": [
+                            "① 간단한 계산 방법",
+                            "② 과거 데이터를 사용",
+                            "③ 미래 현금흐름 예측의 불확실성",
+                            "④ 상대적인 가치 비교 어려움",
+                            "⑤ 시장 데이터 필요"
+                        ],
+                        "answer": "③",
+                        "explanation": "미래 현금흐름 예측의 불확실성은 DCF법의 단점입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0078",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0078_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0078_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "기업의 시장 가치를 평가할 때 사용되는 방법이 아닌 것은?",
+                        "options": [
+                            "① DCF 방법",
+                            "② 상대가치 평가법",
+                            "③ 자산 기반 평가법",
+                            "④ 비용 기반 평가법",
+                            "⑤ 주가수익비율(PER) 방법"
+                        ],
+                        "answer": "④",
+                        "explanation": "비용 기반 평가법은 시장 가치 평가에 사용되지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0079",
+            "chapter": "Theme 7: 기업 가치 평가",
+            "page_contents": "{q_0079_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0079_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "다음 중 잔여 이익 모형의 장점으로 적절한 것은?",
+                        "options": [
+                            "① 복잡한 계산 과정",
+                            "② 단기적인 기업 가치 평가",
+                            "③ 과거 데이터를 기반으로 함",
+                            "④ 현금흐름보다 이익에 집중",
+                            "⑤ 장기적인 가치 평가 가능"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "잔여 이익 모형은 장기적인 가치 평가가 가능합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0081",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0081_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0081_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "다음 중 금융 리스크 관리의 주요 목표가 아닌 것은?",
+                        "options": [
+                            "① 손실 최소화",
+                            "② 이익 극대화",
+                            "③ 리스크의 사전 인식",
+                            "④ 리스크의 사후 대응",
+                            "⑤ 리스크의 전가"
+                        ],
+                        "answer": "②",
+                        "explanation": "이익 극대화는 금융 리스크 관리의 주요 목표가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0082",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0082_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0082_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "금융 파생상품의 종류가 아닌 것은?",
+                        "options": [
+                            "① 옵션",
+                            "② 선물",
+                            "③ 스왑",
+                            "④ 주식",
+                            "⑤ 선도"
+                        ],
+                        "answer": "④",
+                        "explanation": "주식은 금융 파생상품이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0083",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0083_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0083_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "헤지 전략을 사용하지 않을 경우 발생할 수 있는 위험은?",
+                        "options": [
+                            "① 가격 변동 위험",
+                            "② 투자 기회 증가",
+                            "③ 거래 비용 절감",
+                            "④ 이익 안정화",
+                            "⑤ 리스크 전가"
+                        ],
+                        "answer": "①",
+                        "explanation": "헤지 전략이 없으면 가격 변동 위험이 발생합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0084",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0084_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0084_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "다음 중 옵션 거래의 주요 목적이 아닌 것은?",
+                        "options": [
+                            "① 리스크 헤지",
+                            "② 투기",
+                            "③ 가격 발견",
+                            "④ 현금 흐름 관리",
+                            "⑤ 자산 매각"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "자산 매각은 옵션 거래의 주요 목적이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0085",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0085_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0085_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "선물 계약의 주요 특징으로 옳지 않은 것은?",
+                        "options": [
+                            "① 표준화된 계약",
+                            "② 장외 거래",
+                            "③ 미래의 특정 시점에 거래",
+                            "④ 가격 변동 리스크 헤지",
+                            "⑤ 계약 만기 시 실물 인수"
+                        ],
+                        "answer": "②",
+                        "explanation": "선물 계약은 장외 거래가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0086",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0086_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0086_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "스왑 거래의 일반적인 목적은?",
+                        "options": [
+                            "① 금리 리스크 관리",
+                            "② 주식 투자",
+                            "③ 현금 보유량 증가",
+                            "④ 자산 매각",
+                            "⑤ 외환 거래"
+                        ],
+                        "answer": "①",
+                        "explanation": "스왑 거래는 금리 리스크 관리를 위해 사용됩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0087",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0087_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0087_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "금융 리스크 관리에서 사용되는 VaR(Value at Risk) 모델의 주요 단점은?",
+                        "options": [
+                            "① 계산의 복잡성",
+                            "② 과거 데이터를 기반으로 함",
+                            "③ 예측 정확성",
+                            "④ 사용의 용이성",
+                            "⑤ 다양한 리스크 반영"
+                        ],
+                        "answer": "②",
+                        "explanation": "VaR 모델은 과거 데이터를 기반으로 합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0088",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0088_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0088_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "파생상품 거래에서 '헤지 비율'이 의미하는 것은?",
+                        "options": [
+                            "① 거래량",
+                            "② 만기 기간",
+                            "③ 거래 상대방",
+                            "④ 리스크 회피 수준",
+                            "⑤ 이자율"
+                        ],
+                        "answer": "④",
+                        "explanation": "헤지 비율은 리스크 회피 수준을 의미합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0089",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0089_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0089_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 금리 스왑 거래의 장점이 아닌 것은?",
+                        "options": [
+                            "① 금리 변동 리스크 관리",
+                            "② 장기 금리 예측 가능",
+                            "③ 자본 비용 절감",
+                            "④ 현금 흐름 안정화",
+                            "⑤ 주식 가치 증가"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "주식 가치는 금리 스왑 거래로 증가하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0090",
+            "chapter": "Theme 8: 리스크 관리와 파생상품",
+            "page_contents": "{q_0090_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0090_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "외환 리스크를 관리하기 위한 일반적인 방법은?",
+                        "options": [
+                            "① 환율 예측",
+                            "② 외환 선도 계약",
+                            "③ 현금 보유량 증가",
+                            "④ 금리 스왑",
+                            "⑤ 주식 발행"
+                        ],
+                        "answer": "②",
+                        "explanation": "외환 리스크를 관리하기 위한 일반적인 방법은 환율 예측입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0092",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0092_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0092_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "국제 재무관리의 주요 과제 중 하나는?",
+                        "options": [
+                            "① 현지 통화 자산 증가",
+                            "② 환율 변동 관리",
+                            "③ 국내 시장 점유율 확대",
+                            "④ 국내 법규 준수",
+                            "⑤ 국내 자본 조달"
+                        ],
+                        "answer": "②",
+                        "explanation": "국제 재무관리의 주요 과제는 환율 변동 관리입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0093",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0093_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0093_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "다음 중 다국적 기업의 재무관리가 국내 기업과 다른 점은?",
+                        "options": [
+                            "① 자본 비용 관리",
+                            "② 현금 흐름 관리",
+                            "③ 환율 변동 리스크",
+                            "④ 매출 증대 전략",
+                            "⑤ 자산 구조 관리"
+                        ],
+                        "answer": "③",
+                        "explanation": "다국적 기업은 환율 변동 리스크를 추가로 관리해야 합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0094",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0094_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0094_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "국제 재무관리에서 '환 리스크'를 관리하기 위한 방법으로 옳지 않은 것은?",
+                        "options": [
+                            "① 외환 선물 계약",
+                            "② 현금 보유량 증가",
+                            "③ 외환 옵션 계약",
+                            "④ 환 헤지",
+                            "⑤ 다변화된 통화 포트폴리오"
+                        ],
+                        "answer": "②",
+                        "explanation": "현금 보유량 증가는 환 리스크 관리 방법이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0095",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0095_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0095_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "국제 자본 예산 결정 시 고려해야 할 주요 요인은?",
+                        "options": [
+                            "① 인플레이션",
+                            "② 환율 변동",
+                            "③ 현지 법규",
+                            "④ 정치적 리스크",
+                            "⑤ 모든 요소를 종합적으로 고려"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "국제 자본 예산 결정 시 모든 요소를 종합적으로 고려해야 합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0096",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0096_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0096_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 다국적 기업이 현지화 전략을 사용할 때 장점이 아닌 것은?",
+                        "options": [
+                            "① 현지 시장 적응력 향상",
+                            "② 환율 리스크 감소",
+                            "③ 문화적 차이 극복",
+                            "④ 운영 비용 절감",
+                            "⑤ 본사 통제 강화"
+                        ],
+                        "answer": "⑤",
+                        "explanation": "본사 통제 강화는 현지화 전략의 장점이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0097",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0097_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0097_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "국제 재무관리를 위한 주요 금융 수단이 아닌 것은?",
+                        "options": [
+                            "① 외환 선도 계약",
+                            "② 스왑 거래",
+                            "③ 국내 주식 발행",
+                            "④ 해외 채권 발행",
+                            "⑤ 외환 옵션"
+                        ],
+                        "answer": "③",
+                        "explanation": "국내 주식 발행은 국제 재무관리의 주요 금융 수단이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0098",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0098_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0098_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "국제 재무관리에서 환율 예측의 어려움을 증가시키는 요인은?",
+                        "options": [
+                            "① 금리 변동",
+                            "② 경제 성장률",
+                            "③ 정치적 불안정성",
+                            "④ 무역 수지",
+                            "⑤ 기술 혁신"
+                        ],
+                        "answer": "③",
+                        "explanation": "정치적 불안정성은 환율 예측을 어렵게 합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0099",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0099_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0099_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "다국적 기업의 자금 조달 시 주요 장점으로 적절치 않은 것은?",
+                        "options": [
+                            "① 자금 조달의 다양성",
+                            "② 낮은 자본비용",
+                            "③ 글로벌 신용 등급 상승",
+                            "④ 환율 변동 리스크 증가",
+                            "⑤ 현지 금융 시장 접근"
+                        ],
+                        "answer": "④",
+                        "explanation": "환율 변동 리스크 증가는 자금 조달의 장점이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0100",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0100_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0100_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "다음 중 국제 재무관리에 영향을 미치는 주요 외부 요인은?",
+                        "options": [
+                            "① 기업의 내부 정책",
+                            "② 현지 법규",
+                            "③ 직원 복지",
+                            "④ 제품 품질",
+                            "⑤ 고객 만족도"
+                        ],
+                        "answer": "②",
+                        "explanation": "현지 법규는 국제 재무관리에 영향을 미칩니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0101",
+            "chapter": "Theme 9: 국제 재무관리",
+            "page_contents": "{q_0101_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0101_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "국제 재무관리에서 다국적 기업이 직면할 수 있는 주요 리스크는?",
+                        "options": [
+                            "① 환율 변동 리스크",
+                            "② 현지 직원 채용",
+                            "③ 글로벌 브랜드 인지도",
+                            "④ 제품 혁신 속도",
+                            "⑤ 본사 위치 변경"
+                        ],
+                        "answer": "①",
+                        "explanation": "환율 변동 리스크는 다국적 기업이 직면할 주요 리스크입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0103",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0103_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0103_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "1",
+                        "question": "최근 재무관리에서 ESG(Environmental, Social, and Governance) 투자가 중요해진 이유는?",
+                        "options": [
+                            "① 단기 수익 증대",
+                            "② 주가 변동성 증가",
+                            "③ 지속 가능성 강화",
+                            "④ 세금 절감",
+                            "⑤ 법규 준수 강화"
+                        ],
+                        "answer": "③",
+                        "explanation": "ESG 투자는 지속 가능성을 강화합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0104",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0104_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0104_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "2",
+                        "question": "핀테크(FinTech)의 발전이 재무관리에 미친 영향이 아닌 것은?",
+                        "options": [
+                            "① 자금 조달의 용이성",
+                            "② 거래 비용 감소",
+                            "③ 실시간 금융 데이터 접근",
+                            "④ 금융 규제 완화",
+                            "⑤ 고객 접근성 증대"
+                        ],
+                        "answer": "④",
+                        "explanation": "핀테크는 금융 규제를 완화하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0105",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0105_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0105_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "3",
+                        "question": "블록체인 기술이 재무관리에서 활용되는 주요 이유는?",
+                        "options": [
+                            "① 데이터의 중앙 집중화",
+                            "② 거래의 투명성",
+                            "③ 비용 증가",
+                            "④ 데이터의 불변성",
+                            "⑤ 금융 상품 다양화"
+                        ],
+                        "answer": "①",
+                        "explanation": "블록체인은 데이터의 중앙 집중화를 지원하지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0106",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0106_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0106_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "4",
+                        "question": "최근 재무관리에서 빅데이터 분석이 중요한 이유는?",
+                        "options": [
+                            "① 과거 데이터의 활용",
+                            "② 실시간 예측 능력 강화",
+                            "③ 회계 기준 준수",
+                            "④ 재무제표 작성 용이",
+                            "⑤ 세금 보고 간소화"
+                        ],
+                        "answer": "②",
+                        "explanation": "빅데이터 분석은 실시간 예측 능력을 강화합니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0107",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0107_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0107_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "5",
+                        "question": "다음 중 최근 재무관리 동향과 가장 관련이 없는 것은?",
+                        "options": [
+                            "① 인공지능 활용",
+                            "② 클라우드 컴퓨팅 도입",
+                            "③ 전통적 회계 방식 고수",
+                            "④ ESG 투자 확대",
+                            "⑤ 디지털 자산 관리"
+                        ],
+                        "answer": "③",
+                        "explanation": "전통적 회계 방식 고수는 최신 재무관리 동향과 관련이 없습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0108",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0108_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0108_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "6",
+                        "question": "최근 기업들이 채택하는 '그린 파이낸스(Green Finance)'의 목적이 아닌 것은?",
+                        "options": [
+                            "① 환경 보호",
+                            "② 사회적 책임 강화",
+                            "③ 재무 건전성 악화",
+                            "④ 지속 가능한 발전",
+                            "⑤ 장기적 투자 유치"
+                        ],
+                        "answer": "③",
+                        "explanation": "그린 파이낸스는 재무 건전성을 악화시키지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0109",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0109_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0109_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "7",
+                        "question": "다음 중 디지털 전환이 재무관리 실무에 미치는 영향이 아닌 것은?",
+                        "options": [
+                            "① 자동화 증가",
+                            "② 데이터 분석 강화",
+                            "③ 재무 보고 시간 단축",
+                            "④ 인력 의존도 증가",
+                            "⑤ 업무 효율성 향상"
+                        ],
+                        "answer": "④",
+                        "explanation": "디지털 전환은 인력 의존도를 증가시키지 않습니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0110",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0110_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0110_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "8",
+                        "question": "최근 재무관리에서 강조되는 '지속 가능 경영'의 핵심 요소가 아닌 것은?",
+                        "options": [
+                            "① 환경적 책임",
+                            "② 사회적 책임",
+                            "③ 경제적 성과",
+                            "④ 단기 이익 추구",
+                            "⑤ 투명한 경영"
+                        ],
+                        "answer": "④",
+                        "explanation": "단기 이익 추구는 지속 가능 경영의 핵심 요소가 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0111",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0111_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0111_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "9",
+                        "question": "AI 기반 재무 관리 시스템의 장점으로 적절치 않은 것은?",
+                        "options": [
+                            "① 실시간 데이터 처리",
+                            "② 예측 정확성 향상",
+                            "③ 인적 오류 감소",
+                            "④ 전통적 분석 방식 유지",
+                            "⑤ 비용 절감"
+                        ],
+                        "answer": "④",
+                        "explanation": "전통적 분석 방식 유지는 AI 기반 재무 관리 시스템의 장점이 아닙니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        },
+        {
+            "page": "0112",
+            "chapter": "Theme 10: 최신 재무관리 동향 및 실무 사례",
+            "page_contents": "{q_0112_0001}",
+            "add_info": [
+                {
+                    "tag": "q_0112_0001",
+                    "type": "question",
+                    "description": {
+                        "number": "10",
+                        "question": "블록체인 기술을 활용한 재무 관리의 단점으로 적절한 것은?",
+                        "options": [
+                            "① 데이터의 투명성",
+                            "② 높은 보안성",
+                            "③ 거래 속도 저하",
+                            "④ 중앙 관리 필요성 감소",
+                            "⑤ 분산 원장 사용"
+                        ],
+                        "answer": "③",
+                        "explanation": "거래 속도 저하는 블록체인의 단점입니다."
+                    },
+                    "caption": [],
+                    "file_path": null,
+                    "bbox": null
+                }
+            ]
+        }
+    ]
+}
