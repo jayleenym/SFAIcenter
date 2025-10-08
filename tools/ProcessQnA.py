@@ -33,17 +33,21 @@ def analyze_extracted_qna(qna_info: dict):
 
 
 # 수정된 extract_qna_tags 함수 (정규식 패턴 수정)
-def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str = None) -> Dict[str, Any]:
+def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str = None, output_path: str = None) -> Dict[str, Any]:
     """
     page_contents에서 {q_0000_0000} 형태의 태그를 추출하고,
     add_info에서 해당 태그를 찾아서 별도 리스트로 분리하는 함수
-    Q&A 내용 안의 tb, img, f 태그도 함께 추출하여 제거 (수정된 정규식)
+    Q&A 내용 안의 tb, img, f, etc 태그도 함께 추출하여 제거 (수정된 정규식)
+    페이지별로 중간저장도 수행
     
     Args:
         json_data: JSON 데이터
+        file_name: 파일명
+        llm_model: 사용할 LLM 모델
+        output_path: 출력 경로 (페이지별 중간저장용)
         
     Returns:
-        수정된 JSON 데이터와 추출된 Q&A 리스트
+        추출된 Q&A 리스트
     """
     # 추출된 Q&A를 저장할 리스트
     extracted_qna = []
@@ -97,16 +101,17 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str =
                                 else:
                                     qna_content += str(desc[field]) + " "
                     
-                    # Q&A 내용에서 tb, img, f 태그 추출 (수정된 정규식)
+                    # Q&A 내용에서 tb, img, f, etc 태그 추출 (수정된 정규식)
                     tb_tags = re.findall(r'\{tb_\d{4}_\d{4}\}', qna_content)
                     img_tags = re.findall(r'\{img_\d{4}_\d{4}\}', qna_content)
                     f_tags = re.findall(r'\{f_\d{4}_\d{4}\}', qna_content)
-                    additional_tags = tb_tags + img_tags + f_tags
+                    etc_tags = re.findall(r'\{etc_\d{4}_\d{4}\}', qna_content)
+                    additional_tags = tb_tags + img_tags + f_tags + etc_tags
                     
                     # 디버깅: 추가 태그 발견 시 출력
                     # if additional_tags:
                     #     print(f"  추가 태그 발견 - Q&A: {tag}")
-                    #     print(f"    TB: {tb_tags}, IMG: {img_tags}, F: {f_tags}")
+                    #     print(f"    TB: {tb_tags}, IMG: {img_tags}, F: {f_tags}, ETC: {etc_tags}")
                     
                     # 추가 태그들의 실제 데이터 수집
                     additional_tag_data = []
@@ -138,24 +143,32 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str =
 
                     # Domain 추가 (페이지의 모든 Q&A에 대해 한 번만 호출)
                     if not hasattr(add_qna_domain_onebyone, '_page_processed'):
-                        page_domains = add_qna_domain_onebyone(json_data, page_data, llm_model)
-                        # JSON 파싱 시도
                         try:
-                            if isinstance(page_domains, str):
-                                page_domains = json.loads(page_domains)
-                        except json.JSONDecodeError:
+                            page_domains = add_qna_domain_onebyone(json_data, page_data, llm_model)
+                            # JSON 파싱하여 도메인 리스트 저장
+                            try:
+                                if isinstance(page_domains, str):
+                                    page_domains = json.loads(page_domains)
+                            except json.JSONDecodeError:
+                                print(f"  - JSON 파싱 실패, 빈 도메인으로 설정")
+                                page_domains = []
+                        except Exception as e:
+                            print(f"  - API 호출 실패: {e}")
                             page_domains = []
                         # 페이지별 domain 정보를 저장
                         add_qna_domain_onebyone._page_processed = True
                         add_qna_domain_onebyone._page_domains = page_domains
                         add_qna_domain_onebyone._domain_index = 0
                     
-                    # 현재 Q&A에 해당하는 domain 할당
+                    # 각 Q&A에 해당하는 domain 순차적으로 할당
                     if hasattr(add_qna_domain_onebyone, '_page_domains') and add_qna_domain_onebyone._domain_index < len(add_qna_domain_onebyone._page_domains):
-                        qna_domain = add_qna_domain_onebyone._page_domains[add_qna_domain_onebyone._domain_index]
+                        domain_obj = add_qna_domain_onebyone._page_domains[add_qna_domain_onebyone._domain_index]
+                        qna_domain = domain_obj.get('카테고리', '') if isinstance(domain_obj, dict) else str(domain_obj)
+                        qna_reason = domain_obj.get('근거', '') if isinstance(domain_obj, dict) else ''
                         add_qna_domain_onebyone._domain_index += 1
                     else:
-                        qna_domain = {"카테고리": ""}
+                        qna_domain = ""
+                        qna_reason = ""
 
                     # 추출할 Q&A 정보 저장
                     qna_items_to_extract.append({
@@ -169,41 +182,30 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str =
                         'page': page_data.get('page'),
                         "qna_type": qna_type,
                         "qna_domain": qna_domain,
-                        # "qna_domain": "",
+                        "qna_reason": qna_reason,
                         'qna_data': qna_item,
                         'additional_tags_found': additional_tags,
                         'additional_tag_data': additional_tag_data
                     })
-
-
-            
-            # 인덱스를 역순으로 정렬하여 제거 (뒤에서부터 제거)
-            # sorted_indices = sorted(indices_to_remove, reverse=True)
-            # for idx in sorted_indices:
-            #     if 0 <= idx < len(add_info):
-            #         add_info.pop(idx)
             
             # 추출된 Q&A들을 리스트에 추가
             extracted_qna.extend(qna_items_to_extract)
-
-            # 수정된 add_info로 업데이트
-            page_data['add_info'] = add_info
-            page_data['page_contents'] = re.sub(r'\{q_\d{4}_\d{4}\}', "", page_contents)
-            page_data['page_contents'] = page_data['page_contents'].replace('\n\n', '\n')
+            
+            # 페이지별 중간저장 (임시 파일로)
+            if qna_items_to_extract:
+                temp_output_path = output_path.replace('.json', f'_temp_page_{page_data.get("page", "unknown")}.json')
+                temp_dir = os.path.dirname(temp_output_path)
+                os.makedirs(temp_dir, exist_ok=True)
+                
+                try:
+                    with open(temp_output_path, 'w', encoding='utf-8') as f:
+                        json.dump(qna_items_to_extract, f, ensure_ascii=False, indent=4)
+                    print(f"  - 페이지 {page_data.get('page', 'unknown')} 중간저장: {len(qna_items_to_extract)}개 Q&A")
+                except Exception as e:
+                    print(f"  - 페이지 {page_data.get('page', 'unknown')} 중간저장 실패: {e}")
     
-    # 정제 끝나고 빈 페이지 삭제
-    pages_to_remove = []
-    for i, page_data in enumerate(json_data.get('contents', [])):
-        page_contents = page_data.get('page_contents', '')
-        if page_contents.strip() == "":
-            pages_to_remove.append(i)
-    
-    # 역순으로 제거
-    for i in reversed(pages_to_remove):
-        json_data['contents'].pop(i)
     
     return {
-        'modified_json': json_data,
         'extracted_qna': extracted_qna
     }
 
@@ -224,57 +226,34 @@ def get_qna_datas(file_path: str, output_path: str = None, llm_model: str = None
         json_data = json.load(f)
     
     # Q&A 태그 추출 및 분리
-    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0], llm_model)    
+    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0], llm_model, output_path)    
 
     # 추출된 Q&A를 별도 파일로 저장
     if len(result['extracted_qna']) != 0:
-        # 수정된 JSON 저장
-        output_file = output_path if output_path else file_path
-        
-        # 파일이 존재하면 백업 생성
-        if os.path.exists(output_file):
-            # extract_backup 폴더 생성 (존재하지 않는 경우)
-            backup_dir = os.path.join(os.path.dirname(output_file), '_backup')
-            os.makedirs(backup_dir, exist_ok=True)
-            
-            # 백업 파일명 생성 (.bak 확장자 추가)
-            backup_filename = os.path.basename(output_file) + '.bak'
-            backup_path = os.path.join(backup_dir, backup_filename)
-            
-            # 기존 파일을 백업 폴더로 복사
-            shutil.copy2(output_file, backup_path)
-            print(f"기존 파일을 백업했습니다: {backup_path}")
-        
-        # with open(output_file, 'w', encoding='utf-8') as f:
-            # json.dump(result['modified_json'], f, ensure_ascii=False, indent=4)
+        # 출력 디렉토리 생성
+        output_dir = os.path.dirname(output_path)
+        os.makedirs(output_dir, exist_ok=True)
 
         qna_output_path = output_path.replace('.json', '_extracted_qna.json')
         with open(qna_output_path, 'w', encoding='utf-8') as f:
             json.dump(result['extracted_qna'], f, ensure_ascii=False, indent=4)
 
-        # analyze_extracted_qna(qna_output_path)
+        print(f"처리 완료:")
+        print(f"- 추출된 Q&A: {qna_output_path}")
+        print(f"- 추출된 Q&A 개수: {len(result['extracted_qna'])}")
+        
         return result
     else:
-        output_file = ""
-        qna_output_path = ""
-    
-    print(f"처리 완료:")
-    print(f"- 수정된 JSON: {output_file}")
-    print(f"- 추출된 Q&A: {qna_output_path}")
-    if len(result['extracted_qna']) > 0:
-        print(f"- 추출된 Q&A 개수: {len(result['extracted_qna'])}")
-    
-    return result
+        print(f"처리 완료: 추출된 Q&A가 없습니다.")
+        return result
 
 
 def add_qna_domain(file_path: str, output_path: str = None, model: str = None) -> Dict[str, Any]:
     if model is None:
         model = llm_model
-    else:
-        model = model
     """
     추출한 qna_data에 domain을 추가하는 함수
-    grok 4 Fast Free
+    grok 4 Fast
     """
 
     system_prompt = """
@@ -595,17 +574,18 @@ def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any
     
 
 
-def add_qna_domain_onebyone(qna_data: dict, page_data: dict, model: str = None) -> list:
+def add_qna_domain_onebyone(json_data: dict, page_data: dict, model: str = None) -> list:
     """
-    Q&A 데이터에 Domain을 추가하는 함수
+    페이지의 Q&A 데이터에 Domain을 추가하는 함수
     
     Args:
-        qna_data: Q&A 데이터
+        json_data: 전체 JSON 데이터
+        page_data: 페이지 데이터
         model: 사용할 모델
         
     Returns:
-        Domain이 추가된 Q&A 데이터
-    """
+        Domain 분류 결과 리스트
+"""
     system_prompt = """
 당신은 금융 문제지를 분류하는 전문가입니다.  
 당신의 임무는 주어진 정보(책 제목, 책 분류, 챕터 제목)를 바탕으로 질문을 아래 분류 체계 중 하나로 정확하게 분류하는 것입니다.  
@@ -654,17 +634,30 @@ def add_qna_domain_onebyone(qna_data: dict, page_data: dict, model: str = None) 
 }]
 """
     user_prompt = ''
-    for i in range(len(page_data['add_info'])):
-        if page_data['add_info'][i]['type'] == 'question':
-            single_prompt = f"""
-            책 제목: {qna_data['title']}
-            책 분류: {qna_data['cat1_domain']}/{qna_data['cat2_sub']}/{qna_data['cat3_specific']}
-            챕터: {page_data['chapter']}
-            질문: {page_data['add_info'][i]['description']['question']}
-            답변: {page_data['add_info'][i]['description']['answer']}
-            해설: {page_data['add_info'][i]['description']['explanation']}
-            ===================="""
-            user_prompt += single_prompt
+    # page_contents에서 Q&A 태그가 있는 항목들만 찾아서 처리
+    page_contents = page_data.get('page_contents', '')
+    qna_tags = re.findall(r'\{q_\d{4}_\d{4}\}', page_contents)
+    
+    for tag in qna_tags:
+        tag_without_braces = tag[1:-1]  # {q_0000_0000} -> q_0000_0000
+        # add_info에서 해당 태그를 가진 항목 찾기
+        for info_item in page_data.get('add_info', []):
+            if info_item.get('tag') == tag_without_braces and info_item.get('type') == 'question':
+                single_prompt = f"""
+책 제목: {json_data['title']}
+책 분류: {json_data.get('cat1_domain', '')}/{json_data.get('cat2_sub', '')}/{json_data.get('cat3_specific', '')}
+챕터: {page_data.get('chapter', '')}
+질문: {info_item['description']['question']}
+답변: {info_item['description']['answer']}
+해설: {info_item['description']['explanation']}
+===================="""
+                user_prompt += single_prompt
+                break
+    
+    # Q&A가 없는 경우 빈 리스트 반환
+    if not user_prompt.strip():
+        print(f"  - 페이지에 Q&A가 없음")
+        return []
     
     # API 호출 및 도메인 분류
     print(f"  - API 호출 중... (모델: {model})")
