@@ -238,6 +238,46 @@ def get_qna_datas(file_path: str, output_path: str = None, llm_model: str = None
         with open(qna_output_path, 'w', encoding='utf-8') as f:
             json.dump(result['extracted_qna'], f, ensure_ascii=False, indent=4)
 
+        # 임시 파일들 개수 확인 및 삭제
+        temp_files = []
+        temp_qna_count = 0
+        try:
+            for file in os.listdir(output_dir):
+                if file.startswith(os.path.basename(output_path).replace('.json', '_temp_page_')) and file.endswith('.json'):
+                    temp_file_path = os.path.join(output_dir, file)
+                    temp_files.append(temp_file_path)
+                    
+                    # 임시 파일의 Q&A 개수 확인
+                    try:
+                        with open(temp_file_path, 'r', encoding='utf-8') as f:
+                            temp_data = json.load(f)
+                            if isinstance(temp_data, list):
+                                temp_qna_count += len(temp_data)
+                    except Exception as e:
+                        print(f"  - 임시 파일 {file} 읽기 오류: {e}")
+            
+            # 개수 검증
+            final_qna_count = len(result['extracted_qna'])
+            print(f"  - 임시 파일 Q&A 개수: {temp_qna_count}")
+            print(f"  - 최종 파일 Q&A 개수: {final_qna_count}")
+            
+            if temp_qna_count == final_qna_count and temp_qna_count > 0:
+                # 개수가 일치하면 임시 파일들 삭제
+                temp_files_deleted = 0
+                for temp_file_path in temp_files:
+                    try:
+                        os.remove(temp_file_path)
+                        temp_files_deleted += 1
+                    except Exception as e:
+                        print(f"  - 임시 파일 삭제 오류: {e}")
+                print(f"  - 임시 파일 {temp_files_deleted}개 삭제 완료")
+            else:
+                print(f"  - Q&A 개수가 일치하지 않아 임시 파일을 보존합니다.")
+                print(f"  - 임시 파일 {len(temp_files)}개 보존됨")
+                
+        except Exception as e:
+            print(f"  - 임시 파일 처리 중 오류: {e}")
+
         print(f"처리 완료:")
         print(f"- 추출된 Q&A: {qna_output_path}")
         print(f"- 추출된 Q&A 개수: {len(result['extracted_qna'])}")
@@ -352,8 +392,8 @@ def add_qna_domain(file_path: str, output_path: str = None, model: str = None) -
             except json.JSONDecodeError as e:
                 print(f"  - JSON 파싱 오류: {e}")
                 print(f"  - 원본 응답: {domain_response}")
-                # JSON 파싱 실패 시 빈 도메인으로 설정
-                domain = [{"카테고리": ""} for _ in range(len(qna_items))]
+                # JSON 파싱 실패 시 원본 응답으로 설정
+                domain = [{"카테고리": domain_response} for _ in range(len(qna_items))]
             
             # 실제 처리할 아이템 수만큼만 반복
             actual_count = len(qna_items)
