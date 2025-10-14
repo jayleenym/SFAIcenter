@@ -71,7 +71,7 @@ def save_duplicates_report(duplicates_data, output_dir):
     """
     중복 검사 결과를 파일로 저장하는 함수
     """
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     
     # # JSON 형태로 상세 정보 저장
     # json_file = os.path.join(output_dir, f"duplicates_report_{timestamp}.json")
@@ -284,7 +284,7 @@ def check_real_duplicates(directory_path, remove_duplicates=False):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or len(sys.argv) > 4:
-        print("사용법: python check_real_duplicates.py <사용자명> <사이클> [--remove]")
+        print("사용법: python check_real_duplicates.py <username> <cycle> [--remove]")
         print("예시: python check_real_duplicates.py yejin 1")
         print("예시: python check_real_duplicates.py yejin 1 --remove")
         sys.exit(1)
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     user_name = sys.argv[1]
     cycle = sys.argv[2]
     remove_duplicates = len(sys.argv) == 4 and sys.argv[3] == "--remove"
-    directory_path = f"/Users/{user_name}/Desktop/Desktop_AICenter✨/SFAIcenter/data_yejin/FIN_workbook/{cycle}C/extracted"
+    directory_path = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted"
     
     if not os.path.exists(directory_path):
         print(f"❌ 디렉토리가 존재하지 않습니다: {directory_path}")

@@ -83,8 +83,20 @@ def analyze_qna_entry(entry: Dict[str, Any], file_id: str, entry_index: int) -> 
     additional_tags_found = entry.get("additional_tags_found", [])
     additional_tag_data = entry.get("additional_tag_data", [])
     
-    # If there are additional tags found but no corresponding data
-    if additional_tags_found and not additional_tag_data:
+    # Check if additional_tag_data is empty (empty list or list with empty dicts or dicts with empty data)
+    is_empty_data = False
+    if not additional_tag_data:
+        is_empty_data = True
+    else:
+        # Check if all items in additional_tag_data are empty or have empty data
+        is_empty_data = all(
+            (isinstance(item, dict) and not item) or  # Empty dict
+            (isinstance(item, dict) and item.get("data") == {})  # Dict with empty data field
+            for item in additional_tag_data
+        )
+    
+    # If there are additional tags found but no corresponding data (empty list or empty dicts)
+    if additional_tags_found and is_empty_data:
         return {
             "file_id": file_id,
             "entry_index": entry_index,
@@ -132,8 +144,9 @@ def analyze_json_file(file_path: Path) -> List[Dict[str, Any]]:
 def main():
     """Main function to analyze all extracted QnA files"""
     # Directory containing the extracted QnA files
-    cycle = sys.argv[1]
-    extracted_dir = Path(f"/Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/data_yejin/FIN_workbook/{cycle}C/extracted")
+    user_name = sys.argv[1]
+    cycle = sys.argv[2]
+    extracted_dir = Path(f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted")
     
     if not extracted_dir.exists():
         print(f"Error: Directory {extracted_dir} does not exist")
@@ -182,11 +195,14 @@ def main():
             print(f"   Suggested Empty Tags: {entry['suggested_empty_tags']}")
             break
     # Save report to file
-    report_file = Path(f"/Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/data_yejin/FIN_workbook/{cycle}C/additional_tags_report_grouped.json")
-    with open(report_file, 'w', encoding='utf-8') as f:
-        json.dump(all_missing_entries, f, ensure_ascii=False, indent=2)
-    
-    print(f"\nDetailed report saved to: {report_file}")
+    if len(all_missing_entries) > 0:
+        report_file = Path(f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/additional_tags_report.json")
+        with open(report_file, 'w', encoding='utf-8') as f:
+            json.dump(all_missing_entries, f, ensure_ascii=False, indent=2)
+        
+        print(f"\nDetailed report saved to: {report_file}")
+    else:
+        print(f"\nNo entries needing empty QnA data found")
     
     # Analyze minimum pages by file
     print("\nAnalyzing minimum pages by file_id...")
@@ -199,19 +215,19 @@ def main():
     print(f"Files with missing additional_tag_data: {files_with_missing}")
     print(f"Total entries: {len(all_missing_entries)}")
     print(f"Total additional tags: {total_tags}")
-    if len(all_missing_entries) > 0:
-        print(f"Average tags per entry: {total_tags / len(all_missing_entries):.2f}")
-    else:
-        print(f"Average tags per entry: 0")
+    # if len(all_missing_entries) > 0:
+    #     print(f"Average tags per entry: {total_tags / len(all_missing_entries):.2f}")
+    # else:
+    #     print(f"Average tags per entry: 0")
     
     # Minimum page statistics
     if min_pages:
-        all_min_pages = [info['min_page'] for info in min_pages.values()]
-        print(f"\nMINIMUM PAGE STATISTICS:")
-        print(f"Files with valid page data: {len(min_pages)}")
-        print(f"Overall minimum page: {min(all_min_pages):04d}")
-        print(f"Overall maximum minimum page: {max(all_min_pages):04d}")
-        print(f"Average minimum page: {sum(all_min_pages) / len(all_min_pages):.1f}")
+    #     all_min_pages = [info['min_page'] for info in min_pages.values()]
+    #     print(f"\nMINIMUM PAGE STATISTICS:")
+    #     print(f"Files with valid page data: {len(min_pages)}")
+    #     print(f"Overall minimum page: {min(all_min_pages):04d}")
+    #     print(f"Overall maximum minimum page: {max(all_min_pages):04d}")
+    #     print(f"Average minimum page: {sum(all_min_pages) / len(all_min_pages):.1f}")
         
         print(f"\nMINIMUM PAGE BY FILE:")
         for file_id in sorted(min_pages.keys()):

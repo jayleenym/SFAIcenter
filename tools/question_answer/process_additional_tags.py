@@ -30,8 +30,8 @@ def extract_page_from_tag(tag: str) -> str:
     # 중괄호 제거
     clean_tag = tag.strip('{}')
     
-    # 패턴 매칭: img_0205_0001, f_0205_0001, tb_0205_0001 등
-    match = re.match(r'^(img|f|tb)_(\d{4})_\d+$', clean_tag)
+    # 패턴 매칭: img_0205_0001, f_0205_0001, tb_0205_0001, note_0205_0001, etc_0205_0001 등
+    match = re.match(r'^(img|f|tb|note|etc)_(\d{4})_\d+$', clean_tag)
     if match:
         return match.group(2)
     
@@ -46,6 +46,30 @@ def find_tag_data_in_add_info(add_info: List[Dict], tag: str) -> Dict[str, Any]:
             return item
     
     return None
+
+def extract_tags_from_qna_content(qna_item: Dict) -> List[str]:
+    """Q&A 내용에서 img_, f_, tb_, etc_, note_ 태그를 추출합니다."""
+    qna_content = ""
+    if 'qna_data' in qna_item and 'description' in qna_item['qna_data']:
+        desc = qna_item['qna_data']['description']
+        # question, answer, explanation, options에서 태그 추출
+        for field in ['question', 'answer', 'explanation', 'options']:
+            if field in desc and desc[field]:
+                if field == 'options' and isinstance(desc[field], list):
+                    # options는 리스트이므로 각 항목을 합침
+                    for option in desc[field]:
+                        qna_content += str(option) + " "
+                else:
+                    qna_content += str(desc[field]) + " "
+    
+    # Q&A 내용에서 tb, img, f, etc, note 태그 추출
+    tb_tags = re.findall(r'\{tb_\d{4}_\d{4}\}', qna_content)
+    img_tags = re.findall(r'\{img_\d{4}_\d{4}\}', qna_content)
+    f_tags = re.findall(r'\{f_\d{4}_\d{4}\}', qna_content)
+    etc_tags = re.findall(r'\{etc_\d{4}_\d{4}\}', qna_content)
+    footnote_tags = re.findall(r'\{note_\d{4}_\d{4}\}', qna_content)
+    
+    return tb_tags + img_tags + f_tags + etc_tags + footnote_tags
 
 def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data: Dict) -> tuple:
     """additional_tags_found에 있지만 additional_tag_data에 없는 태그들을 추가합니다."""
@@ -69,9 +93,24 @@ def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data: Dict) -> t
 
     tags_added_from_source = 0
     tags_added_empty = 0
+    tags_found_in_content = 0
 
     for i, entry in enumerate(qna_data):
+        # 기존 additional_tags_found 가져오기
         additional_tags_found = set(entry.get("additional_tags_found", []))
+        
+        # Q&A 내용에서 추가 태그 추출
+        content_tags = extract_tags_from_qna_content(entry)
+        if content_tags:
+            print(f"항목 {i}에서 Q&A 내용에서 {len(content_tags)}개의 태그 발견: {content_tags}")
+            # 새로 발견된 태그들을 additional_tags_found에 추가
+            for tag in content_tags:
+                additional_tags_found.add(tag)
+            tags_found_in_content += len(content_tags)
+        
+        # additional_tags_found 업데이트
+        entry["additional_tags_found"] = list(additional_tags_found)
+        
         additional_tag_data_tags = {item["tag"] for item in entry.get("additional_tag_data", [])}
 
         missing_in_data = additional_tags_found - additional_tag_data_tags
@@ -106,7 +145,7 @@ def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data: Dict) -> t
                     tags_added_empty += 1
                     print(f"  - {tag_with_braces} 추가됨 (빈 데이터로)")
 
-    return tags_added_from_source, tags_added_empty
+    return tags_added_from_source, tags_added_empty, tags_found_in_content
 
 def fill_additional_tag_data(qna_data: List[Dict], source_data: Dict) -> tuple:
     """빈 additional_tag_data의 "data":{}를 원본 파일의 add_info에서 채웁니다."""
@@ -150,13 +189,13 @@ def fill_additional_tag_data(qna_data: List[Dict], source_data: Dict) -> tuple:
     
     return filled_count, total_empty
 
-def process_additional_tags(cycle: str, file_id: str) -> None:
-    """additional_tag_data를 처리하는 메인 함수"""
+def process_additional_tags(user_name: str, cycle: str, file_id: str) -> bool:
+    """additional_tag_data를 처리하는 메인 함수. 성공시 True, 실패시 False 반환"""
     
     # 파일 경로 설정
-    extracted_qna_path = f"/Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/data_yejin/FIN_workbook/{cycle}C/extracted/{file_id}_extracted_qna.json"
-    source_path = f"/Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/data_yejin/FINAL/{cycle}C/Lv5/{file_id}/{file_id}.json"
-    backup_dir = f"/Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/data_yejin/FIN_workbook/{cycle}C/extracted/_backup"
+    extracted_qna_path = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted/{file_id}_extracted_qna.json"
+    source_path = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FINAL/{cycle}C/Lv5/{file_id}/{file_id}.json"
+    backup_dir = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted/_backup"
     backup_path = f"{backup_dir}/{file_id}_extracted_qna.json.bak"
     
     # 백업 디렉토리 생성 (존재하지 않는 경우)
@@ -171,7 +210,7 @@ def process_additional_tags(cycle: str, file_id: str) -> None:
         shutil.copy2(extracted_qna_path, backup_path)
     else:
         print(f"Warning: Original file not found: {extracted_qna_path}")
-        return
+        return False
     
     # 파일 로드
     print("Loading files...")
@@ -180,9 +219,10 @@ def process_additional_tags(cycle: str, file_id: str) -> None:
     
     # 1단계: 누락된 태그 추가
     print("\n1단계: 누락된 태그 추가 중...")
-    tags_added_from_source, tags_added_empty = fix_missing_tags_with_add_info(qna_data, source_data)
+    tags_added_from_source, tags_added_empty, tags_found_in_content = fix_missing_tags_with_add_info(qna_data, source_data)
     
     print(f"\n1단계 완료:")
+    print(f"  - Q&A 내용에서 발견된 태그: {tags_found_in_content}개")
     print(f"  - 원본에서 찾아서 추가된 태그: {tags_added_from_source}개")
     print(f"  - 빈 데이터로 추가된 태그: {tags_added_empty}개")
     
@@ -195,6 +235,12 @@ def process_additional_tags(cycle: str, file_id: str) -> None:
     print(f"  - 성공적으로 채워진 필드: {filled_count}개")
     print(f"  - 채우지 못한 필드: {total_empty - filled_count}개")
     
+    # 채우지 못한 필드가 있으면 실패로 처리
+    unfilled_count = total_empty - filled_count
+    if unfilled_count > 0:
+        print(f"\n❌ 실패: {unfilled_count}개의 빈 필드를 채우지 못했습니다.")
+        return False
+    
     # 결과 저장 (원본 파일명으로 저장)
     save_json_file(qna_data, extracted_qna_path)
     print(f"\n처리된 파일이 저장되었습니다: {extracted_qna_path}")
@@ -202,13 +248,95 @@ def process_additional_tags(cycle: str, file_id: str) -> None:
     
     print("\n" + "=" * 50)
     print("처리 완료!")
+    return True
+
+def find_all_extracted_qna_files(user_name: str, cycle: str) -> List[str]:
+    """지정된 경로의 모든 extracted_qna 파일을 찾습니다."""
+    extracted_dir = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted"
+    
+    if not os.path.exists(extracted_dir):
+        print(f"디렉토리가 존재하지 않습니다: {extracted_dir}")
+        return []
+    
+    extracted_files = []
+    for file in os.listdir(extracted_dir):
+        if file.endswith('_extracted_qna.json') and file != 'merged_extracted_qna.json':
+            # file_id 추출 (파일명에서 _extracted_qna.json 제거)
+            file_id = file.replace('_extracted_qna.json', '')
+            extracted_files.append(file_id)
+    
+    return sorted(extracted_files)
+
+def process_all_files(user_name: str, cycle: str) -> None:
+    """모든 extracted_qna 파일을 처리합니다."""
+    print(f"{cycle}C의 모든 extracted_qna 파일을 처리합니다...")
+    print("=" * 60)
+    
+    # 모든 파일 찾기
+    file_ids = find_all_extracted_qna_files(user_name, cycle)
+    
+    if not file_ids:
+        print("처리할 파일이 없습니다.")
+        return
+    
+    print(f"발견된 파일 개수: {len(file_ids)}개")
+    print(f"파일 목록: {', '.join(file_ids)}")
+    print("\n" + "=" * 60)
+    
+    # 각 파일 처리
+    success_count = 0
+    error_count = 0
+    error_files = []
+    
+    for i, file_id in enumerate(file_ids, 1):
+        print(f"\n[{i}/{len(file_ids)}] 처리 중: {file_id}")
+        print("-" * 40)
+        
+        try:
+            success = process_additional_tags(user_name, cycle, file_id)
+            if success:
+                success_count += 1
+                print(f"✅ {file_id} 처리 완료")
+            else:
+                error_count += 1
+                error_files.append(file_id)
+                print(f"❌ {file_id} 처리 실패: 빈 필드를 채우지 못함")
+        except Exception as e:
+            error_count += 1
+            error_files.append(file_id)
+            print(f"❌ {file_id} 처리 실패: {e}")
+    
+    # 최종 결과 출력
+    print("\n" + "=" * 60)
+    print("전체 처리 완료!")
+    print(f"✅ 성공: {success_count}개")
+    print(f"❌ 실패: {error_count}개")
+    
+    if error_files:
+        print(f"실패한 파일: {', '.join(error_files)}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("사용법: python process_additional_tags.py <cycle> <file_id>")
-        print("예시: python process_additional_tags.py 1 SS0332")
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print("사용법:")
+        print("  python process_additional_tags.py <username> <cycle> [file_id]")
+        print("")
+        print("예시:")
+        print("  python process_additional_tags.py yejin 1 SS0332  # 특정 파일 처리")
+        print("  python process_additional_tags.py yejin 1         # 모든 파일 처리")
         sys.exit(1)
     
-    cycle = sys.argv[1]
-    file_id = sys.argv[2]
-    process_additional_tags(cycle, file_id)
+    user_name = sys.argv[1]
+    cycle = sys.argv[2]
+    
+    if len(sys.argv) == 4:
+        # 특정 파일 처리
+        file_id = sys.argv[3]
+        success = process_additional_tags(user_name, cycle, file_id)
+        if success:
+            print(f"\n✅ {file_id} 처리 완료!")
+        else:
+            print(f"\n❌ {file_id} 처리 실패!")
+            sys.exit(1)
+    else:
+        # 모든 파일 처리
+        process_all_files(user_name, cycle)

@@ -72,11 +72,12 @@ def move_jsons(i, final_data_path = FINAL_DATA_PATH):
 
 
 def get_filelist(i, data_path = None, FINAL_DATA_PATH = FINAL_DATA_PATH):
-    if data_path:
+    if data_path != FINAL_DATA_PATH:
         FINAL_DATA_PATH = data_path
-    else:
-        FINAL_DATA_PATH = os.path.join(FINAL_DATA_PATH, CYCLE_PATH[i])
+    
+    FINAL_DATA_PATH = os.path.join(FINAL_DATA_PATH, CYCLE_PATH[i])
 
+    print(FINAL_DATA_PATH)
     json_files = []
     for root, _, files in os.walk(FINAL_DATA_PATH):
         for f in files:

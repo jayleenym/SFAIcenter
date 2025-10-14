@@ -5,9 +5,8 @@ import shutil
 from typing import List, Dict, Any
 
 import tools.Openrouter as Openrouter
+from tools.ProcessFiles import FINAL_DATA_PATH, CYCLE_PATH
 
-# llm_model = 'openai/gpt-5'
-llm_model = 'x-ai/grok-4-fast'
 
 def analyze_extracted_qna(qna_info: dict):
     try:
@@ -30,6 +29,98 @@ def analyze_extracted_qna(qna_info: dict):
                     return 'essay'
     except Exception as e:
         print("분석 오류:", e)
+
+
+def add_qna_domain_onebyone(json_data: dict, page_data: dict, model: str = None) -> list:
+    """
+    페이지의 Q&A 데이터에 Domain을 추가하는 함수
+    
+    Args:
+        json_data: 전체 JSON 데이터
+        page_data: 페이지 데이터
+        model: 사용할 모델
+        
+    Returns:
+        Domain 분류 결과 리스트
+"""
+    system_prompt = """
+당신은 금융 문제지를 분류하는 전문가입니다.  
+당신의 임무는 주어진 정보(책 제목, 책 분류, 챕터 제목)를 바탕으로 질문을 아래 분류 체계 중 하나로 정확하게 분류하는 것입니다.  
+
+## 분류 체계
+
+1. 금융기초
+- 경제 (미시경제, 거시경제, 국제경제, 계량경제 등)
+- 경영 (인사/조직, 전략/마케팅, 재무기초 등)
+- 회계 (회계사 관련 자격증 및 회계 관련 학문적 내용)
+- 세무 (세무사 관련 자격증 및 세법 관련 학문적 내용)
+- 노무 (노무사 관련 자격증 및 노동법, 사회보험법 관련 학문적 내용)
+- 통계 (통계 관련 자격증 및 통계학 관련 학문적 내용)
+
+2. 금융실무
+- 내부통제 (컴플라이언스, 법률, 규제, 협회규정 등)
+- 영업 (세일즈, 화법, 고객관리 등)
+- 디지털 (마이데이터, 가상자산, 블록체인, 핀테크 등)
+- 자산운용 (트레이딩, 채권, 부동산PF, 퇴직연금, 신탁 등)
+- 리스크관리 (채권수심, 신용리스크, 대체심사, 헷징 등)
+- 보험계약 (장기보험, 자동차보험, 해상보험, 지급, 보전 등)
+- 보상처리 (손해사정, 보험금 심사, 자동차 보상 등)
+
+---
+
+## 분류 지침
+1. 반드시 위 체계 중 하나를 선택합니다.  
+2. 질문의 핵심 주제가 학문적 개념·이론이면 → 금융기초,  
+   실제 업무·규제·법률·실무 절차라면 → 금융실무로 분류합니다.  
+3. 모호한 경우 더 구체적인 문맥을 고려해 대분류와 세부 카테고리를 명확히 결정합니다.  
+4. 출력은 분류 결과만 JSON 형식으로 작성합니다.
+5. 출력에는 코드 블록 표시(```json, ```)를 절대 포함하지 않습니다.  
+
+---
+
+## 출력 형식
+[{
+  "대분류": "금융기초 또는 금융실무",
+  "카테고리": "세부 카테고리명",
+  "근거": "간단한 분류 이유"
+},
+{
+  "대분류": "금융기초 또는 금융실무",
+  "카테고리": "세부 카테고리명",
+  "근거": "간단한 분류 이유"
+}]
+"""
+    user_prompt = ''
+    # page_contents에서 Q&A 태그가 있는 항목들만 찾아서 처리
+    page_contents = page_data.get('page_contents', '')
+    qna_tags = re.findall(r'\{q_\d{4}_\d{4}\}', page_contents)
+    
+    for tag in qna_tags:
+        tag_without_braces = tag[1:-1]  # {q_0000_0000} -> q_0000_0000
+        # add_info에서 해당 태그를 가진 항목 찾기
+        for info_item in page_data.get('add_info', []):
+            if info_item.get('tag') == tag_without_braces and info_item.get('type') == 'question':
+                single_prompt = f"""
+책 제목: {json_data['title']}
+책 분류: {json_data.get('cat1_domain', '')}/{json_data.get('cat2_sub', '')}/{json_data.get('cat3_specific', '')}
+챕터: {page_data.get('chapter', '')}
+질문: {info_item['description']['question']}
+답변: {info_item['description']['answer']}
+해설: {info_item['description']['explanation']}
+===================="""
+                user_prompt += single_prompt
+                break
+    
+    # Q&A가 없는 경우 빈 리스트 반환
+    if not user_prompt.strip():
+        print(f"  - 페이지에 Q&A가 없음")
+        return []
+    
+    # API 호출 및 도메인 분류
+    print(f"  - API 호출 중... (모델: {model})")
+    domain_response = Openrouter.query_model_openrouter(system_prompt, user_prompt, model)
+    return domain_response
+
 
 
 # 수정된 extract_qna_tags 함수 (정규식 패턴 수정)
@@ -106,12 +197,13 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str =
                     img_tags = re.findall(r'\{img_\d{4}_\d{4}\}', qna_content)
                     f_tags = re.findall(r'\{f_\d{4}_\d{4}\}', qna_content)
                     etc_tags = re.findall(r'\{etc_\d{4}_\d{4}\}', qna_content)
-                    additional_tags = tb_tags + img_tags + f_tags + etc_tags
+                    footnote_tags = re.findall(r'\{note_\d{4}_\d{4}\}', qna_content)
+                    additional_tags = tb_tags + img_tags + f_tags + etc_tags + footnote_tags
                     
                     # 디버깅: 추가 태그 발견 시 출력
                     # if additional_tags:
                     #     print(f"  추가 태그 발견 - Q&A: {tag}")
-                    #     print(f"    TB: {tb_tags}, IMG: {img_tags}, F: {f_tags}, ETC: {etc_tags}")
+                    #     print(f"    TB: {tb_tags}, IMG: {img_tags}, F: {f_tags}, ETC: {etc_tags}, NOTE: {footnote_tags}")
                     
                     # 추가 태그들의 실제 데이터 수집
                     additional_tag_data = []
@@ -288,175 +380,6 @@ def get_qna_datas(file_path: str, output_path: str = None, llm_model: str = None
         return result
 
 
-def add_qna_domain(file_path: str, output_path: str = None, model: str = None) -> Dict[str, Any]:
-    if model is None:
-        model = llm_model
-    """
-    추출한 qna_data에 domain을 추가하는 함수
-    grok 4 Fast
-    """
-
-    system_prompt = """
-당신은 금융 문제지를 분류하는 전문가입니다.  
-당신의 임무는 주어진 정보(책 제목, 책 분류, 챕터 제목)를 바탕으로 질문을 아래 분류 체계 중 하나로 정확하게 분류하는 것입니다.  
-
-## 분류 체계
-
-1. 금융기초
-- 경제 (미시경제, 거시경제, 국제경제, 계량경제 등)
-- 경영 (인사/조직, 전략/마케팅, 재무기초 등)
-- 회계 (회계사 관련 자격증 및 회계 관련 학문적 내용)
-- 세무 (세무사 관련 자격증 및 세법 관련 학문적 내용)
-- 노무 (노무사 관련 자격증 및 노동법, 사회보험법 관련 학문적 내용)
-- 통계 (통계 관련 자격증 및 통계학 관련 학문적 내용)
-
-2. 금융실무
-- 내부통제 (컴플라이언스, 법률, 규제, 협회규정 등)
-- 영업 (세일즈, 화법, 고객관리 등)
-- 디지털 (마이데이터, 가상자산, 블록체인, 핀테크 등)
-- 자산운용 (트레이딩, 채권, 부동산PF, 퇴직연금, 신탁 등)
-- 리스크관리 (채권수심, 신용리스크, 대체심사, 헷징 등)
-- 보험계약 (장기보험, 자동차보험, 해상보험, 지급, 보전 등)
-- 보상처리 (손해사정, 보험금 심사, 자동차 보상 등)
-
----
-
-## 분류 지침
-1. 반드시 위 체계 중 하나를 선택합니다.  
-2. 질문의 핵심 주제가 학문적 개념·이론이면 → 금융기초,  
-   실제 업무·규제·법률·실무 절차라면 → 금융실무로 분류합니다.  
-3. 모호한 경우 더 구체적인 문맥을 고려해 대분류와 세부 카테고리를 명확히 결정합니다.  
-4. 출력은 분류 결과만 JSON 형식으로 작성합니다.
-5. 출력에는 코드 블록 표시(```json, ```)를 절대 포함하지 않습니다.  
-
----
-
-## 출력 형식
-[{
-  "대분류": "금융기초 또는 금융실무",
-  "카테고리": "세부 카테고리명",
-  "근거": "간단한 분류 이유"
-},
-{
-  "대분류": "금융기초 또는 금융실무",
-  "카테고리": "세부 카테고리명",
-  "근거": "간단한 분류 이유"
-}]
-"""
-    # 파일이 존재하면 백업 생성
-    if os.path.exists(output_path):
-        # extract_backup 폴더 생성 (존재하지 않는 경우)
-        backup_dir = os.path.join(os.path.dirname(output_path), '_backup')
-        os.makedirs(backup_dir, exist_ok=True)
-        
-        # 백업 파일명 생성 (.bak 확장자 추가)
-        backup_filename = os.path.basename(output_path) + '.bak'
-        backup_path = os.path.join(backup_dir, backup_filename)
-        
-        # 기존 파일을 백업 폴더로 복사
-        shutil.copy2(output_path, backup_path)
-        print(f"기존 파일을 백업했습니다: {backup_path}")
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
-        qna_data = json.load(f)
-    
-    total_items = len(qna_data)
-    print(f"총 {total_items}개의 Q&A 항목을 처리합니다.")
-    
-    # 5개씩 처리
-    for i in range(0, total_items, 5):
-        try:
-            print(f"\n진행상황: {i+1}-{min(i+5, total_items)}/{total_items} 처리 중...")
-            
-            user_prompt = ''
-            qna_items = qna_data[i:i+5]
-            
-            for qna_item in qna_items:
-                question = qna_item['qna_data']['description']['question']
-                single_prompt = f"""
-책 제목: {qna_item['title']}
-책 분류: {qna_item['cat1_domain']}/{qna_item['cat2_sub']}/{qna_item['cat3_specific']}
-챕터: {qna_item['chapter']}
-질문: {question}
-===================="""
-                user_prompt += single_prompt
-            
-            # API 호출 및 도메인 분류
-            print(f"  - API 호출 중... (모델: {model})")
-            domain_response = Openrouter.query_model_openrouter(system_prompt, user_prompt, model)
-            
-            # JSON 파싱
-            try:
-                domain = json.loads(domain_response)
-                print(f"  - API 응답 파싱 성공")
-            except json.JSONDecodeError as e:
-                print(f"  - JSON 파싱 오류: {e}")
-                print(f"  - 원본 응답: {domain_response}")
-                # JSON 파싱 실패 시 원본 응답으로 설정
-                domain = [{"카테고리": domain_response} for _ in range(len(qna_items))]
-            
-            # 실제 처리할 아이템 수만큼만 반복
-            actual_count = len(qna_items)
-            success_count = 0
-            
-            for idx in range(i, i + actual_count):
-                try:
-                    if idx - i < len(domain):
-                        dom = domain[idx - i]
-                        qna_data[idx]['qna_domain'] = dom.get('카테고리', '')
-                        success_count += 1
-                    else:
-                        print(f"    - 인덱스 {idx} 범위 초과, 빈 도메인으로 설정")
-                        qna_data[idx]['qna_domain'] = ''
-                except Exception as e:
-                    print(f"    - 인덱스 {idx} 처리 오류: {e}")
-                    qna_data[idx]['qna_domain'] = ''
-            
-            print(f"  - 성공: {success_count}/{actual_count}개")
-            
-            # 중간 저장 (매 5개 처리마다)
-            try:
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    json.dump(qna_data, f, ensure_ascii=False, indent=4)
-                print(f"  - 중간 저장 완료: {output_path}")
-            except Exception as e:
-                print(f"  - 중간 저장 오류: {e}")
-            
-        except Exception as e:
-            print(f"  - 배치 처리 오류 (인덱스 {i}-{min(i+4, total_items-1)}): {e}")
-            # 오류 발생 시 해당 배치의 모든 항목에 빈 도메인 설정
-            for idx in range(i, min(i+5, total_items)):
-                qna_data[idx]['qna_domain'] = ''
-            
-            # 오류 발생해도 중간 저장 시도
-            try:
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    json.dump(qna_data, f, ensure_ascii=False, indent=4)
-                print(f"  - 오류 후 중간 저장 완료")
-            except Exception as save_error:
-                print(f"  - 오류 후 중간 저장 실패: {save_error}")
-    
-    # 최종 저장
-    try:
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(qna_data, f, ensure_ascii=False, indent=4)
-        print(f"\n최종 저장 완료: {output_path}")
-    except Exception as e:
-        print(f"최종 저장 오류: {e}")
-    
-    # 처리 결과 통계
-    processed_count = sum(1 for item in qna_data if item.get('qna_domain', '') != '')
-    empty_count = total_items - processed_count
-    
-    print(f"\n처리 완료 통계:")
-    print(f"- 총 항목: {total_items}개")
-    print(f"- 성공 처리: {processed_count}개")
-    print(f"- 빈 도메인: {empty_count}개")
-    
-    return qna_data
-
-
-
 def merge_extracted_qna_files(input_dir: str, output_file: str = None) -> Dict[str, Any]:
     """
     지정된 경로의 모든 extracted_qna 파일을 하나로 합치는 함수
@@ -545,7 +468,6 @@ def merge_extracted_qna_files(input_dir: str, output_file: str = None) -> Dict[s
 
 
 
-
 def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any]:
     """
     Domain별로 extracted_qna 파일들을 분류하여 합치는 함수
@@ -614,92 +536,241 @@ def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any
     
 
 
-def add_qna_domain_onebyone(json_data: dict, page_data: dict, model: str = None) -> list:
+def replace_tags_in_text(text: str, additional_tag_data: list) -> str:
     """
-    페이지의 Q&A 데이터에 Domain을 추가하는 함수
+    텍스트에서 {f_0000_0000}이나 {tb_0000_0000} 같은 태그를 additional_tag_data에서 찾아서 대치합니다.
     
     Args:
-        json_data: 전체 JSON 데이터
-        page_data: 페이지 데이터
-        model: 사용할 모델
-        
+        text: 대치할 텍스트
+        additional_tag_data: 태그 데이터 리스트
+    
     Returns:
-        Domain 분류 결과 리스트
-"""
-    system_prompt = """
-당신은 금융 문제지를 분류하는 전문가입니다.  
-당신의 임무는 주어진 정보(책 제목, 책 분류, 챕터 제목)를 바탕으로 질문을 아래 분류 체계 중 하나로 정확하게 분류하는 것입니다.  
-
-## 분류 체계
-
-1. 금융기초
-- 경제 (미시경제, 거시경제, 국제경제, 계량경제 등)
-- 경영 (인사/조직, 전략/마케팅, 재무기초 등)
-- 회계 (회계사 관련 자격증 및 회계 관련 학문적 내용)
-- 세무 (세무사 관련 자격증 및 세법 관련 학문적 내용)
-- 노무 (노무사 관련 자격증 및 노동법, 사회보험법 관련 학문적 내용)
-- 통계 (통계 관련 자격증 및 통계학 관련 학문적 내용)
-
-2. 금융실무
-- 내부통제 (컴플라이언스, 법률, 규제, 협회규정 등)
-- 영업 (세일즈, 화법, 고객관리 등)
-- 디지털 (마이데이터, 가상자산, 블록체인, 핀테크 등)
-- 자산운용 (트레이딩, 채권, 부동산PF, 퇴직연금, 신탁 등)
-- 리스크관리 (채권수심, 신용리스크, 대체심사, 헷징 등)
-- 보험계약 (장기보험, 자동차보험, 해상보험, 지급, 보전 등)
-- 보상처리 (손해사정, 보험금 심사, 자동차 보상 등)
-
----
-
-## 분류 지침
-1. 반드시 위 체계 중 하나를 선택합니다.  
-2. 질문의 핵심 주제가 학문적 개념·이론이면 → 금융기초,  
-   실제 업무·규제·법률·실무 절차라면 → 금융실무로 분류합니다.  
-3. 모호한 경우 더 구체적인 문맥을 고려해 대분류와 세부 카테고리를 명확히 결정합니다.  
-4. 출력은 분류 결과만 JSON 형식으로 작성합니다.
-5. 출력에는 코드 블록 표시(```json, ```)를 절대 포함하지 않습니다.  
-
----
-
-## 출력 형식
-[{
-  "대분류": "금융기초 또는 금융실무",
-  "카테고리": "세부 카테고리명",
-  "근거": "간단한 분류 이유"
-},
-{
-  "대분류": "금융기초 또는 금융실무",
-  "카테고리": "세부 카테고리명",
-  "근거": "간단한 분류 이유"
-}]
-"""
-    user_prompt = ''
-    # page_contents에서 Q&A 태그가 있는 항목들만 찾아서 처리
-    page_contents = page_data.get('page_contents', '')
-    qna_tags = re.findall(r'\{q_\d{4}_\d{4}\}', page_contents)
+        태그가 대치된 텍스트
+    """
+    if not text or not additional_tag_data:
+        return text
     
-    for tag in qna_tags:
-        tag_without_braces = tag[1:-1]  # {q_0000_0000} -> q_0000_0000
-        # add_info에서 해당 태그를 가진 항목 찾기
-        for info_item in page_data.get('add_info', []):
-            if info_item.get('tag') == tag_without_braces and info_item.get('type') == 'question':
-                single_prompt = f"""
-책 제목: {json_data['title']}
-책 분류: {json_data.get('cat1_domain', '')}/{json_data.get('cat2_sub', '')}/{json_data.get('cat3_specific', '')}
-챕터: {page_data.get('chapter', '')}
-질문: {info_item['description']['question']}
-답변: {info_item['description']['answer']}
-해설: {info_item['description']['explanation']}
-===================="""
-                user_prompt += single_prompt
-                break
+    # 태그 패턴 매칭: {f_0000_0000}, {tb_0000_0000}, {img_0000_0000}, {etc_0000_0000}, {note_0000_0000}
+    tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|note_\d{4}_\d{4})\}'
     
-    # Q&A가 없는 경우 빈 리스트 반환
-    if not user_prompt.strip():
-        print(f"  - 페이지에 Q&A가 없음")
-        return []
+    def replace_tag(match):
+        tag_with_braces = match.group(0)  # {f_0000_0000}
+        tag_without_braces = match.group(1)  # f_0000_0000
+        
+        # additional_tag_data에서 해당 태그 찾기
+        for tag_data in additional_tag_data:
+            if tag_data.get('tag') == tag_with_braces:
+                # data 필드가 있는 경우
+                if 'data' in tag_data:
+                    data = tag_data.get('data', {})
+                    if isinstance(data, dict):
+                        # data에서 적절한 필드 찾기 (우선순위: content, text, description, caption)
+                        for field in ['content', 'text', 'description', 'caption']:
+                            if field in data and data[field]:
+                                return str(data[field])
+                        
+                        # file_path가 있으면 파일명 표시
+                        if 'file_path' in data and data['file_path']:
+                            return f"[{os.path.basename(data['file_path'])}]"
+                    
+                    # data가 문자열이면 그대로 사용
+                    elif isinstance(data, str) and data:
+                        return data
+                    
+                    # data가 리스트면 첫 번째 요소 사용
+                    elif isinstance(data, list) and data:
+                        return str(data[0])
+                
+                # data 필드가 없는 경우, 직접 필드에서 찾기
+                else:
+                    # 직접 필드에서 적절한 내용 찾기 (우선순위: content, text, description, caption)
+                    for field in ['content', 'text', 'description', 'caption']:
+                        if field in tag_data and tag_data[field]:
+                            return str(tag_data[field])
+                    
+                    # file_path가 있으면 파일명 표시
+                    if 'file_path' in tag_data and tag_data['file_path']:
+                        return f"[{os.path.basename(tag_data['file_path'])}]"
+        
+        # 태그를 찾지 못한 경우 원본 태그 유지
+        return tag_with_braces
     
-    # API 호출 및 도메인 분류
-    print(f"  - API 호출 중... (모델: {model})")
-    domain_response = Openrouter.query_model_openrouter(system_prompt, user_prompt, model)
-    return domain_response
+    return re.sub(tag_pattern, replace_tag, text)
+
+def replace_tags_in_qna_data(qna_data: dict, additional_tag_data: list) -> dict:
+    """
+    Q&A 데이터의 question과 options에서 태그를 대치합니다.
+    
+    Args:
+        qna_data: Q&A 데이터 딕셔너리 (전체 qna 객체 또는 qna_data 부분)
+        additional_tag_data: 추가 태그 데이터 리스트
+    
+    Returns:
+        태그가 대치된 Q&A 데이터
+    """
+    if not qna_data:
+        return qna_data
+    
+    if not additional_tag_data:
+        return qna_data
+    
+    # qna_data가 전체 qna 객체인 경우 qna_data 부분을 추출
+    if 'qna_data' in qna_data:
+        qna_info = qna_data['qna_data']
+    else:
+        # 이미 qna_data 부분만 전달된 경우
+        qna_info = qna_data
+    if 'description' in qna_info:
+        desc = qna_info['description']
+        
+        # question 필드 처리
+        if 'question' in desc and desc['question']:
+            desc['question'] = replace_tags_in_text(desc['question'], additional_tag_data)
+        
+        # options 필드 처리 (리스트)
+        if 'options' in desc and desc['options']:
+            if isinstance(desc['options'], list):
+                desc['options'] = [replace_tags_in_text(option, additional_tag_data) for option in desc['options']]
+            else:
+                desc['options'] = replace_tags_in_text(desc['options'], additional_tag_data)
+        
+        # answer 필드 처리
+        if 'answer' in desc and desc['answer']:
+            desc['answer'] = replace_tags_in_text(desc['answer'], additional_tag_data)
+        
+        # explanation 필드 처리
+        if 'explanation' in desc and desc['explanation']:
+            desc['explanation'] = replace_tags_in_text(desc['explanation'], additional_tag_data)
+    
+    return qna_data
+
+def process_json_file_with_tag_replacement(file_path: str) -> bool:
+    """
+    JSON 파일을 로드하고 태그 대치를 수행한 후 저장합니다.
+    
+    Args:
+        file_path: 처리할 JSON 파일 경로
+    
+    Returns:
+        성공 여부
+    """
+    try:
+        # JSON 파일 로드
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # extracted_qna 데이터가 있는 경우 처리
+        if 'extracted_qna' in data and isinstance(data['extracted_qna'], list):
+            print(f"Processing {os.path.basename(file_path)}: {len(data['extracted_qna'])} Q&A items")
+            
+            # 각 Q&A 항목에 대해 태그 대치 수행
+            for i, qna_item in enumerate(data['extracted_qna']):
+                data['extracted_qna'][i] = replace_tags_in_qna_data(qna_item)
+            
+            # 백업 파일 생성
+            backup_path = file_path + '.backup'
+            shutil.copy2(file_path, backup_path)
+            print(f"Backup created: {backup_path}")
+            
+            # 수정된 데이터 저장
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            
+            print(f"Tag replacement completed for {os.path.basename(file_path)}")
+            return True
+        
+        else:
+            print(f"No extracted_qna data found in {os.path.basename(file_path)}")
+            return False
+            
+    except Exception as e:
+        print(f"Error processing {file_path}: {e}")
+        return False
+
+def process_all_json_files_with_tag_replacement(cycle: int, data_path: str = None) -> None:
+    """
+    지정된 사이클의 모든 JSON 파일에 대해 태그 대치를 수행합니다.
+    
+    Args:
+        cycle: 사이클 번호 (1, 2, 3)
+        data_path: 데이터 경로 (기본값: FINAL_DATA_PATH)
+    """
+    if data_path is None:
+        data_path = FINAL_DATA_PATH
+    
+    final_path = os.path.join(data_path, CYCLE_PATH[cycle])
+    
+    if not os.path.exists(final_path):
+        print(f"경로가 존재하지 않습니다: {final_path}")
+        return
+    
+    print(f"Processing cycle {cycle} files in: {final_path}")
+    print("=" * 60)
+    
+    # 모든 JSON 파일 찾기
+    json_files = []
+    for root, _, files in os.walk(final_path):
+        for f in files:
+            if f.endswith(".json") and ('_' not in f):
+                json_files.append(os.path.join(root, f))
+    
+    if not json_files:
+        print("처리할 JSON 파일이 없습니다.")
+        return
+    
+    print(f"발견된 JSON 파일: {len(json_files)}개")
+    
+    # 각 파일 처리
+    success_count = 0
+    error_count = 0
+    error_files = []
+    
+    for i, file_path in enumerate(json_files, 1):
+        print(f"\n[{i}/{len(json_files)}] 처리 중: {os.path.basename(file_path)}")
+        print("-" * 40)
+        
+        try:
+            success = process_json_file_with_tag_replacement(file_path)
+            if success:
+                success_count += 1
+                print(f"✅ {os.path.basename(file_path)} 처리 완료")
+            else:
+                error_count += 1
+                error_files.append(os.path.basename(file_path))
+                print(f"❌ {os.path.basename(file_path)} 처리 실패")
+        except Exception as e:
+            error_count += 1
+            error_files.append(os.path.basename(file_path))
+            print(f"❌ {os.path.basename(file_path)} 처리 실패: {e}")
+    
+    # 최종 결과 출력
+    print("\n" + "=" * 60)
+    print("전체 처리 완료!")
+    print(f"✅ 성공: {success_count}개")
+    print(f"❌ 실패: {error_count}개")
+    
+    if error_files:
+        print(f"실패한 파일: {', '.join(error_files)}")
+
+
+# 사용 예시
+if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) < 2:
+        print("사용법:")
+        print("  python ProcessFiles.py <cycle> [data_path]")
+        print("")
+        print("예시:")
+        print("  python ProcessFiles.py 1  # 1차 사이클 파일 처리")
+        print("  python ProcessFiles.py 2 /custom/path  # 2차 사이클, 커스텀 경로")
+        sys.exit(1)
+    
+    cycle = int(sys.argv[1])
+    data_path = sys.argv[2] if len(sys.argv) > 2 else None
+    
+    if cycle not in [1, 2, 3]:
+        print("사이클은 1, 2, 3 중 하나여야 합니다.")
+        sys.exit(1)
+    
+    process_all_json_files_with_tag_replacement(cycle, data_path)
