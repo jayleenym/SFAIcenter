@@ -18,7 +18,7 @@ def query_model_openrouter(system_prompt: str, user_prompt: str, model_name = 'o
                 frequency_penalty=float(config["PARAMS"]["frequency_penalty"]), 
                 presence_penalty=float(config["PARAMS"]["presence_penalty"]),
                 top_p=float(config["PARAMS"]["top_p"]), 
-                max_tokens=int(config["PARAMS"]["max_tokens"]), 
+                # max_tokens=int(config["PARAMS"]["max_tokens"]), 
                 messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
             )
     llm_result = response.choices[0].message.content
