@@ -30,7 +30,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('evaluation_result/log/evaluation.log', encoding='utf-8')
+        logging.FileHandler('evaluation/log/evaluation.log', encoding='utf-8')
     ]
 )
 logger = logging.getLogger(__name__)

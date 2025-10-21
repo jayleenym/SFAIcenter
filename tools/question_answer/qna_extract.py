@@ -10,7 +10,7 @@ import glob
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import ProcessFiles as pf
-import ProcessQnA as pq
+import tools.question_answer.ProcessQnA as pq
 
 
 def find_last_processed_page(extracted_dir, file_name):
