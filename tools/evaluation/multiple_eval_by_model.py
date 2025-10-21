@@ -5,7 +5,7 @@ LLM 평가 시스템 - 통합 버전
 O, X 문제를 포함한 객관식 문제 평가 시스템
 
 사용법:
-    python llm_evaluation_system.py --data_path /path/to/data --sample_size 100 --mock_mode
+    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 100 --mock_mode
 """
 
 import os
@@ -30,7 +30,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('evaluation/log/evaluation.log', encoding='utf-8')
+        logging.FileHandler('logs/multiple_eval_by_model.log', encoding='utf-8')
     ]
 )
 logger = logging.getLogger(__name__)

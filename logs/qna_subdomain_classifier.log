@@ -1,0 +1,154 @@
+2025-10-21 16:44:52,782 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 16:44:52,782 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 16:44:52,782 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_subdomain.json
+2025-10-21 16:44:53,571 - INFO - 처리된 객관식 문제 수: 0
+2025-10-21 16:44:53,571 - WARNING - '디지털' 도메인의 문제를 찾을 수 없습니다.
+2025-10-21 16:44:53,604 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 16:45:41,813 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data
+2025-10-21 16:45:44,304 - INFO - Note: NumExpr detected 12 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+2025-10-21 16:45:44,304 - INFO - NumExpr defaulting to 8 threads.
+2025-10-21 16:45:44,823 - INFO - 처리된 객관식 문제 수: 183
+2025-10-21 16:47:04,790 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 16:47:04,790 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 16:47:04,790 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_subdomain.json
+2025-10-21 16:47:05,512 - INFO - 처리된 객관식 문제 수: 0
+2025-10-21 16:47:05,513 - WARNING - '디지털' 도메인의 문제를 찾을 수 없습니다.
+2025-10-21 16:47:05,542 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 16:47:21,549 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data
+2025-10-21 16:47:23,119 - INFO - 처리된 객관식 문제 수: 183
+2025-10-21 16:48:39,813 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/multiple_subdomain.json
+2025-10-21 16:48:40,413 - INFO - 처리된 객관식 문제 수: 0
+2025-10-21 17:14:38,636 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 17:14:38,636 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 17:14:38,636 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple.json
+2025-10-21 17:14:39,217 - INFO - 처리된 객관식 문제 수: 0
+2025-10-21 17:14:39,217 - WARNING - '디지털' 도메인의 문제를 찾을 수 없습니다.
+2025-10-21 17:14:39,243 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:16:51,542 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 17:16:51,542 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 17:16:51,542 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple.json
+2025-10-21 17:16:52,110 - INFO - 처리된 객관식 문제 수: 0
+2025-10-21 17:16:52,110 - INFO - 처리된 문제 수: 0
+2025-10-21 17:16:52,110 - INFO - 해당 도메인의 문제 수: 0
+2025-10-21 17:16:52,110 - WARNING - '디지털' 도메인의 문제를 찾을 수 없습니다.
+2025-10-21 17:16:52,136 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:17:04,985 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 17:17:04,985 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 17:17:04,985 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple.json
+2025-10-21 17:17:05,558 - INFO - 처리된 객관식 문제 수: 0
+2025-10-21 17:17:05,558 - INFO - 원시 문제 수: 54311
+2025-10-21 17:17:05,558 - INFO - 처리된 문제 수: 0
+2025-10-21 17:17:05,558 - INFO - 해당 도메인의 문제 수: 0
+2025-10-21 17:17:05,558 - WARNING - '디지털' 도메인의 문제를 찾을 수 없습니다.
+2025-10-21 17:17:05,585 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:18:40,426 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 17:18:40,426 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 17:18:40,426 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple.json
+2025-10-21 17:18:40,998 - INFO - 처리된 객관식 문제 수: 0
+2025-10-21 17:18:40,998 - INFO - 원시 문제 수: 54311
+2025-10-21 17:18:40,998 - INFO - 처리된 문제 수: 0
+2025-10-21 17:18:40,998 - INFO - 해당 도메인의 문제 수: 0
+2025-10-21 17:18:40,998 - WARNING - '디지털' 도메인의 문제를 찾을 수 없습니다.
+2025-10-21 17:18:41,026 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:19:51,005 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 17:19:51,005 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 17:19:51,005 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple.json
+2025-10-21 17:19:51,560 - INFO - 처리된 객관식 문제 수: 0
+2025-10-21 17:19:51,561 - INFO - 원시 문제 수: 54311
+2025-10-21 17:19:51,561 - INFO - 처리된 문제 수: 0
+2025-10-21 17:19:51,561 - INFO - 해당 도메인의 문제 수: 0
+2025-10-21 17:19:51,561 - WARNING - '디지털' 도메인의 문제를 찾을 수 없습니다.
+2025-10-21 17:19:51,588 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:22:18,582 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 17:22:18,582 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 17:22:18,582 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple.json
+2025-10-21 17:22:18,950 - INFO - 원시 문제 수: 54311
+2025-10-21 17:22:18,952 - INFO - 해당 도메인의 문제 수: 42
+2025-10-21 17:22:18,952 - INFO - 디지털 도메인 문제 수: 42
+2025-10-21 17:22:18,952 - INFO - 디지털 도메인 처리 시작 - 총 42개 문제
+2025-10-21 17:22:18,963 - INFO - 디지털 배치 1 처리 중... (42개 문제)
+2025-10-21 17:22:19,828 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:22:39,038 - INFO - 디지털 도메인 처리 완료 - 42개 문제
+2025-10-21 17:22:39,039 - INFO - 디지털 결과 저장 완료: evaluation/eval_data/subdomain_results/디지털_subdomain_classified.json
+2025-10-21 17:22:39,039 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:22:39,066 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:24:00,928 - INFO - '디지털' 도메인만 처리합니다.
+2025-10-21 17:24:00,928 - INFO - '디지털' 도메인 처리 시작
+2025-10-21 17:24:00,928 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_subdomain.json
+2025-10-21 17:24:01,333 - INFO - 원시 문제 수: 54311
+2025-10-21 17:24:01,336 - INFO - 해당 도메인의 문제 수: 42
+2025-10-21 17:24:01,336 - INFO - 디지털 도메인 문제 수: 42
+2025-10-21 17:24:01,336 - INFO - 디지털 도메인 처리 시작 - 총 42개 문제
+2025-10-21 17:24:01,366 - INFO - 디지털 배치 1 처리 중... (42개 문제)
+2025-10-21 17:24:02,319 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:24:23,002 - INFO - 디지털 도메인 처리 완료 - 42개 문제
+2025-10-21 17:24:23,008 - INFO - 디지털 결과 저장 완료: evaluation/eval_data/subdomain_results/디지털_subdomain_classified.json
+2025-10-21 17:24:23,009 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:24:23,069 - INFO - '디지털' 도메인 처리 완료!
+2025-10-21 17:32:07,975 - INFO - '노무' 도메인만 처리합니다.
+2025-10-21 17:32:07,975 - INFO - '노무' 도메인 처리 시작
+2025-10-21 17:32:07,975 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_subdomain.json
+2025-10-21 17:32:08,380 - INFO - 원시 문제 수: 54311
+2025-10-21 17:32:08,384 - INFO - 해당 도메인의 문제 수: 674
+2025-10-21 17:32:08,384 - INFO - 노무 도메인 문제 수: 674
+2025-10-21 17:32:08,384 - INFO - 노무 도메인 처리 시작 - 총 674개 문제
+2025-10-21 17:32:08,394 - INFO - 노무 배치 1 처리 중... (50개 문제)
+2025-10-21 17:32:09,422 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:32:25,850 - INFO - 노무 배치 2 처리 중... (50개 문제)
+2025-10-21 17:32:26,640 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:32:44,025 - INFO - 노무 배치 3 처리 중... (50개 문제)
+2025-10-21 17:32:45,238 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:33:08,082 - INFO - 노무 배치 4 처리 중... (50개 문제)
+2025-10-21 17:33:09,239 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:33:29,844 - INFO - 노무 배치 5 처리 중... (50개 문제)
+2025-10-21 17:33:30,944 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:33:52,845 - INFO - 노무 결과 저장 완료: evaluation/eval_data/subdomain_results/노무_subdomain_classified_batch_5.json
+2025-10-21 17:33:52,845 - INFO - 노무 배치 6 처리 중... (50개 문제)
+2025-10-21 17:33:53,622 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:34:15,063 - INFO - 노무 배치 7 처리 중... (50개 문제)
+2025-10-21 17:34:15,962 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:34:38,993 - INFO - 노무 배치 8 처리 중... (50개 문제)
+2025-10-21 17:34:40,076 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:35:04,144 - INFO - 노무 배치 9 처리 중... (50개 문제)
+2025-10-21 17:35:05,365 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:35:24,583 - INFO - 노무 배치 10 처리 중... (50개 문제)
+2025-10-21 17:35:25,985 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:35:45,736 - INFO - 노무 결과 저장 완료: evaluation/eval_data/subdomain_results/노무_subdomain_classified_batch_10.json
+2025-10-21 17:35:45,736 - INFO - 노무 배치 11 처리 중... (50개 문제)
+2025-10-21 17:35:46,786 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:36:07,892 - INFO - 노무 배치 12 처리 중... (50개 문제)
+2025-10-21 17:36:09,051 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:36:32,886 - INFO - 노무 배치 13 처리 중... (50개 문제)
+2025-10-21 17:36:34,417 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:36:54,555 - INFO - 노무 배치 14 처리 중... (24개 문제)
+2025-10-21 17:36:55,106 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:37:04,741 - INFO - 노무 도메인 처리 완료 - 674개 문제
+2025-10-21 17:37:04,763 - INFO - 노무 결과 저장 완료: evaluation/eval_data/subdomain_results/노무_subdomain_classified.json
+2025-10-21 17:37:04,763 - INFO - '노무' 도메인 처리 완료!
+2025-10-21 17:37:04,797 - INFO - '노무' 도메인 처리 완료!
+2025-10-21 17:43:10,235 - INFO - 모든 도메인을 처리합니다.
+2025-10-21 17:43:10,236 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_subdomain.json
+2025-10-21 17:43:10,639 - ERROR - 처리 중 오류 발생: 'QnASubdomainClassifier' object has no attribute 'process_qna_data'
+2025-10-21 17:44:04,512 - INFO - 모든 도메인을 처리합니다.
+2025-10-21 17:44:04,512 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_subdomain.json
+2025-10-21 17:44:04,946 - INFO - 도메인별 문제 수: [('경영', 3457), ('경제', 10241), ('영업', 430), ('자산운용', 6691), ('세무', 3351), ('보험계약', 5231), ('내부통제', 8288), ('리스크관리', 4637), ('보상처리', 2271), ('노무', 674), ('통계', 2517), ('회계', 6481), ('디지털', 42)]
+2025-10-21 17:44:04,946 - INFO - 경영 도메인 처리 시작 - 총 3457개 문제
+2025-10-21 17:44:04,975 - INFO - 경영 배치 1 처리 중... (50개 문제)
+2025-10-21 17:44:05,887 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:44:26,507 - INFO - 경영 배치 2 처리 중... (50개 문제)
+2025-10-21 17:44:27,282 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:44:46,820 - INFO - 경영 배치 3 처리 중... (50개 문제)
+2025-10-21 17:44:47,705 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:45:01,756 - INFO - 경영 배치 4 처리 중... (50개 문제)
+2025-10-21 17:45:02,310 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:45:20,237 - INFO - 경영 배치 5 처리 중... (50개 문제)
+2025-10-21 17:45:20,891 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:45:40,980 - INFO - 경영 결과 저장 완료: evaluation/eval_data/subdomain_results/경영_subdomain_classified_batch_5.json
+2025-10-21 17:45:40,981 - INFO - 경영 배치 6 처리 중... (50개 문제)
+2025-10-21 17:45:41,898 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:45:58,783 - INFO - 경영 배치 7 처리 중... (50개 문제)
+2025-10-21 17:45:59,404 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:46:15,115 - INFO - 경영 배치 8 처리 중... (50개 문제)
+2025-10-21 17:46:15,701 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 17:46:34,671 - INFO - 경영 배치 9 처리 중... (50개 문제)
+2025-10-21 17:46:35,191 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"

@@ -11,6 +11,7 @@ import os
 import json
 import time
 import logging
+import glob
 from typing import List, Dict, Any, Tuple
 from tqdm import tqdm
 import configparser
@@ -21,7 +22,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('qna_classification.log', encoding='utf-8'),
+        logging.FileHandler('logs/qna_subdomain_classifier.log', encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -55,73 +56,9 @@ class QnASubdomainClassifier:
         """객관식 문제 데이터 로드"""
         logger.info(f"데이터 로딩 중: {data_path}")
         
-        if os.path.isfile(data_path):
-            # 단일 파일인 경우
-            with open(data_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        else:
-            # 디렉토리인 경우 모든 JSON 파일 로드
-            json_files = []
-            for root, _, files in os.walk(data_path):
-                for f in files:
-                    if f.endswith(".json") and 'merged' not in f:
-                        json_files.append(os.path.join(root, f))
-            
-            all_data = []
-            for file_path in tqdm(json_files, desc="파일 로딩"):
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                        if isinstance(data, list):
-                            all_data.extend(data)
-                        else:
-                            all_data.append(data)
-                except Exception as e:
-                    logger.error(f"파일 로딩 실패: {file_path} - {e}")
-            
-            return all_data
-    
-    def process_qna_data(self, raw_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """원시 Q&A 데이터를 처리하여 표준화된 형태로 변환"""
-        from tools.evaluation.llm_evaluation_system import replace_tags_in_qna_data
-        
-        processed_data = []
-        
-        for item in tqdm(raw_data, desc="데이터 처리"):
-            try:
-                if not item.get('qna_data') or not item.get('qna_data', {}).get('description', {}).get('answer'):
-                    continue
-                
-                qna_data = replace_tags_in_qna_data(
-                    item.get('qna_data'), 
-                    item.get('additional_tag_data')
-                )
-                
-                # 객관식 문제만 처리 (선지가 2개 이상)
-                if (qna_data.get('description', {}).get('options') is not None and 
-                    len(qna_data.get('description', {}).get('options', [])) > 2):
-                    
-                    processed_qna = {
-                        'file_id': item.get('file_id'),
-                        'title': item.get('title'),
-                        'chapter': item.get('chapter'),
-                        'qna_id': qna_data.get('tag'),
-                        'qna_domain': item.get('qna_domain'),
-                        'qna_subdomain': "",
-                        'qna_reason': item.get('qna_reason'),
-                        'qna_question': qna_data.get('description', {}).get('question'),
-                        'qna_answer': qna_data.get('description', {}).get('answer'),
-                        'qna_options': qna_data.get('description', {}).get('options'),
-                        'qna_explanation': qna_data.get('description', {}).get('explanation')
-                    }
-                    processed_data.append(processed_qna)
-                    
-            except Exception as e:
-                logger.error(f"데이터 처리 실패: {item.get('file_id', 'unknown')} - {e}")
-                continue
-        
-        logger.info(f"처리된 객관식 문제 수: {len(processed_data)}")
-        return processed_data
+        with open(data_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data
     
     def create_system_prompt(self, domain: str) -> str:
         """도메인별 시스템 프롬프트 생성"""
@@ -244,11 +181,28 @@ class QnASubdomainClassifier:
             qna_id = qna['qna_id']
             if qna_id in classification_dict:
                 qna['qna_subdomain'] = classification_dict[qna_id]['category_detail']
+                
+                # 기존 qna_reason에 새로운 reason 추가
+                existing_reason = qna.get('qna_reason', '')
+                new_reason = classification_dict[qna_id]['reason']
+                if existing_reason:
+                    qna['qna_reason'] = f"{existing_reason}\n{new_reason}"
+                else:
+                    qna['qna_reason'] = new_reason
+                    
                 qna['qna_subdomain_reason'] = classification_dict[qna_id]['reason']
             else:
                 logger.warning(f"분류 결과를 찾을 수 없음: {qna_id}")
                 qna['qna_subdomain'] = "분류실패"
                 qna['qna_subdomain_reason'] = "API 응답에서 해당 문제를 찾을 수 없음"
+                
+                # 기존 qna_reason에 실패 메시지 추가
+                existing_reason = qna.get('qna_reason', '')
+                failure_reason = "API 응답에서 해당 문제를 찾을 수 없음"
+                if existing_reason:
+                    qna['qna_reason'] = f"{existing_reason}\n{failure_reason}"
+                else:
+                    qna['qna_reason'] = existing_reason
             
             updated_questions.append(qna)
         
@@ -320,16 +274,69 @@ class QnASubdomainClassifier:
         
         logger.info(f"{domain} 결과 저장 완료: {filepath}")
     
+    def cleanup_temp_files(self, domain: str):
+        """도메인별 임시 파일들 정리"""
+        pattern = os.path.join(self.output_dir, f"{domain}_subdomain_classified_batch_*.json")
+        temp_files = glob.glob(pattern)
+        
+        for temp_file in temp_files:
+            try:
+                os.remove(temp_file)
+                logger.info(f"임시 파일 삭제: {temp_file}")
+            except OSError as e:
+                logger.warning(f"임시 파일 삭제 실패: {temp_file} - {e}")
+    
+    def process_single_domain(self, domain: str, data_path: str, model: str = "x-ai/grok-4-fast", 
+                            batch_size: int = 50):
+        """특정 도메인만 처리"""
+        logger.info(f"'{domain}' 도메인 처리 시작")
+        
+        # 데이터 로드 및 처리
+        raw_data = self.load_multiple_choice_data(data_path)
+        # processed_data = self.process_qna_data(raw_data)
+        logger.info(f"원시 문제 수: {len(raw_data)}")
+        
+        # 해당 도메인의 문제만 필터링
+        domain_questions = [qna for qna in raw_data if qna['qna_domain'] == domain]
+        logger.info(f"해당 도메인의 문제 수: {len(domain_questions)}")
+        if not domain_questions:
+            logger.warning(f"'{domain}' 도메인의 문제를 찾을 수 없습니다.")
+            return {}
+        
+        if domain not in self.domain_subdomain:
+            logger.error(f"도메인 '{domain}'에 대한 서브도메인 매핑이 없습니다.")
+            return {}
+        
+        logger.info(f"{domain} 도메인 문제 수: {len(domain_questions)}")
+        
+        try:
+            updated_questions = self.process_domain_batch(
+                domain, domain_questions, batch_size, model
+            )
+            
+            # 결과 저장
+            self.save_domain_results(domain, updated_questions)
+            
+            # 임시 파일들 정리
+            self.cleanup_temp_files(domain)
+            
+            logger.info(f"'{domain}' 도메인 처리 완료!")
+            return {domain: updated_questions}
+            
+        except Exception as e:
+            logger.error(f"{domain} 도메인 처리 중 오류: {e}")
+            return {}
+
     def process_all_domains(self, data_path: str, model: str = "x-ai/grok-4-fast", 
                           batch_size: int = 50):
         """모든 도메인 처리"""
         # 데이터 로드 및 처리
         raw_data = self.load_multiple_choice_data(data_path)
-        processed_data = self.process_qna_data(raw_data)
+        # processed_data = self.process_qna_data(raw_data)
         
         # 도메인별로 그룹화
         domain_groups = {}
-        for qna in processed_data:
+        for qna in raw_data:
             domain = qna['qna_domain']
             if domain not in domain_groups:
                 domain_groups[domain] = []
@@ -352,6 +359,9 @@ class QnASubdomainClassifier:
                 
                 # 최종 결과 저장
                 self.save_domain_results(domain, updated_questions)
+                
+                # 임시 파일들 정리
+                self.cleanup_temp_files(domain)
                 
             except Exception as e:
                 logger.error(f"{domain} 도메인 처리 중 오류: {e}")
@@ -401,7 +411,7 @@ def main():
     
     parser = argparse.ArgumentParser(description='Q&A 서브도메인 분류기')
     parser.add_argument('--data_path', type=str, 
-                       default='/Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook',
+                       default='/Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data',
                        help='데이터 경로 (파일 또는 디렉토리)')
     parser.add_argument('--model', type=str, default='x-ai/grok-4-fast',
                        help='사용할 모델')
@@ -409,6 +419,8 @@ def main():
                        help='배치 크기')
     parser.add_argument('--config', type=str, default='./llm_config.ini',
                        help='설정 파일 경로')
+    parser.add_argument('--domain', type=str, default=None,
+                       help='처리할 특정 도메인 (지정하지 않으면 모든 도메인 처리)')
     
     args = parser.parse_args()
     
@@ -417,13 +429,25 @@ def main():
     
     # 처리 실행
     try:
-        results = classifier.process_all_domains(
-            data_path=args.data_path,
-            model=args.model,
-            batch_size=args.batch_size
-        )
-        
-        logger.info("모든 도메인 처리 완료!")
+        if args.domain:
+            # 특정 도메인만 처리
+            logger.info(f"'{args.domain}' 도메인만 처리합니다.")
+            results = classifier.process_single_domain(
+                domain=str(args.domain).strip(),
+                data_path=str(args.data_path).strip(),
+                model=str(args.model).strip(),
+                batch_size=args.batch_size
+            )
+            logger.info(f"'{args.domain}' 도메인 처리 완료!")
+        else:
+            # 모든 도메인 처리
+            logger.info("모든 도메인을 처리합니다.")
+            results = classifier.process_all_domains(
+                data_path=str(args.data_path).strip(),
+                model=str(args.model).strip(),
+                batch_size=args.batch_size
+            )
+            logger.info("모든 도메인 처리 완료!")
         
     except Exception as e:
         logger.error(f"처리 중 오류 발생: {e}")
