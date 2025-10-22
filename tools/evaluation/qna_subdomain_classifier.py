@@ -44,7 +44,7 @@ class QnASubdomainClassifier:
         self.domain_subdomain = self.load_domain_subdomain()
         
         # 결과 저장 디렉토리
-        self.output_dir = 'evaluation/eval_data/subdomain_results'
+        self.output_dir = 'evaluation/eval_data/multiple_with_subdomain'
         os.makedirs(self.output_dir, exist_ok=True)
         
     def load_domain_subdomain(self) -> Dict[str, List[str]]:
@@ -87,15 +87,16 @@ class QnASubdomainClassifier:
 - 판단이 애매할 경우, **'가장 관련성이 높은 영역 하나만** 선택해야 합니다.
 
 출력은 아래 JSON 형태로 작성합니다. 각 문제마다 하나의 객체를 생성하세요.
+문제 ID는 "file_id_qna_id" 형태로 제공됩니다.
 
 [
 {{
-  "qna_id": "문제ID",
+  "qna_id": "file_id_qna_id",
   "category_detail": "선택된_서브도메인명",
   "reason": "간단한 이유 (문제의 핵심 키워드와 근거 중심으로)"
 }},
 {{
-  "qna_id": "문제ID",
+  "qna_id": "file_id_qna_id",
   "category_detail": "선택된_서브도메인명", 
   "reason": "간단한 이유 (문제의 핵심 키워드와 근거 중심으로)"
 }}
@@ -109,8 +110,9 @@ class QnASubdomainClassifier:
         
         for qna in questions:
             options_text = '\n'.join(qna['qna_options'])
+            unique_id = f"{qna['file_id']}_{qna['qna_id']}"
             single_prompt = f"""
-문제 ID: {qna['qna_id']}
+문제 ID: {unique_id}
 책 제목: {qna['title']}
 챕터: {qna['chapter']}
 질문 분류: {qna['qna_domain']}
@@ -171,43 +173,80 @@ class QnASubdomainClassifier:
             return []
     
     def update_qna_subdomain(self, questions: List[Dict[str, Any]], 
-                           classifications: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+                           classifications: List[Dict[str, Any]], 
+                           domain: str = None, batch_num: int = None) -> List[Dict[str, Any]]:
         """Q&A 데이터에 서브도메인 분류 결과 업데이트"""
-        # qna_id를 키로 하는 딕셔너리 생성
+        # file_id + qna_id 조합을 키로 하는 딕셔너리 생성
         classification_dict = {item['qna_id']: item for item in classifications}
         
         updated_questions = []
+        failed_questions = []  # 분류 실패한 문제들 수집
+        
         for qna in questions:
-            qna_id = qna['qna_id']
-            if qna_id in classification_dict:
-                qna['qna_subdomain'] = classification_dict[qna_id]['category_detail']
-                
-                # 기존 qna_reason에 새로운 reason 추가
-                existing_reason = qna.get('qna_reason', '')
-                new_reason = classification_dict[qna_id]['reason']
-                if existing_reason:
-                    qna['qna_reason'] = f"{existing_reason}\n{new_reason}"
-                else:
-                    qna['qna_reason'] = new_reason
-                    
-                qna['qna_subdomain_reason'] = classification_dict[qna_id]['reason']
+            unique_id = f"{qna['file_id']}_{qna['qna_id']}"
+            if unique_id in classification_dict:
+                qna['qna_subdomain'] = classification_dict[unique_id]['category_detail']
+                qna['qna_subdomain_reason'] = classification_dict[unique_id]['reason']
             else:
-                logger.warning(f"분류 결과를 찾을 수 없음: {qna_id}")
+                logger.warning(f"분류 결과를 찾을 수 없음: {unique_id}")
                 qna['qna_subdomain'] = "분류실패"
                 qna['qna_subdomain_reason'] = "API 응답에서 해당 문제를 찾을 수 없음"
-                
-                # 기존 qna_reason에 실패 메시지 추가
-                existing_reason = qna.get('qna_reason', '')
-                failure_reason = "API 응답에서 해당 문제를 찾을 수 없음"
-                if existing_reason:
-                    qna['qna_reason'] = f"{existing_reason}\n{failure_reason}"
-                else:
-                    qna['qna_reason'] = existing_reason
+                failed_questions.append(qna)
             
             updated_questions.append(qna)
         
+        # 분류 실패한 문제들이 있고, 도메인과 배치 번호가 제공된 경우 파일에 저장
+        if failed_questions and domain and batch_num is not None:
+            self.save_failure_response(domain, batch_num, "분류실패", 
+                                     error_message=f"{len(failed_questions)}개 문제 분류 실패", 
+                                     batch=failed_questions)
+        
         return updated_questions
     
+    def save_failure_response(self, domain: str, batch_num: int, failure_type: str, 
+                            response: str = None, batch: List[Dict[str, Any]] = None, 
+                            error_message: str = None):
+        """실패 시 응답 결과를 별도 파일에 저장"""
+        failure_data = {
+            "domain": domain,
+            "batch_num": batch_num,
+            "failure_type": failure_type,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        if batch:
+            failure_data.update({
+                "batch_size": len(batch),
+                "qna_ids": [f"{qna['file_id']}_{qna['qna_id']}" for qna in batch]
+            })
+        
+        if response:
+            failure_data["api_response"] = response
+        
+        if error_message:
+            failure_data["error_message"] = error_message
+        
+        failure_filename = f"{domain}_{failure_type}.json"
+        failure_filepath = os.path.join(self.output_dir, failure_filename)
+        
+        # 기존 파일이 있으면 로드하고 새 데이터 추가
+        if os.path.exists(failure_filepath):
+            with open(failure_filepath, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+        else:
+            existing_data = []
+        
+        existing_data.append(failure_data)
+        
+        with open(failure_filepath, 'w', encoding='utf-8') as f:
+            json.dump(existing_data, f, ensure_ascii=False, indent=2)
+        
+        logger.info(f"{failure_type} 응답 저장: {failure_filepath}")
+
+    def save_parsing_failure_response(self, domain: str, batch_num: int, response: str, batch: List[Dict[str, Any]]):
+        """파싱 실패 시 응답 결과를 별도 파일에 저장 (기존 호환성 유지)"""
+        self.save_failure_response(domain, batch_num, "파싱실패", response, batch)
+
     def process_domain_batch(self, domain: str, questions: List[Dict[str, Any]], 
                            batch_size: int = 50, model: str = "x-ai/grok-4-fast") -> List[Dict[str, Any]]:
         """도메인별 문제들을 배치 단위로 처리"""
@@ -231,6 +270,10 @@ class QnASubdomainClassifier:
             
             if response is None:
                 logger.error(f"{domain} 배치 {batch_num} API 호출 실패")
+                # API 호출 실패를 파일에 저장
+                self.save_failure_response(domain, batch_num, "API호출실패", 
+                                         error_message="API 호출에 실패했습니다", batch=batch)
+                
                 # 실패한 경우 기본값으로 설정
                 for qna in batch:
                     qna['qna_subdomain'] = "API호출실패"
@@ -243,6 +286,9 @@ class QnASubdomainClassifier:
             
             if not classifications:
                 logger.error(f"{domain} 배치 {batch_num} 응답 파싱 실패")
+                # 파싱 실패한 경우 응답 결과를 별도 파일에 저장
+                self.save_parsing_failure_response(domain, batch_num, response, batch)
+                
                 # 파싱 실패한 경우 기본값으로 설정
                 for qna in batch:
                     qna['qna_subdomain'] = "파싱실패"
@@ -251,7 +297,7 @@ class QnASubdomainClassifier:
                 continue
             
             # Q&A 데이터 업데이트
-            updated_batch = self.update_qna_subdomain(batch, classifications)
+            updated_batch = self.update_qna_subdomain(batch, classifications, domain, batch_num)
             all_updated_questions.extend(updated_batch)
             
             # API 호출 간격 조절
@@ -260,6 +306,10 @@ class QnASubdomainClassifier:
             # 중간 결과 저장
             if batch_num % 5 == 0:  # 5배치마다 중간 저장
                 self.save_domain_results(domain, all_updated_questions, f"_batch_{batch_num}")
+        
+        # 전체 문제수 검증
+        if len(all_updated_questions) != len(questions):
+            logger.warning(f"{domain} 도메인 문제수 불일치: 원본 {len(questions)}개, 처리된 {len(all_updated_questions)}개")
         
         logger.info(f"{domain} 도메인 처리 완료 - {len(all_updated_questions)}개 문제")
         return all_updated_questions
@@ -369,6 +419,7 @@ class QnASubdomainClassifier:
         
         # 전체 결과 저장
         self.save_all_results(all_results)
+        self.save_statistics(all_results)
         
         return all_results
     
@@ -385,7 +436,18 @@ class QnASubdomainClassifier:
         
         logger.info(f"전체 결과 저장 완료: {all_filepath}")
         
+    def save_statistics(self, all_results: Dict[str, List[Dict[str, Any]]] = None):
         # 통계 정보 저장
+        if all_results is None:
+            all_results = {}
+            for filename in os.listdir(self.output_dir):
+                if filename.endswith('_subdomain_classified.json'):
+                    domain = filename.replace('_subdomain_classified.json', '')
+                    with open(os.path.join(self.output_dir, filename), 'r', encoding='utf-8') as f:
+                        all_results[domain] = json.load(f)
+        else:
+            pass
+        
         stats = {}
         for domain, questions in all_results.items():
             subdomain_counts = {}
@@ -397,7 +459,7 @@ class QnASubdomainClassifier:
                 'total_questions': len(questions),
                 'subdomain_distribution': subdomain_counts
             }
-        
+            
         stats_filepath = os.path.join(self.output_dir, "classification_statistics.json")
         with open(stats_filepath, 'w', encoding='utf-8') as f:
             json.dump(stats, f, ensure_ascii=False, indent=2)
