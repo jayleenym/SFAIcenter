@@ -25,12 +25,33 @@ import argparse
 # -----------------------------
 # 로깅 설정
 # -----------------------------
+# 홈 디렉토리에서 프로젝트 루트 찾기
+home_dir = os.path.expanduser("~")
+project_root = None
+
+# 홈 디렉토리에서 SFAIcenter 프로젝트 찾기
+for root, dirs, files in os.walk(home_dir):
+    if 'SFAIcenter' in dirs:
+        project_root = os.path.join(root, 'SFAIcenter')
+        break
+
+# 프로젝트 루트를 찾지 못한 경우 현재 스크립트 기준으로 설정
+if project_root is None:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(script_dir))
+
+log_dir = os.path.join(project_root, 'logs')
+log_file = os.path.join(log_dir, 'multiple_eval_by_model.log')
+
+# logs 디렉토리가 없으면 생성
+os.makedirs(log_dir, exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('logs/multiple_eval_by_model.log', encoding='utf-8')
+        logging.FileHandler(log_file, encoding='utf-8')
     ]
 )
 logger = logging.getLogger(__name__)
@@ -102,22 +123,43 @@ def parse_answer_set_improved(ans: str, question: str = "", options: list = None
 def json_to_df_all(json_list: List[dict]) -> pd.DataFrame:
     """
     입력 JSON(list[dict])을 파싱해 df_all 생성.
-    컬럼: book_id, tag, id, question, opt1..opt5, answer_set
+    컬럼: subject, domain, subdomain, book_id, tag, id, question, opt1..opt5, answer_set
     """
     rows = []
     for item in json_list:
         book_id = str(item.get("file_id", ""))
-        qna = item.get("qna_data", {}) or {}
-        tag  = qna.get("tag", "")
-        desc = qna.get("description", {}) or {}
-        q    = (desc.get("question") or "").strip()
-        opts = desc.get("options") or []
+        
+        # Mock exam 파일 구조 처리 (qna_data가 없는 경우)
+        if "qna_data" in item:
+            # 일반 파일 구조
+            qna = item.get("qna_data", {}) or {}
+            tag  = qna.get("tag", "")
+            desc = qna.get("description", {}) or {}
+            q    = (desc.get("question") or "").strip()
+            opts = desc.get("options") or []
+            ans_set = parse_answer_set(desc.get("answer", ""))
+            domain = item.get("qna_domain", "")
+            subdomain = item.get("qna_subdomain", "")
+        else:
+            # Mock exam 파일 구조
+            tag = item.get("tag", "")
+            q = (item.get("question") or "").strip()
+            opts = item.get("options") or []
+            ans_set = parse_answer_set(item.get("answer", ""))
+            domain = item.get("domain", "")
+            subdomain = item.get("subdomain", "")
+        
+        # subject 정보 추출
+        subject = item.get("subject", "")
+        
         # 5지선다 기준으로 빈칸 보정
         opts = list(opts)[:5] + [""] * max(0, 5 - len(opts))
         opts = [normalize_option_text(x) for x in opts]
-        ans_set = parse_answer_set(desc.get("answer", ""))
 
         rows.append({
+            "subject": subject,
+            "domain": domain,
+            "subdomain": subdomain,
             "book_id": book_id,
             "tag": tag,
             "id": f"{book_id}_{tag}",
@@ -130,42 +172,73 @@ def json_to_df_all(json_list: List[dict]) -> pd.DataFrame:
     df = df.drop_duplicates("id", keep="last").reset_index(drop=True)
     return df
 
-def json_to_df_all_improved(json_list: List[dict]) -> pd.DataFrame:
+def json_to_df_all_improved(json_list: List[dict], use_ox_support: bool = False) -> pd.DataFrame:
     """
     개선된 JSON → df_all 변환 함수 - O, X 문제도 처리
-    컬럼: book_id, tag, id, question, opt1..opt5, answer_set, is_ox_question
+    컬럼: subject, domain, subdomain, book_id, tag, id, question, opt1..opt5, answer_set [, is_ox_question]
     """
     rows = []
     for item in json_list:
         book_id = str(item.get("file_id", ""))
-        qna = item.get("qna_data", {}) or {}
-        tag  = qna.get("tag", "")
-        desc = qna.get("description", {}) or {}
-        q    = (desc.get("question") or "").strip()
-        opts = desc.get("options") or []
         
-        # O, X 문제인지 판단
-        is_ox = is_ox_question(q, opts)
+        # Mock exam 파일 구조 처리 (qna_data가 없는 경우)
+        if "qna_data" in item:
+            # 일반 파일 구조
+            qna = item.get("qna_data", {}) or {}
+            tag  = qna.get("tag", "")
+            desc = qna.get("description", {}) or {}
+            q    = (desc.get("question") or "").strip()
+            opts = desc.get("options") or []
+            ans_set = parse_answer_set_improved(desc.get("answer", ""), q, opts)
+            domain = item.get("qna_domain", "")
+            subdomain = item.get("qna_subdomain", "")
+        else:
+            # Mock exam 파일 구조
+            tag = item.get("tag", "")
+            q = (item.get("question") or "").strip()
+            opts = item.get("options") or []
+            ans_set = parse_answer_set_improved(item.get("answer", ""), q, opts)
+            domain = item.get("domain", "")
+            subdomain = item.get("subdomain", "")
         
-        if is_ox:
-            # O, X 문제는 2개 선지로 고정
-            opts = ["O", "X"] + [""] * 3
+        # O, X 문제인지 판단 (ox 모드가 켜진 경우에만)
+        is_ox = False
+        if use_ox_support:
+            is_ox = is_ox_question(q, opts)
+            
+            if is_ox:
+                # O, X 문제는 2개 선지로 고정
+                opts = ["O", "X"] + [""] * 3
+            else:
+                # 5지선다 기준으로 빈칸 보정
+                opts = list(opts)[:5] + [""] * max(0, 5 - len(opts))
         else:
             # 5지선다 기준으로 빈칸 보정
             opts = list(opts)[:5] + [""] * max(0, 5 - len(opts))
         
         opts = [normalize_option_text(x) for x in opts]
-        ans_set = parse_answer_set_improved(desc.get("answer", ""), q, opts)
+        
+        # subject 정보 추출
+        subject = item.get("subject", "")
 
-        rows.append({
+        # 기본 컬럼 구성
+        row_data = {
+            "subject": subject,
+            "domain": domain,
+            "subdomain": subdomain,
             "book_id": book_id,
             "tag": tag,
             "id": f"{book_id}_{tag}",
             "question": q,
             "opt1": opts[0], "opt2": opts[1], "opt3": opts[2], "opt4": opts[3], "opt5": opts[4],
-            "answer_set": ans_set,
-            "is_ox_question": is_ox
-        })
+            "answer_set": ans_set
+        }
+        
+        # ox 모드가 켜진 경우에만 is_ox_question 추가
+        if use_ox_support:
+            row_data["is_ox_question"] = is_ox
+        
+        rows.append(row_data)
     df = pd.DataFrame(rows)
     # 혹시 id 중복이 있으면 마지막 것 유지(필요시 정책 변경)
     df = df.drop_duplicates("id", keep="last").reset_index(drop=True)
@@ -234,15 +307,22 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
             import os
             # tools 디렉토리를 Python 경로에 추가
             tools_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)))
+            logger.debug(f"Tools directory: {tools_dir}")
             if tools_dir not in sys.path:
                 sys.path.insert(0, tools_dir)
+                logger.debug(f"Added {tools_dir} to Python path")
+            
+            # Openrouter 모듈 import
             import Openrouter
+            logger.debug("Openrouter module imported successfully")
+            
         except ImportError as e:
             logger.error(f"Openrouter 모듈을 찾을 수 없습니다: {str(e)}")
             logger.error("해결 방법:")
             logger.error("1. mock_mode=True로 실행하여 테스트")
             logger.error("2. pip install openai 명령으로 의존성 설치")
             logger.error("3. tools/Openrouter.py 파일이 올바른 위치에 있는지 확인")
+            logger.error(f"현재 Python path: {sys.path}")
             raise ImportError(f"Openrouter 모듈이 필요합니다: {str(e)}")
         
         for attempt in range(max_retries):
@@ -486,7 +566,7 @@ def run_eval_pipeline_improved(
     
     # (1) JSON → df_all (O, X 문제 지원)
     logger.info("1단계: JSON 데이터를 DataFrame으로 변환 중...")
-    df_all = json_to_df_all_improved(json_list)
+    df_all = json_to_df_all_improved(json_list, use_ox_support=True)
     df_all = df_all.sort_values(by=['book_id', 'tag'], ascending=False).reset_index(drop=True)
     logger.info(f"전체 데이터: {len(df_all)}개 문제")
 
@@ -688,7 +768,10 @@ def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str =
         return
     
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    invalid_filename = f"evaluation_result/{filename_prefix}_invalid_responses_{timestamp}.json"
+    invalid_filename = f"evaluation/result/{filename_prefix}_invalid_responses_{timestamp}.json"
+    
+    # 디렉토리가 없으면 생성
+    os.makedirs(os.path.dirname(invalid_filename), exist_ok=True)
     
     try:
         with open(invalid_filename, 'w', encoding='utf-8') as f:
@@ -714,7 +797,8 @@ def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evalu
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
     
     # 예측 결과 상세 로그
-    pred_log_filename = f"evaluation_result/log/{filename_prefix}_predictions_{timestamp}.csv"
+    pred_log_filename = f"evaluation/result/log/{filename_prefix}_predictions_{timestamp}.csv"
+    os.makedirs(os.path.dirname(pred_log_filename), exist_ok=True)
     pred_long_df.to_csv(pred_log_filename, index=False, encoding='utf-8-sig')
     logger.info(f"상세 예측 로그 저장: {pred_log_filename}")
     
@@ -725,7 +809,8 @@ def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evalu
     model_stats.columns = ['총_예측수', '유효_예측수', '무효_예측수']
     model_stats['유효율'] = (model_stats['유효_예측수'] / model_stats['총_예측수'] * 100).round(1)
     
-    stats_filename = f"evaluation_result/log/{filename_prefix}_model_stats_{timestamp}.csv"
+    stats_filename = f"evaluation/result/log/{filename_prefix}_model_stats_{timestamp}.csv"
+    os.makedirs(os.path.dirname(stats_filename), exist_ok=True)
     model_stats.to_csv(stats_filename, encoding='utf-8-sig')
     logger.info(f"모델 통계 저장: {stats_filename}")
 
@@ -768,26 +853,214 @@ def check_data_quality(df_all: pd.DataFrame, df_sample: pd.DataFrame):
     
     return issues
 
-def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd.DataFrame, filename: str = None):
-    """결과를 Excel 파일로 저장"""
+def calculate_domain_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) -> pd.DataFrame:
+    """Domain별 정확도 계산 - 모델별 컬럼 형태로 반환"""
+    # pred_long과 df_all을 병합하여 domain 정보 추가
+    merged = pred_long.merge(df_all[['id', 'domain', 'subdomain']], on='id', how='left')
+    
+    # 정답 여부 계산 (기존 로직 사용)
+    def _is_correct(pred: float, s: Set[int]) -> float:
+        if np.isnan(pred) or not s:
+            return np.nan
+        return float(int(pred) in s)
+    
+    # answer_set 정보 추가
+    merged = merged.merge(df_all[['id', 'answer_set']], on='id', how='left')
+    merged["correct"] = merged.apply(lambda r: _is_correct(r["answer"], r["answer_set"]), axis=1)
+    
+    # Domain별 정확도 계산 (모델별 컬럼 형태)
+    domain_acc = (
+        merged.groupby(["domain", "model_name"], dropna=False)["correct"]
+        .mean()
+        .reset_index()
+        .pivot(index="domain", columns="model_name", values="correct")
+        .reset_index()
+    )
+    
+    return domain_acc
+
+def calculate_subdomain_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) -> pd.DataFrame:
+    """Subdomain별 정확도 계산 - 모델별 컬럼 형태로 반환"""
+    # pred_long과 df_all을 병합하여 subdomain 정보 추가
+    merged = pred_long.merge(df_all[['id', 'domain', 'subdomain']], on='id', how='left')
+    
+    # 정답 여부 계산
+    def _is_correct(pred: float, s: Set[int]) -> float:
+        if np.isnan(pred) or not s:
+            return np.nan
+        return float(int(pred) in s)
+    
+    # answer_set 정보 추가
+    merged = merged.merge(df_all[['id', 'answer_set']], on='id', how='left')
+    merged["correct"] = merged.apply(lambda r: _is_correct(r["answer"], r["answer_set"]), axis=1)
+    
+    # Subdomain별 정확도 계산 (모델별 컬럼 형태)
+    subdomain_acc = (
+        merged.groupby(["domain", "subdomain", "model_name"], dropna=False)["correct"]
+        .mean()
+        .reset_index()
+        .pivot(index=["domain", "subdomain"], columns="model_name", values="correct")
+        .reset_index()
+    )
+    
+    return subdomain_acc
+
+def calculate_subject_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) -> pd.DataFrame:
+    """Subject별 정확도 계산 - 모델별 컬럼 형태로 반환"""
+    # pred_long과 df_all을 병합하여 subject 정보 추가
+    merged = pred_long.merge(df_all[['id', 'subject']], on='id', how='left')
+    
+    # 정답 여부 계산
+    def _is_correct(pred: float, s: Set[int]) -> float:
+        if np.isnan(pred) or not s:
+            return np.nan
+        return float(int(pred) in s)
+    
+    # answer_set 정보 추가
+    merged = merged.merge(df_all[['id', 'answer_set']], on='id', how='left')
+    merged["correct"] = merged.apply(lambda r: _is_correct(r["answer"], r["answer_set"]), axis=1)
+    
+    # Subject별 정확도 계산 (모델별 컬럼 형태)
+    subject_acc = (
+        merged.groupby(["subject", "model_name"], dropna=False)["correct"]
+        .mean()
+        .reset_index()
+        .pivot(index="subject", columns="model_name", values="correct")
+        .reset_index()
+    )
+    
+    return subject_acc
+
+def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd.DataFrame, pred_long: pd.DataFrame = None, filename: str = None, mock_mode: bool = False):
+    """결과를 Excel 파일로 저장 (domain, subdomain 분석 포함)"""
+    
+    # 기본 저장 경로 설정 (현재 사용자 기준)
+    current_user = os.path.expanduser("~").split("/")[-1]  # 현재 사용자명 추출
+    default_base_path = f"/Users/{current_user}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/result/"
+    
     if filename is None:
         timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
-        filename = f"evaluation_results_{timestamp}.xlsx"
+        if mock_mode:
+            filename = f"{default_base_path}evaluation_results_test_{timestamp}.xlsx"
+        else:
+            filename = f"{default_base_path}evaluation_results_{timestamp}.xlsx"
+    elif not filename.startswith(('/', './', 'evaluation/')):
+        # 파일명만 주어진 경우 (확장자 포함 여부 확인)
+        timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
+        if filename.endswith('.xlsx'):
+            # 확장자가 있는 경우
+            name = filename[:-5]  # .xlsx 제거
+            if mock_mode and 'test' not in name:
+                filename = f"{default_base_path}{name}_test_{timestamp}.xlsx"
+            else:
+                filename = f"{default_base_path}{name}_{timestamp}.xlsx"
+        else:
+            # 확장자가 없는 경우
+            if mock_mode and 'test' not in filename:
+                filename = f"{default_base_path}{filename}_test_{timestamp}.xlsx"
+            else:
+                filename = f"{default_base_path}{filename}_{timestamp}.xlsx"
+    elif filename.startswith('evaluation/'):
+        # evaluation/로 시작하는 경우 기본 경로 사용
+        if mock_mode and 'test' not in filename:
+            name, ext = os.path.splitext(filename)
+            filename = f"{default_base_path}{name}_test{ext}"
+        else:
+            filename = f"{default_base_path}{filename}"
+    
+    # 디렉토리가 없으면 생성
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     
     logger.info(f"결과를 {filename}에 저장 중...")
     
+    # 분석 결과 변수 초기화
+    domain_acc = None
+    
     try:
         with pd.ExcelWriter(filename, engine="openpyxl") as w:
+            # 기본 시트들
             df_all.to_excel(w, index=False, sheet_name="전체데이터")
             pred_wide.to_excel(w, index=False, sheet_name="모델별예측")
             acc.to_excel(w, index=False, sheet_name="정확도")
             
+            # Subject, Domain, Subdomain 분석 추가 (pred_long이 제공된 경우)
+            if pred_long is not None and 'domain' in df_all.columns:
+                # Subject별 정확도 계산 (subject 컬럼이 있는 경우)
+                if 'subject' in df_all.columns:
+                    logger.info("Subject별 정확도 계산 중...")
+                    subject_acc = calculate_subject_accuracy(pred_long, df_all)
+                    subject_acc.to_excel(w, index=False, sheet_name="Subject별정확도")
+                    
+                    # Subject별 문제 수 통계
+                    subject_stats = df_all.groupby('subject').size().reset_index(name='question_count')
+                    subject_stats.to_excel(w, index=False, sheet_name="Subject별문제수")
+                
+                logger.info("Domain별 정확도 계산 중...")
+                domain_acc = calculate_domain_accuracy(pred_long, df_all)
+                domain_acc.to_excel(w, index=False, sheet_name="Domain별정확도")
+                
+                # Domain별 문제 수 통계
+                domain_stats = df_all.groupby('domain').size().reset_index(name='question_count')
+                domain_stats.to_excel(w, index=False, sheet_name="Domain별문제수")
+                
+                logger.info("Subdomain별 정확도 계산 중...")
+                subdomain_acc = calculate_subdomain_accuracy(pred_long, df_all)
+                subdomain_acc.to_excel(w, index=False, sheet_name="Subdomain별정확도")
+                
+                # Subdomain별 문제 수 통계
+                subdomain_stats = df_all.groupby(['domain', 'subdomain']).size().reset_index(name='question_count')
+                subdomain_stats.to_excel(w, index=False, sheet_name="Subdomain별문제수")
+            
         logger.info(f"결과 저장 완료: {filename}")
         print(f"\n📁 결과 파일 저장 완료: {filename}")
+        
+        # Domain 분석 요약 출력
+        if pred_long is not None and 'domain' in df_all.columns and domain_acc is not None:
+            print_domain_analysis_summary(df_all, domain_acc)
         
     except Exception as e:
         logger.error(f"결과 저장 실패: {str(e)}")
         print(f"결과 저장 중 오류 발생: {str(e)}")
+
+def print_domain_analysis_summary(df_all: pd.DataFrame, domain_acc: pd.DataFrame):
+    """Domain 분석 요약 출력"""
+    print("\n" + "="*80)
+    print("📊 분야별 분석 요약")
+    print("="*80)
+    
+    # Domain별 문제 수
+    domain_counts = df_all['domain'].value_counts()
+    print("📈 Domain별 문제 수:")
+    for domain, count in domain_counts.items():
+        print(f"  - {domain}: {count}개")
+    
+    # Subject별 문제 수 (subject 컬럼이 있는 경우)
+    if 'subject' in df_all.columns:
+        subject_counts = df_all['subject'].value_counts()
+        print("\n📚 Subject별 문제 수:")
+        for subject, count in subject_counts.items():
+            if subject:  # 빈 문자열이 아닌 경우만 출력
+                print(f"  - {subject}: {count}개")
+    
+    # Domain별 정확도 (모델별)
+    print(f"\n🏆 Domain별 정확도 (상위 모델 기준):")
+    for domain in domain_counts.index:
+        domain_data = domain_acc[domain_acc['domain'] == domain]
+        if len(domain_data) > 0:
+            # 모델별 컬럼에서 최고 정확도 찾기
+            model_columns = [col for col in domain_data.columns if col != 'domain']
+            if model_columns:
+                best_accuracy = 0
+                best_model = ""
+                for model in model_columns:
+                    acc = domain_data[model].iloc[0]
+                    if not pd.isna(acc) and acc > best_accuracy:
+                        best_accuracy = acc
+                        best_model = model
+                if best_model:
+                    print(f"  - {domain}: {best_model} ({best_accuracy:.3f})")
+    
+    print("="*80)
 
 # -----------------------------
 # 태그 대치 함수들
@@ -903,27 +1176,69 @@ def replace_tags_in_qna_data(qna_data: dict, additional_tag_data: list) -> dict:
     return qna_data
 
 # -----------------------------
+# 유틸리티 함수들
+# -----------------------------
+
+def extract_subject_from_filename(filename: str) -> str:
+    """파일명에서 subject 정보를 추출합니다.
+    
+    Args:
+        filename: 파일명 (예: "금융실무1_mock_exam.json")
+    
+    Returns:
+        str: 추출된 subject (예: "금융실무1")
+    """
+    if '_mock_exam' in filename:
+        # mock_exam 파일인 경우 파일명에서 subject 추출
+        subject = filename.replace('_mock_exam.json', '')
+        return subject
+    else:
+        # 일반 파일인 경우 빈 문자열 반환
+        return ""
+
+# -----------------------------
 # 데이터 로딩 함수
 # -----------------------------
 
-def load_data_from_directory(data_path: str, apply_tag_replacement: bool = True) -> List[dict]:
-    """디렉토리에서 JSON 파일들을 로드하여 데이터 리스트 반환"""
+def load_data_from_directory(data_path: str, apply_tag_replacement: bool = True) -> Tuple[List[dict], bool]:
+    """디렉토리에서 JSON 파일들을 로드하여 데이터 리스트 반환
+    
+    Returns:
+        Tuple[List[dict], bool]: (데이터 리스트, mock_exam 파일 포함 여부)
+    """
     json_files = []
+    is_mock_exam = False
+    
     for root, _, files in os.walk(data_path):
         for f in files:
             if f.endswith(".json") and ('merged' not in f):
                 json_files.append(os.path.join(root, f))
+                # mock_exam 파일인지 확인
+                if '_mock_exam' in f:
+                    is_mock_exam = True
     
     logger.info(f"발견된 JSON 파일 수: {len(json_files)}")
+    if is_mock_exam:
+        logger.info("Mock exam 파일이 감지되었습니다. 객관식 필터링을 건너뜁니다.")
     
     all_data = []
     for file_path in json_files:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+                
+                # 파일명에서 subject 추출 (mock_exam 파일인 경우)
+                filename = os.path.basename(file_path)
+                subject = extract_subject_from_filename(filename)
+                
                 if isinstance(data, list):
+                    # 리스트인 경우 각 항목에 subject 추가
+                    for item in data:
+                        item['subject'] = subject
                     all_data.extend(data)
                 else:
+                    # 단일 객체인 경우 subject 추가
+                    data['subject'] = subject
                     all_data.append(data)
         except Exception as e:
             logger.warning(f"파일 로딩 실패: {file_path} - {str(e)}")
@@ -944,7 +1259,7 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = True)
                     processed_count += 1
         logger.info(f"태그 대치 완료: {processed_count}개 항목 처리")
     
-    return all_data
+    return all_data, is_mock_exam
 
 def filter_multiple_choice_questions(data: List[dict]) -> List[dict]:
     """객관식 문제만 필터링"""
@@ -965,12 +1280,13 @@ def main():
     parser.add_argument('--data_path', type=str, required=True, help='데이터 디렉토리 경로')
     parser.add_argument('--sample_size', type=int, default=100, help='샘플 크기 (기본값: 100)')
     parser.add_argument('--batch_size', type=int, default=5, help='배치 크기 (기본값: 5)')
-    parser.add_argument('--models', nargs='+', default=['anthropic/claude-sonnet-4.5'], help='평가할 모델 목록')
+    parser.add_argument('--models', nargs='+', default=['anthropic/claude-sonnet-4.5', 'google/gemini-2.5-flash', 'openai/gpt-5'], help='평가할 모델 목록')
     parser.add_argument('--mock_mode', action='store_true', help='Mock 모드로 실행 (실제 API 호출 없음)')
     parser.add_argument('--use_ox_support', action='store_true', help='O, X 문제 지원 활성화')
     parser.add_argument('--apply_tag_replacement', action='store_true', help='태그 대치 적용 (기본값: True)')
     parser.add_argument('--no_tag_replacement', action='store_true', help='태그 대치 비활성화')
     parser.add_argument('--seed', type=int, default=42, help='랜덤 시드 (기본값: 42)')
+    parser.add_argument('--output_filename', type=str, help='결과 Excel 파일명 (기본값: 자동 생성)')
     parser.add_argument('--debug', action='store_true', help='디버그 로그 활성화')
     
     args = parser.parse_args()
@@ -989,6 +1305,7 @@ def main():
     logger.info(f"모델: {args.models}")
     logger.info(f"Mock 모드: {args.mock_mode}")
     logger.info(f"O, X 문제 지원: {args.use_ox_support}")
+    logger.info(f"출력 파일명: {args.output_filename or '자동 생성'}")
     
     # 태그 대치 옵션 처리
     apply_tag_replacement = not args.no_tag_replacement
@@ -997,11 +1314,18 @@ def main():
     try:
         # 데이터 로딩
         logger.info("데이터 로딩 중...")
-        all_data = load_data_from_directory(args.data_path, apply_tag_replacement)
-        multiple_choice_data = filter_multiple_choice_questions(all_data)
+        all_data, is_mock_exam = load_data_from_directory(args.data_path, apply_tag_replacement)
+        
+        # mock_exam 파일이 아닌 경우에만 객관식 필터링 적용
+        if is_mock_exam:
+            multiple_choice_data = all_data
+            logger.info("Mock exam 파일이므로 모든 데이터를 사용합니다.")
+        else:
+            multiple_choice_data = filter_multiple_choice_questions(all_data)
+            logger.info(f"객관식 문제 필터링 완료: {len(multiple_choice_data)}개")
         
         if len(multiple_choice_data) == 0:
-            logger.error("객관식 문제를 찾을 수 없습니다.")
+            logger.error("처리할 데이터를 찾을 수 없습니다.")
             return
         
         # 샘플링
@@ -1014,7 +1338,7 @@ def main():
         
         # 데이터 품질 검사
         if args.use_ox_support:
-            df_temp = json_to_df_all_improved(sample_data)
+            df_temp = json_to_df_all_improved(sample_data, use_ox_support=True)
         else:
             df_temp = json_to_df_all(sample_data)
         
@@ -1065,7 +1389,7 @@ def main():
         save_detailed_logs(pred_long, "evaluation")
         
         # Excel 파일 저장
-        save_results_to_excel(df_all, pred_wide, acc)
+        save_results_to_excel(df_all, pred_wide, acc, pred_long, args.output_filename, args.mock_mode)
         
         logger.info("=" * 60)
         logger.info("평가 완료")

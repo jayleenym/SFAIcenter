@@ -29,8 +29,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class QnASubdomainClassifier:
-    def __init__(self, config_path: str = './llm_config.ini'):
+    def __init__(self, config_path: str = None):
         """Q&A 서브도메인 분류기 초기화"""
+        # 프로젝트 루트 디렉토리 찾기 (현재 파일 기준으로 상위 2단계)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(current_dir))
+        
+        # 설정 파일 경로 설정
+        if config_path is None:
+            config_path = os.path.join(project_root, 'llm_config.ini')
+        
+        # 설정 파일 존재 확인
+        if not os.path.exists(config_path):
+            raise FileNotFoundError(f"설정 파일을 찾을 수 없습니다: {config_path}")
+        
         self.config = configparser.ConfigParser()
         self.config.read(config_path, encoding='utf-8')
         
@@ -43,13 +55,31 @@ class QnASubdomainClassifier:
         # 도메인-서브도메인 매핑 로드
         self.domain_subdomain = self.load_domain_subdomain()
         
-        # 결과 저장 디렉토리
-        self.output_dir = 'evaluation/eval_data/multiple_with_subdomain'
+        # 결과 저장 디렉토리 (evaluation_yejin 우선, 없으면 evaluation 사용)
+        eval_dir = os.path.join(project_root, 'evaluation_yejin')
+        if not os.path.exists(eval_dir):
+            eval_dir = os.path.join(project_root, 'evaluation')
+            logger.warning(f"evaluation_yejin 디렉토리를 찾을 수 없어 {eval_dir}을 사용합니다.")
+        
+        self.output_dir = os.path.join(eval_dir, 'eval_data', 'multiple_with_subdomain')
         os.makedirs(self.output_dir, exist_ok=True)
         
     def load_domain_subdomain(self) -> Dict[str, List[str]]:
         """도메인-서브도메인 매핑 로드"""
-        with open('evaluation/eval_data/domain_subdomain.json', 'r', encoding='utf-8') as f:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(current_dir))
+        
+        # evaluation_yejin 우선, 없으면 evaluation 사용
+        eval_dir = os.path.join(project_root, 'evaluation_yejin')
+        if not os.path.exists(eval_dir):
+            eval_dir = os.path.join(project_root, 'evaluation')
+        
+        domain_subdomain_path = os.path.join(eval_dir, 'eval_data', 'domain_subdomain.json')
+        
+        if not os.path.exists(domain_subdomain_path):
+            raise FileNotFoundError(f"도메인-서브도메인 매핑 파일을 찾을 수 없습니다: {domain_subdomain_path}")
+        
+        with open(domain_subdomain_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     
     def load_multiple_choice_data(self, data_path: str) -> List[Dict[str, Any]]:
@@ -473,18 +503,37 @@ def main():
     
     parser = argparse.ArgumentParser(description='Q&A 서브도메인 분류기')
     parser.add_argument('--data_path', type=str, 
-                       default='/Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data',
+                       default=None,
                        help='데이터 경로 (파일 또는 디렉토리)')
     parser.add_argument('--model', type=str, default='x-ai/grok-4-fast',
                        help='사용할 모델')
     parser.add_argument('--batch_size', type=int, default=50,
                        help='배치 크기')
-    parser.add_argument('--config', type=str, default='./llm_config.ini',
+    parser.add_argument('--config', type=str, default=None,
                        help='설정 파일 경로')
     parser.add_argument('--domain', type=str, default=None,
                        help='처리할 특정 도메인 (지정하지 않으면 모든 도메인 처리)')
     
     args = parser.parse_args()
+    
+    # 데이터 경로가 지정되지 않은 경우 기본값 설정
+    if args.data_path is None:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(current_dir))
+        
+        # evaluation_yejin 우선, 없으면 evaluation 사용
+        eval_dir = os.path.join(project_root, 'evaluation_yejin')
+        if not os.path.exists(eval_dir):
+            eval_dir = os.path.join(project_root, 'evaluation')
+            logger.warning(f"evaluation_yejin 디렉토리를 찾을 수 없어 {eval_dir}을 사용합니다.")
+        
+        args.data_path = os.path.join(eval_dir, 'eval_data')
+    
+    # 데이터 경로 존재 확인
+    if not os.path.exists(args.data_path):
+        logger.error(f"데이터 경로를 찾을 수 없습니다: {args.data_path}")
+        logger.info("사용 가능한 경로를 확인하거나 --data_path 옵션으로 올바른 경로를 지정하세요.")
+        return
     
     # 분류기 초기화
     classifier = QnASubdomainClassifier(args.config)

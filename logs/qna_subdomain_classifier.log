@@ -3351,3 +3351,9 @@
 2025-10-22 13:54:01,107 - INFO - 통계 정보 저장 완료: evaluation/eval_data/subdomain_results/classification_statistics.json
 2025-10-22 14:01:45,634 - INFO - 통계 정보 저장 완료: evaluation/eval_data/subdomain_results/classification_statistics.json
 2025-10-22 17:04:53,950 - INFO - 통계 정보 저장 완료: evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-10-24 08:31:49,847 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-24 08:32:01,105 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-10-24 11:32:27,068 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-24 11:32:32,454 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-10-24 11:44:59,250 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-10-24 12:55:53,993 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json

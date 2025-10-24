@@ -89,88 +89,20 @@ def rearrange_multiple_data(multiple_data_path: str):
                 'file_id': m.get('file_id'),
                 'title': m.get('title'),
                 'chapter': m.get('chapter'),
-                'qna_id': qna_data.get('tag'),
-                'qna_domain': m.get('qna_domain'),
-                "qna_subdomain": "",
-                'qna_reason': m.get('qna_reason'),
-                'qna_question': qna_data.get('description').get('question'),
-                'qna_answer': qna_data.get('description').get('answer'),
-                'qna_options': qna_data.get('description').get('options'),
-                'qna_explanation': qna_data.get('description').get('explanation')            
+                'tag': qna_data.get('tag'),
+                'domain': m.get('qna_domain'),
+                'domain_reason': m.get('qna_reason'),
+                "subdomain": "",
+                "subdomain_reason": "",
+                'question': qna_data.get('description').get('question'),
+                'answer': qna_data.get('description').get('answer'),
+                'options': qna_data.get('description').get('options'),
+                'explanation': qna_data.get('description').get('explanation')            
             }
             multiple_for_grp.append(qna)
     print("정제된 multiple-choice 문제 수: ", len(multiple_for_grp))
 
     return multiple_for_grp
-
-def add_subdomain_to_multiple_data(multiple_data: list, domain: str):
-    """
-    multiple-choice 문제 리스트에 subdomain 추가
-    Args:
-        multiple_data: 정제된 multiple-choice 문제 리스트
-    Returns:
-        multiple_data: subdomain이 추가된 multiple-choice 문제 리스트
-    """
-
-
-
-
-
-
-def create_system_prompt(domain: str):
-    """
-    domain 별 system prompt 생성
-    Args:
-        domain: 도메인
-    Returns:
-        system_prompt: system prompt
-    """
-    with open('evaluation/eval_data/domain_subdomain.json', 'r', encoding='utf-8') as f:
-        domain_subdomain = json.load(f)
-
-    subdomain_list = domain_subdomain[domain]
-    prompt_domain = ''
-    domain_list = []
-
-    for i, subdomain_item in enumerate(subdomain_list):
-        subdomain_name = subdomain_item.split('(')[0].strip()
-        domain_list.append(subdomain_name)
-        subdomain_ex = subdomain_item.split('(')[1].split(')')[0].strip()
-        prompt_domain += f'{i+1}. {subdomain_name}\n   - {subdomain_ex}\n'
-    
-    system_prompt = f"""
-당신은 금융·{domain} 시험 문제를 세부 주제별로 정확히 분류하는 전문가입니다.  
-주어진 문제는 이미 '{domain}' 영역으로 1차 분류된 것입니다.  
-당신의 임무는 이 문제를 아래의 세부 분류체계 중 하나로 정확히 분류하는 것입니다.
-
-### 세부 분류체계
-{prompt_domain}
-
-분류 기준:
-- 문제의 핵심 개념, 등장 용어, 계산 대상, 제시된 사례를 기준으로 판단합니다.
-- 특정 학문적 이론이나 모형이 등장한다면 그 이론이 속한 학문 영역으로 분류합니다.
-- 판단이 애매할 경우, **'가장 관련성이 높은 영역 하나만** 선택해야 합니다.
-
-출력은 아래 JSON 형태로 작성합니다. 각 문제마다 하나의 객체를 생성하세요.
-
-[
-{{
-  "qna_id": "SS0000_q_0000_0000",
-  "category_detail": "{' | '.join(domain_list)}",
-  "reason": "간단한 이유 (문제의 핵심 키워드와 근거 중심으로)"
-}},
-{{
-  "qna_id": "SS0000_q_0000_0000",
-  "category_detail": "{' | '.join(domain_list)}", 
-  "reason": "간단한 이유 (문제의 핵심 키워드와 근거 중심으로)"
-}}
-]
-"""
-    return system_prompt
-
-
-
-
 
 
 if __name__ == "__main__":
