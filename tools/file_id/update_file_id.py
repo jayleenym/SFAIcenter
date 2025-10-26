@@ -100,7 +100,7 @@ def main():
     
     # Look for Excel file
     possible_excel_paths = [
-        "/Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/도서목록_전체통합.xlsx"
+        "/Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/book_list_ALL.xlsx"
     ]
     
     excel_path = None
@@ -110,7 +110,7 @@ def main():
             break
     
     if excel_path is None:
-        print("Excel file not found. Please provide the path to '도서목록_전체통합.xlsx'")
+        print("Excel file not found. Please provide the path to 'book_list_ALL.xlsx'")
         excel_path = input("Enter the full path to the Excel file: ").strip()
         
         if not os.path.exists(excel_path):

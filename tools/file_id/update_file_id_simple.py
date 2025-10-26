@@ -104,7 +104,7 @@ def main():
             
     except Exception as e:
         print(f"Error: {e}")
-        print("Make sure the Excel file '도서목록_전체통합.xlsx' exists in the project directory")
+        print("Make sure the Excel file 'book_list_ALL.xlsx' exists in the project directory")
     finally:
         # Restore original BASE_PATH
         pf.BASE_PATH = original_base_path
