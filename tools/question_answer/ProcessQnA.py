@@ -4,7 +4,7 @@ import os
 import shutil
 from typing import List, Dict, Any
 
-import tools.Openrouter as Openrouter
+import tools.QueryModels as QueryModels
 from tools.ProcessFiles import FINAL_DATA_PATH, CYCLE_PATH
 
 
@@ -126,7 +126,7 @@ def add_qna_domain_onebyone(json_data: dict, page_data: dict, model: str = None)
     
     # API 호출 및 도메인 분류
     print(f"  - API 호출 중... (모델: {model})")
-    domain_response = Openrouter.query_model_openrouter(system_prompt, user_prompt, model)
+    domain_response = QueryModels.query_model_openrouter(system_prompt, user_prompt, model)
     return domain_response
 
 

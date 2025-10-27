@@ -7,9 +7,8 @@ CYCLE_PATH = pf.CYCLE_PATH
 ORIGINAL_DATA_PATH = pf.ORIGINAL_DATA_PATH
 FINAL_DATA_PATH = pf.FINAL_DATA_PATH
 
-def format_change(i: int, pages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def format_change(id: str, i: int, pages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     merge_excel = pf.get_excel_data(i)
-    id = 'SS0299'
     revision = {
         'file_id': str(merge_excel.loc[id, 'ISBN']),
         'title': merge_excel.loc[id, '도서명'],
@@ -80,29 +79,6 @@ def fill_chapter(file):
     output["contents"] = new_pages
     return output
 
-
-
-def extract_footnote(file):
-    pages = file["contents"]
-    
-    # # 각주 처리
-    # for fn in range(1, 43):
-    #     if f"\n{fn} " in c['page_contents']:
-    #         start = c['page_contents'].find(f"\n{fn} ")
-    #         tag = f"note_{c['page']}_{len(c['add_info'])+1:04}"
-
-    #         c['add_info'].append(
-    #             {
-    #                 "tag": tag,
-    #                 "type": "footnote",
-    #                 "description": c['page_contents'][start+1:], # 두개 겹쳐있으면 그대로..
-    #                 "caption": 0,
-    #                 "file_path": 0,
-    #                 "bbox": 0
-    #             }
-    #         )
-    #         c['page_contents'] = c['page_contents'].replace(c['page_contents'][start:], "{"+tag+"}")
-    return c
 
 
 def merge_paragraphs(file):

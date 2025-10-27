@@ -5,7 +5,11 @@ LLM 평가 시스템 - 통합 버전
 O, X 문제를 포함한 객관식 문제 평가 시스템
 
 사용법:
-    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 100 --mock_mode
+    # OpenRouter API 모드 (기본값)
+    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 100 --api --mock_mode
+    
+    # vLLM 서버 모드
+    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 100 --server --mock_mode
 """
 
 import os
@@ -280,10 +284,11 @@ def build_user_prompt(batch_df: pd.DataFrame) -> str:
 # LLM 호출 추상화
 # -----------------------------
 
-def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: bool=False, max_retries: int=3) -> str:
+def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: bool=False, use_server_mode: bool=False, max_retries: int=3) -> str:
     """
     - mock_mode=True면 임의 번호(1~5)를 생성해 파이프라인 검증용 출력 반환.
-    - 실제 환경에서는 이 함수를 OpenAI/사내엔진 호출로 교체.
+    - use_server_mode=True면 vLLM 서버 모드로 호출
+    - use_server_mode=False면 OpenRouter API로 호출
     - 에러 핸들링 및 재시도 로직 포함
     """
     if mock_mode:
@@ -302,53 +307,84 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
         return result
     
     else:
-        try:
-            import sys
-            import os
-            # tools 디렉토리를 Python 경로에 추가
-            tools_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)))
-            logger.debug(f"Tools directory: {tools_dir}")
-            if tools_dir not in sys.path:
-                sys.path.insert(0, tools_dir)
-                logger.debug(f"Added {tools_dir} to Python path")
-            
-            # Openrouter 모듈 import
-            import Openrouter
-            logger.debug("Openrouter module imported successfully")
-            
-        except ImportError as e:
-            logger.error(f"Openrouter 모듈을 찾을 수 없습니다: {str(e)}")
-            logger.error("해결 방법:")
-            logger.error("1. mock_mode=True로 실행하여 테스트")
-            logger.error("2. pip install openai 명령으로 의존성 설치")
-            logger.error("3. tools/Openrouter.py 파일이 올바른 위치에 있는지 확인")
-            logger.error(f"현재 Python path: {sys.path}")
-            raise ImportError(f"Openrouter 모듈이 필요합니다: {str(e)}")
-        
         for attempt in range(max_retries):
             try:
-                logger.info(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
-                start_time = time.time()
-                
-                ans = Openrouter.query_model_openrouter(system_prompt, user_prompt, model_name)
-                
-                elapsed_time = time.time() - start_time
-                logger.info(f"[API] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
-                
-                return ans
+                if use_server_mode:
+                    # vLLM 서버 모드
+                    logger.info(f"[VLLM] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
+                    start_time = time.time()
+                    
+                    # vLLM 모듈 import
+                    import sys
+                    import os
+                    tools_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)))
+                    if tools_dir not in sys.path:
+                        sys.path.insert(0, tools_dir)
+                    
+                    import vllm as vllm_module
+                    import configparser
+                    
+                    # config 파일 찾기
+                    current_dir = os.path.dirname(os.path.abspath(__file__))
+                    project_root = os.path.dirname(os.path.dirname(current_dir))
+                    config_path = os.path.join(project_root, 'llm_config.ini')
+                    
+                    if not os.path.exists(config_path):
+                        raise FileNotFoundError(f"Config 파일을 찾을 수 없습니다: {config_path}")
+                    
+                    # 모델 로드 (캐시 사용)
+                    if not hasattr(call_llm, '_vllm_cache'):
+                        call_llm._vllm_cache = {}
+                    
+                    cache_key = model_name
+                    if cache_key not in call_llm._vllm_cache:
+                        logger.info(f"[VLLM] 모델 로드 중: {model_name}")
+                        config = configparser.ConfigParser()
+                        config.read(config_path, encoding='utf-8')
+                        
+                    # vLLM 직접 호출
+                    ans = vllm_module.query_vllm(config, system_prompt, user_prompt, model_name)
+                    
+                    elapsed_time = time.time() - start_time
+                    logger.info(f"[VLLM] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
+                    
+                    return ans
+                else:
+                    # OpenRouter API 모드
+                    logger.info(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
+                    start_time = time.time()
+                    
+                    # Openrouter 모듈 import
+                    import sys
+                    import os
+                    tools_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)))
+                    if tools_dir not in sys.path:
+                        sys.path.insert(0, tools_dir)
+                    
+                    import tools.QueryModels as QueryModels
+                    config = configparser.ConfigParser()
+                    config.read(config_path, encoding='utf-8')
+                    
+                    ans = QueryModels.query_openrouter(config, system_prompt, user_prompt, model_name)
+                    
+                    elapsed_time = time.time() - start_time
+                    logger.info(f"[API] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
+                    
+                    return ans
                 
             except Exception as e:
-                logger.warning(f"[API] 모델 {model_name} 호출 실패 (시도 {attempt + 1}/{max_retries}): {str(e)}")
+                mode_str = "[VLLM]" if use_server_mode else "[API]"
+                logger.warning(f"{mode_str} 모델 {model_name} 호출 실패 (시도 {attempt + 1}/{max_retries}): {str(e)}")
                 if attempt == max_retries - 1:
-                    logger.error(f"[API] 모델 {model_name} 최종 실패 - 모든 재시도 소진")
+                    logger.error(f"{mode_str} 모델 {model_name} 최종 실패 - 모든 재시도 소진")
                     raise e
                 else:
                     wait_time = 2 ** attempt  # 지수 백오프
-                    logger.info(f"[API] {wait_time}초 후 재시도...")
+                    logger.info(f"{mode_str} {wait_time}초 후 재시도...")
                     time.sleep(wait_time)
 
 # -----------------------------
-# 모델 출력 파싱
+# 모델 출력 파싱 
 # -----------------------------
 
 def parse_model_output(raw: str, expected_ids: List[str]) -> Dict[str, float]:
@@ -413,6 +449,7 @@ def run_eval_pipeline(
     batch_size: int = 50,
     seed: int = 42,
     mock_mode: bool = False,
+    use_server_mode: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     반환:
@@ -455,7 +492,7 @@ def run_eval_pipeline(
                     # 배치별 진행상황 표시
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
-                    raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode)
+                    raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
                     parsed = parse_model_output(raw, ids)
                     
                     # 파싱 결과 검증
@@ -553,6 +590,7 @@ def run_eval_pipeline_improved(
     batch_size: int = 50,
     seed: int = 42,
     mock_mode: bool = False,
+    use_server_mode: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     O, X 문제를 지원하는 개선된 평가 파이프라인
@@ -604,7 +642,7 @@ def run_eval_pipeline_improved(
                     # 배치별 진행상황 표시
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
-                    raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode)
+                    raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
                     parsed = parse_model_output(raw, ids)
                     
                     # 파싱 결과 검증
@@ -1289,6 +1327,11 @@ def main():
     parser.add_argument('--output_filename', type=str, help='결과 Excel 파일명 (기본값: 자동 생성)')
     parser.add_argument('--debug', action='store_true', help='디버그 로그 활성화')
     
+    # API 모드 옵션 추가
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument('--api', action='store_true', help='OpenRouter API 모드로 실행 (기본값)')
+    mode_group.add_argument('--server', action='store_true', help='vLLM 서버 모드로 실행')
+    
     args = parser.parse_args()
     
     # 디버그 모드 설정
@@ -1306,6 +1349,13 @@ def main():
     logger.info(f"Mock 모드: {args.mock_mode}")
     logger.info(f"O, X 문제 지원: {args.use_ox_support}")
     logger.info(f"출력 파일명: {args.output_filename or '자동 생성'}")
+    
+    # API 모드 확인
+    use_server_mode = args.server
+    if use_server_mode:
+        logger.info("모드: vLLM 서버 모드")
+    else:
+        logger.info("모드: OpenRouter API 모드 (기본값)")
     
     # 태그 대치 옵션 처리
     apply_tag_replacement = not args.no_tag_replacement
@@ -1352,11 +1402,11 @@ def main():
         logger.info("평가 실행 중...")
         if args.use_ox_support:
             df_all, pred_long, pred_wide, acc = run_eval_pipeline_improved(
-                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode
+                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode
             )
         else:
             df_all, pred_long, pred_wide, acc = run_eval_pipeline(
-                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode
+                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode
             )
         
         # 결과 출력
