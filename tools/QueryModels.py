@@ -2,8 +2,6 @@ import configparser
 import os
 from openai import OpenAI
 import pandas as pd
-from transformers import AutoTokenizer
-from vllm import LLM, SamplingParams
 import argparse
 
 # 프로젝트 루트에서 llm_config.ini 찾기
@@ -52,6 +50,10 @@ def query_openrouter(config, system_prompt: str, user_prompt: str, model_name = 
 
 
 def load_model(model_path, config):
+    # 지연 import (vLLM 모드에서만 필요)
+    from vllm import LLM, SamplingParams
+    from transformers import AutoTokenizer
+    
     print(f"[DEBUG] Config file path: {INI_PATH}")
     config.read(INI_PATH, encoding='utf-8')
     os.environ["CUDA_VISIBLE_DEVICES"] = config["VLLM"]["gpu"]
@@ -122,8 +124,8 @@ def query_vllm(config, system_prompt: str, user_prompt: str, model_name: str):
         raise
 
 if __name__ == "__main__":
-    # query_model_openrouter 테스트
-    print(query_model_openrouter("안녕하세요"))
+    # query_openrouter 테스트
+    print(query_openrouter("안녕하세요"))
 
     # query_model_vllm 테스트
     parser = argparse.ArgumentParser()
@@ -143,7 +145,7 @@ if __name__ == "__main__":
     task_files = args.task_files.split(',')
     
     for task_file in task_files:
-        df_merge = query_model_vllm(config, system_prompt, user_prompt, model_name)
+        df_merge = query_vllm(config, system_prompt, user_prompt, model_name)
 
         task_name = task_file.split('/')[-1].split('.')[0]
         output_file = os.path.join(args.res_path, f"res_{model_name}_{task_name}.csv")

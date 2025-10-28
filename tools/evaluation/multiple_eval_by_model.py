@@ -13,6 +13,7 @@ O, X 문제를 포함한 객관식 문제 평가 시스템
 """
 
 import os
+import sys
 import pandas as pd
 import numpy as np
 import re
@@ -43,6 +44,10 @@ for root, dirs, files in os.walk(home_dir):
 if project_root is None:
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(script_dir))
+
+# QueryModels import
+sys.path.append(project_root)
+import tools.QueryModels as QueryModels
 
 log_dir = os.path.join(project_root, 'logs')
 log_file = os.path.join(log_dir, 'multiple_eval_by_model.log')
@@ -314,19 +319,9 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     logger.info(f"[VLLM] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
                     start_time = time.time()
                     
-                    # vLLM 모듈 import
-                    import sys
-                    import os
-                    tools_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)))
-                    if tools_dir not in sys.path:
-                        sys.path.insert(0, tools_dir)
-                    
-                    import vllm as vllm_module
                     import configparser
                     
                     # config 파일 찾기
-                    current_dir = os.path.dirname(os.path.abspath(__file__))
-                    project_root = os.path.dirname(os.path.dirname(current_dir))
                     config_path = os.path.join(project_root, 'llm_config.ini')
                     
                     if not os.path.exists(config_path):
@@ -341,9 +336,12 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                         logger.info(f"[VLLM] 모델 로드 중: {model_name}")
                         config = configparser.ConfigParser()
                         config.read(config_path, encoding='utf-8')
+                        call_llm._vllm_cache[cache_key] = config
+                    else:
+                        config = call_llm._vllm_cache[cache_key]
                         
                     # vLLM 직접 호출
-                    ans = vllm_module.query_vllm(config, system_prompt, user_prompt, model_name)
+                    ans = QueryModels.query_vllm(config, system_prompt, user_prompt, model_name)
                     
                     elapsed_time = time.time() - start_time
                     logger.info(f"[VLLM] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
@@ -354,14 +352,14 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     logger.info(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
                     start_time = time.time()
                     
-                    # Openrouter 모듈 import
-                    import sys
-                    import os
-                    tools_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)))
-                    if tools_dir not in sys.path:
-                        sys.path.insert(0, tools_dir)
+                    import configparser
                     
-                    import tools.QueryModels as QueryModels
+                    # config 파일 찾기
+                    config_path = os.path.join(project_root, 'llm_config.ini')
+                    
+                    if not os.path.exists(config_path):
+                        raise FileNotFoundError(f"Config 파일을 찾을 수 없습니다: {config_path}")
+                    
                     config = configparser.ConfigParser()
                     config.read(config_path, encoding='utf-8')
                     
@@ -1221,14 +1219,14 @@ def extract_subject_from_filename(filename: str) -> str:
     """파일명에서 subject 정보를 추출합니다.
     
     Args:
-        filename: 파일명 (예: "금융실무1_mock_exam.json")
+        filename: 파일명 (예: "금융실무1_mock_exam_set1.json")
     
     Returns:
         str: 추출된 subject (예: "금융실무1")
     """
     if '_mock_exam' in filename:
         # mock_exam 파일인 경우 파일명에서 subject 추출
-        subject = filename.replace('_mock_exam.json', '')
+        subject = filename.split("_")[0]
         return subject
     else:
         # 일반 파일인 경우 빈 문자열 반환
@@ -1318,7 +1316,7 @@ def main():
     parser.add_argument('--data_path', type=str, required=True, help='데이터 디렉토리 경로')
     parser.add_argument('--sample_size', type=int, default=100, help='샘플 크기 (기본값: 100)')
     parser.add_argument('--batch_size', type=int, default=5, help='배치 크기 (기본값: 5)')
-    parser.add_argument('--models', nargs='+', default=['anthropic/claude-sonnet-4.5', 'google/gemini-2.5-flash', 'openai/gpt-5'], help='평가할 모델 목록')
+    parser.add_argument('--models', nargs='+', default=['anthropic/claude-sonnet-4.5', 'google/gemini-2.5-flash', 'openai/gpt-5', 'google/gemini-2.5-pro', 'google/gemma-3-27b-it:free'], help='평가할 모델 목록')
     parser.add_argument('--mock_mode', action='store_true', help='Mock 모드로 실행 (실제 API 호출 없음)')
     parser.add_argument('--use_ox_support', action='store_true', help='O, X 문제 지원 활성화')
     parser.add_argument('--apply_tag_replacement', action='store_true', help='태그 대치 적용 (기본값: True)')

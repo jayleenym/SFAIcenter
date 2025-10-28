@@ -5,6 +5,7 @@ Q&A 서브도메인 분류기
 - 50문제 단위로 API 호출
 - JSON 응답 파싱하여 qna_subdomain 업데이트
 - 도메인별 문제들을 JSON 파일로 저장
+- --mode 옵션으로 multiple/short/essay 구분
 """
 
 import os
@@ -29,7 +30,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class QnASubdomainClassifier:
-    def __init__(self, config_path: str = None):
+    def __init__(self, config_path: str = None, mode: str = 'multiple'):
         """Q&A 서브도메인 분류기 초기화"""
         # 프로젝트 루트 디렉토리 찾기 (현재 파일 기준으로 상위 2단계)
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -52,6 +53,13 @@ class QnASubdomainClassifier:
             base_url=self.config["OPENROUTER"]["url"]
         )
         
+        # mode 검증
+        valid_modes = ['multiple', 'short', 'essay']
+        if mode not in valid_modes:
+            raise ValueError(f"잘못된 mode입니다. 가능한 값: {valid_modes}")
+        
+        self.mode = mode
+        
         # 도메인-서브도메인 매핑 로드
         self.domain_subdomain = self.load_domain_subdomain()
         
@@ -61,8 +69,9 @@ class QnASubdomainClassifier:
             eval_dir = os.path.join(project_root, 'evaluation')
             logger.warning(f"evaluation_yejin 디렉토리를 찾을 수 없어 {eval_dir}을 사용합니다.")
         
-        self.output_dir = os.path.join(eval_dir, 'eval_data', 'multiple_with_subdomain')
+        self.output_dir = os.path.join(eval_dir, 'eval_data', f'{mode}_with_subdomain')
         os.makedirs(self.output_dir, exist_ok=True)
+        logger.info(f"출력 디렉토리: {self.output_dir}")
         
     def load_domain_subdomain(self) -> Dict[str, List[str]]:
         """도메인-서브도메인 매핑 로드"""
@@ -117,16 +126,16 @@ class QnASubdomainClassifier:
 - 판단이 애매할 경우, **'가장 관련성이 높은 영역 하나만** 선택해야 합니다.
 
 출력은 아래 JSON 형태로 작성합니다. 각 문제마다 하나의 객체를 생성하세요.
-문제 ID는 "file_id_qna_id" 형태로 제공됩니다.
+문제 ID는 "file_id_tag" 형태로 제공됩니다.
 
 [
 {{
-  "qna_id": "file_id_qna_id",
+  "qna_id": "file_id_tag",
   "category_detail": "선택된_서브도메인명",
   "reason": "간단한 이유 (문제의 핵심 키워드와 근거 중심으로)"
 }},
 {{
-  "qna_id": "file_id_qna_id",
+  "qna_id": "file_id_tag",
   "category_detail": "선택된_서브도메인명", 
   "reason": "간단한 이유 (문제의 핵심 키워드와 근거 중심으로)"
 }}
@@ -139,17 +148,31 @@ class QnASubdomainClassifier:
         user_prompt = ''
         
         for qna in questions:
-            options_text = '\n'.join(qna['qna_options'])
-            unique_id = f"{qna['file_id']}_{qna['qna_id']}"
-            single_prompt = f"""
+            unique_id = f"{qna['file_id']}_{qna['tag']}"
+            
+            # 옵션이 있는 경우 (multiple choice)
+            if qna['options']:
+                options_text = '\n'.join(qna['options']) if isinstance(qna['options'], list) else qna['options']
+                single_prompt = f"""
 문제 ID: {unique_id}
 책 제목: {qna['title']}
 챕터: {qna['chapter']}
-질문 분류: {qna['qna_domain']}
-질문: {qna['qna_question']}
+질문 분류: {qna['domain']}
+질문: {qna['question']}
 선지: {options_text}
-답변: {qna['qna_answer']}
-해설: {qna['qna_explanation']}
+답변: {qna['answer']}
+해설: {qna['explanation']}
+===================="""
+            else:
+                # 옵션이 없는 경우 (short answer, essay)
+                single_prompt = f"""
+문제 ID: {unique_id}
+책 제목: {qna['title']}
+챕터: {qna['chapter']}
+질문 분류: {qna['domain']}
+질문: {qna['question']}
+답변: {qna['answer']}
+해설: {qna['explanation']}
 ===================="""
             user_prompt += single_prompt
         
@@ -206,21 +229,21 @@ class QnASubdomainClassifier:
                            classifications: List[Dict[str, Any]], 
                            domain: str = None, batch_num: int = None) -> List[Dict[str, Any]]:
         """Q&A 데이터에 서브도메인 분류 결과 업데이트"""
-        # file_id + qna_id 조합을 키로 하는 딕셔너리 생성
+        # file_id + tag 조합을 키로 하는 딕셔너리 생성
         classification_dict = {item['qna_id']: item for item in classifications}
         
         updated_questions = []
         failed_questions = []  # 분류 실패한 문제들 수집
         
         for qna in questions:
-            unique_id = f"{qna['file_id']}_{qna['qna_id']}"
+            unique_id = f"{qna['file_id']}_{qna['tag']}"
             if unique_id in classification_dict:
-                qna['qna_subdomain'] = classification_dict[unique_id]['category_detail']
-                qna['qna_subdomain_reason'] = classification_dict[unique_id]['reason']
+                qna['subdomain'] = classification_dict[unique_id]['category_detail']
+                qna['subdomain_reason'] = classification_dict[unique_id]['reason']
             else:
                 logger.warning(f"분류 결과를 찾을 수 없음: {unique_id}")
-                qna['qna_subdomain'] = "분류실패"
-                qna['qna_subdomain_reason'] = "API 응답에서 해당 문제를 찾을 수 없음"
+                qna['subdomain'] = "분류실패"
+                qna['subdomain_reason'] = "API 응답에서 해당 문제를 찾을 수 없음"
                 failed_questions.append(qna)
             
             updated_questions.append(qna)
@@ -247,7 +270,7 @@ class QnASubdomainClassifier:
         if batch:
             failure_data.update({
                 "batch_size": len(batch),
-                "qna_ids": [f"{qna['file_id']}_{qna['qna_id']}" for qna in batch]
+                "tags": [qna['tag'] for qna in batch]
             })
         
         if response:
@@ -306,8 +329,8 @@ class QnASubdomainClassifier:
                 
                 # 실패한 경우 기본값으로 설정
                 for qna in batch:
-                    qna['qna_subdomain'] = "API호출실패"
-                    qna['qna_subdomain_reason'] = "API 호출에 실패했습니다"
+                    qna['subdomain'] = "API호출실패"
+                    qna['subdomain_reason'] = "API 호출에 실패했습니다"
                 all_updated_questions.extend(batch)
                 continue
             
@@ -321,8 +344,8 @@ class QnASubdomainClassifier:
                 
                 # 파싱 실패한 경우 기본값으로 설정
                 for qna in batch:
-                    qna['qna_subdomain'] = "파싱실패"
-                    qna['qna_subdomain_reason'] = "API 응답 파싱에 실패했습니다"
+                    qna['subdomain'] = "파싱실패"
+                    qna['subdomain_reason'] = "API 응답 파싱에 실패했습니다"
                 all_updated_questions.extend(batch)
                 continue
             
@@ -377,7 +400,7 @@ class QnASubdomainClassifier:
         logger.info(f"원시 문제 수: {len(raw_data)}")
         
         # 해당 도메인의 문제만 필터링
-        domain_questions = [qna for qna in raw_data if qna['qna_domain'] == domain]
+        domain_questions = [qna for qna in raw_data if qna['domain'] == domain]
         logger.info(f"해당 도메인의 문제 수: {len(domain_questions)}")
         if not domain_questions:
             logger.warning(f"'{domain}' 도메인의 문제를 찾을 수 없습니다.")
@@ -417,7 +440,7 @@ class QnASubdomainClassifier:
         # 도메인별로 그룹화
         domain_groups = {}
         for qna in raw_data:
-            domain = qna['qna_domain']
+            domain = qna['domain']
             if domain not in domain_groups:
                 domain_groups[domain] = []
             domain_groups[domain].append(qna)
@@ -513,6 +536,9 @@ def main():
                        help='설정 파일 경로')
     parser.add_argument('--domain', type=str, default=None,
                        help='처리할 특정 도메인 (지정하지 않으면 모든 도메인 처리)')
+    parser.add_argument('--mode', type=str, default='multiple',
+                       choices=['multiple', 'short', 'essay'],
+                       help='처리할 문제 유형 (multiple/short/essay)')
     
     args = parser.parse_args()
     
@@ -527,7 +553,13 @@ def main():
             eval_dir = os.path.join(project_root, 'evaluation')
             logger.warning(f"evaluation_yejin 디렉토리를 찾을 수 없어 {eval_dir}을 사용합니다.")
         
-        args.data_path = os.path.join(eval_dir, 'eval_data')
+        # mode에 따라 기본 data_path 설정
+        if args.mode == 'multiple':
+            args.data_path = os.path.join(eval_dir, 'eval_data', 'multiple_for_grp.json')
+        elif args.mode == 'short':
+            args.data_path = os.path.join(eval_dir, 'eval_data', 'short_for_grp.json')
+        elif args.mode == 'essay':
+            args.data_path = os.path.join(eval_dir, 'eval_data', 'essay_for_grp.json')
     
     # 데이터 경로 존재 확인
     if not os.path.exists(args.data_path):
@@ -536,7 +568,7 @@ def main():
         return
     
     # 분류기 초기화
-    classifier = QnASubdomainClassifier(args.config)
+    classifier = QnASubdomainClassifier(args.config, mode=args.mode)
     
     # 처리 실행
     try:

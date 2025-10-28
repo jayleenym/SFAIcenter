@@ -3357,3 +3357,287 @@
 2025-10-24 11:32:32,454 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
 2025-10-24 11:44:59,250 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
 2025-10-24 12:55:53,993 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-10-28 09:30:46,847 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:31:36,349 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:31:36,384 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:31:36,385 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain
+2025-10-28 09:31:36,385 - INFO - 모든 도메인을 처리합니다.
+2025-10-28 09:31:36,385 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_for_grp.json
+2025-10-28 09:31:36,396 - ERROR - 처리 중 오류 발생: 'qna_domain'
+2025-10-28 09:34:32,336 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:34:32,358 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:34:32,358 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain
+2025-10-28 09:34:32,358 - INFO - 모든 도메인을 처리합니다.
+2025-10-28 09:34:32,358 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_for_grp.json
+2025-10-28 09:34:32,370 - INFO - 도메인별 문제 수: [('경제', 306), ('내부통제', 678), ('경영', 206), ('자산운용', 1285), ('세무', 182), ('보험계약', 121), ('보상처리', 24), ('회계', 102), ('통계', 24), ('리스크관리', 292), ('영업', 65), ('노무', 5)]
+2025-10-28 09:34:32,370 - INFO - 경제 도메인 처리 시작 - 총 306개 문제
+2025-10-28 09:34:32,382 - INFO - 경제 배치 1 처리 중... (50개 문제)
+2025-10-28 09:34:33,236 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:34:53,299 - ERROR - 경제 도메인 처리 중 오류: 'tag'
+2025-10-28 09:34:53,299 - INFO - 내부통제 도메인 처리 시작 - 총 678개 문제
+2025-10-28 09:34:53,299 - INFO - 내부통제 배치 1 처리 중... (50개 문제)
+2025-10-28 09:34:54,044 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:35:15,261 - ERROR - 내부통제 도메인 처리 중 오류: 'tag'
+2025-10-28 09:35:15,262 - INFO - 경영 도메인 처리 시작 - 총 206개 문제
+2025-10-28 09:35:15,262 - INFO - 경영 배치 1 처리 중... (50개 문제)
+2025-10-28 09:35:15,840 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:35:36,936 - ERROR - 경영 도메인 처리 중 오류: 'tag'
+2025-10-28 09:35:36,937 - INFO - 자산운용 도메인 처리 시작 - 총 1285개 문제
+2025-10-28 09:35:36,937 - INFO - 자산운용 배치 1 처리 중... (50개 문제)
+2025-10-28 09:35:37,494 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:36:01,641 - ERROR - 자산운용 도메인 처리 중 오류: 'tag'
+2025-10-28 09:36:01,641 - INFO - 세무 도메인 처리 시작 - 총 182개 문제
+2025-10-28 09:36:01,642 - INFO - 세무 배치 1 처리 중... (50개 문제)
+2025-10-28 09:36:02,284 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:36:28,793 - ERROR - 세무 도메인 처리 중 오류: 'tag'
+2025-10-28 09:36:28,794 - INFO - 보험계약 도메인 처리 시작 - 총 121개 문제
+2025-10-28 09:36:28,795 - INFO - 보험계약 배치 1 처리 중... (50개 문제)
+2025-10-28 09:36:29,331 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:36:52,732 - ERROR - 보험계약 도메인 처리 중 오류: 'tag'
+2025-10-28 09:36:52,733 - INFO - 보상처리 도메인 처리 시작 - 총 24개 문제
+2025-10-28 09:36:52,733 - INFO - 보상처리 배치 1 처리 중... (24개 문제)
+2025-10-28 09:36:53,884 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:37:03,935 - ERROR - 보상처리 도메인 처리 중 오류: 'tag'
+2025-10-28 09:37:03,935 - INFO - 회계 도메인 처리 시작 - 총 102개 문제
+2025-10-28 09:37:03,936 - INFO - 회계 배치 1 처리 중... (50개 문제)
+2025-10-28 09:37:04,468 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:39:02,305 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:39:02,330 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:39:02,330 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain
+2025-10-28 09:39:02,330 - INFO - 모든 도메인을 처리합니다.
+2025-10-28 09:39:02,330 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_for_grp.json
+2025-10-28 09:39:02,341 - INFO - 도메인별 문제 수: [('경제', 306), ('내부통제', 678), ('경영', 206), ('자산운용', 1285), ('세무', 182), ('보험계약', 121), ('보상처리', 24), ('회계', 102), ('통계', 24), ('리스크관리', 292), ('영업', 65), ('노무', 5)]
+2025-10-28 09:39:02,341 - INFO - 경제 도메인 처리 시작 - 총 306개 문제
+2025-10-28 09:39:02,351 - INFO - 경제 배치 1 처리 중... (50개 문제)
+2025-10-28 09:39:04,967 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:39:23,504 - INFO - 경제 배치 2 처리 중... (50개 문제)
+2025-10-28 09:39:24,371 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:39:46,977 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:39:46,996 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:39:46,997 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain
+2025-10-28 09:39:46,997 - INFO - '통계' 도메인만 처리합니다.
+2025-10-28 09:39:46,997 - INFO - '통계' 도메인 처리 시작
+2025-10-28 09:39:46,997 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_for_grp.json
+2025-10-28 09:39:47,008 - INFO - 원시 문제 수: 3290
+2025-10-28 09:39:47,008 - INFO - 해당 도메인의 문제 수: 24
+2025-10-28 09:39:47,008 - INFO - 통계 도메인 문제 수: 24
+2025-10-28 09:39:47,008 - INFO - 통계 도메인 처리 시작 - 총 24개 문제
+2025-10-28 09:39:47,017 - INFO - 통계 배치 1 처리 중... (24개 문제)
+2025-10-28 09:39:47,555 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:39:59,186 - INFO - 통계 도메인 처리 완료 - 24개 문제
+2025-10-28 09:39:59,189 - INFO - 통계 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/통계_subdomain_classified.json
+2025-10-28 09:39:59,190 - INFO - '통계' 도메인 처리 완료!
+2025-10-28 09:39:59,192 - INFO - '통계' 도메인 처리 완료!
+2025-10-28 09:43:54,194 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:43:54,217 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-10-28 09:43:54,217 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain
+2025-10-28 09:43:54,217 - INFO - 모든 도메인을 처리합니다.
+2025-10-28 09:43:54,217 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_for_grp.json
+2025-10-28 09:43:54,229 - INFO - 도메인별 문제 수: [('경제', 306), ('내부통제', 678), ('경영', 206), ('자산운용', 1285), ('세무', 182), ('보험계약', 121), ('보상처리', 24), ('회계', 102), ('통계', 24), ('리스크관리', 292), ('영업', 65), ('노무', 5)]
+2025-10-28 09:43:54,229 - INFO - 경제 도메인 처리 시작 - 총 306개 문제
+2025-10-28 09:43:54,238 - INFO - 경제 배치 1 처리 중... (50개 문제)
+2025-10-28 09:43:55,275 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:44:18,451 - INFO - 경제 배치 2 처리 중... (50개 문제)
+2025-10-28 09:44:19,298 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:44:39,724 - INFO - 경제 배치 3 처리 중... (50개 문제)
+2025-10-28 09:44:40,288 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:45:01,801 - INFO - 경제 배치 4 처리 중... (50개 문제)
+2025-10-28 09:45:02,704 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:45:28,541 - INFO - 경제 배치 5 처리 중... (50개 문제)
+2025-10-28 09:45:29,818 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:45:54,726 - INFO - 경제 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/경제_subdomain_classified_batch_5.json
+2025-10-28 09:45:54,727 - INFO - 경제 배치 6 처리 중... (50개 문제)
+2025-10-28 09:45:55,524 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:46:20,165 - INFO - 경제 배치 7 처리 중... (6개 문제)
+2025-10-28 09:46:20,734 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:46:29,494 - INFO - 경제 도메인 처리 완료 - 306개 문제
+2025-10-28 09:46:29,503 - INFO - 경제 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/경제_subdomain_classified.json
+2025-10-28 09:46:29,503 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/경제_subdomain_classified_batch_5.json
+2025-10-28 09:46:29,503 - INFO - 내부통제 도메인 처리 시작 - 총 678개 문제
+2025-10-28 09:46:29,504 - INFO - 내부통제 배치 1 처리 중... (50개 문제)
+2025-10-28 09:46:30,046 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:46:47,602 - INFO - 내부통제 배치 2 처리 중... (50개 문제)
+2025-10-28 09:46:48,354 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:47:12,677 - INFO - 내부통제 배치 3 처리 중... (50개 문제)
+2025-10-28 09:47:13,209 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:47:35,617 - INFO - 내부통제 배치 4 처리 중... (50개 문제)
+2025-10-28 09:47:36,583 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:47:57,113 - INFO - 내부통제 배치 5 처리 중... (50개 문제)
+2025-10-28 09:47:57,697 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:48:19,421 - INFO - 내부통제 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/내부통제_subdomain_classified_batch_5.json
+2025-10-28 09:48:19,421 - INFO - 내부통제 배치 6 처리 중... (50개 문제)
+2025-10-28 09:48:20,363 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:48:39,449 - INFO - 내부통제 배치 7 처리 중... (50개 문제)
+2025-10-28 09:48:40,017 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:49:01,613 - INFO - 내부통제 배치 8 처리 중... (50개 문제)
+2025-10-28 09:49:02,159 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:49:24,316 - INFO - 내부통제 배치 9 처리 중... (50개 문제)
+2025-10-28 09:49:25,434 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:49:48,391 - INFO - 내부통제 배치 10 처리 중... (50개 문제)
+2025-10-28 09:49:49,224 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:50:19,500 - INFO - 내부통제 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/내부통제_subdomain_classified_batch_10.json
+2025-10-28 09:50:19,500 - INFO - 내부통제 배치 11 처리 중... (50개 문제)
+2025-10-28 09:50:20,305 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:50:38,069 - INFO - 내부통제 배치 12 처리 중... (50개 문제)
+2025-10-28 09:50:38,595 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:50:56,939 - INFO - 내부통제 배치 13 처리 중... (50개 문제)
+2025-10-28 09:50:57,573 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:51:14,916 - INFO - 내부통제 배치 14 처리 중... (28개 문제)
+2025-10-28 09:51:15,765 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:52:00,651 - INFO - 내부통제 도메인 처리 완료 - 678개 문제
+2025-10-28 09:52:00,657 - INFO - 내부통제 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/내부통제_subdomain_classified.json
+2025-10-28 09:52:00,658 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/내부통제_subdomain_classified_batch_10.json
+2025-10-28 09:52:00,658 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/내부통제_subdomain_classified_batch_5.json
+2025-10-28 09:52:00,658 - INFO - 경영 도메인 처리 시작 - 총 206개 문제
+2025-10-28 09:52:00,659 - INFO - 경영 배치 1 처리 중... (50개 문제)
+2025-10-28 09:52:01,586 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:52:21,407 - INFO - 경영 배치 2 처리 중... (50개 문제)
+2025-10-28 09:52:22,625 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:52:50,852 - INFO - 경영 배치 3 처리 중... (50개 문제)
+2025-10-28 09:52:52,428 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:53:33,696 - INFO - 경영 배치 4 처리 중... (50개 문제)
+2025-10-28 09:53:34,849 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:53:56,123 - INFO - 경영 배치 5 처리 중... (6개 문제)
+2025-10-28 09:53:57,011 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:54:02,936 - INFO - 경영 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/경영_subdomain_classified_batch_5.json
+2025-10-28 09:54:02,936 - INFO - 경영 도메인 처리 완료 - 206개 문제
+2025-10-28 09:54:02,938 - INFO - 경영 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/경영_subdomain_classified.json
+2025-10-28 09:54:02,939 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/경영_subdomain_classified_batch_5.json
+2025-10-28 09:54:02,939 - INFO - 자산운용 도메인 처리 시작 - 총 1285개 문제
+2025-10-28 09:54:02,939 - INFO - 자산운용 배치 1 처리 중... (50개 문제)
+2025-10-28 09:54:03,834 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:54:21,883 - INFO - 자산운용 배치 2 처리 중... (50개 문제)
+2025-10-28 09:54:22,646 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:54:42,868 - INFO - 자산운용 배치 3 처리 중... (50개 문제)
+2025-10-28 09:54:44,144 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:55:02,760 - INFO - 자산운용 배치 4 처리 중... (50개 문제)
+2025-10-28 09:55:03,359 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:55:20,112 - INFO - 자산운용 배치 5 처리 중... (50개 문제)
+2025-10-28 09:55:20,729 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:55:44,097 - INFO - 자산운용 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_5.json
+2025-10-28 09:55:44,098 - INFO - 자산운용 배치 6 처리 중... (50개 문제)
+2025-10-28 09:55:45,020 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:56:05,796 - INFO - 자산운용 배치 7 처리 중... (50개 문제)
+2025-10-28 09:56:06,547 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:56:22,156 - INFO - 자산운용 배치 8 처리 중... (50개 문제)
+2025-10-28 09:56:22,880 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:56:47,174 - INFO - 자산운용 배치 9 처리 중... (50개 문제)
+2025-10-28 09:56:47,812 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:57:07,732 - INFO - 자산운용 배치 10 처리 중... (50개 문제)
+2025-10-28 09:57:08,585 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:57:28,512 - INFO - 자산운용 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_10.json
+2025-10-28 09:57:28,512 - INFO - 자산운용 배치 11 처리 중... (50개 문제)
+2025-10-28 09:57:29,378 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:57:53,666 - INFO - 자산운용 배치 12 처리 중... (50개 문제)
+2025-10-28 09:57:54,293 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:58:14,492 - INFO - 자산운용 배치 13 처리 중... (50개 문제)
+2025-10-28 09:58:15,027 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:58:38,919 - INFO - 자산운용 배치 14 처리 중... (50개 문제)
+2025-10-28 09:58:39,425 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:59:02,914 - INFO - 자산운용 배치 15 처리 중... (50개 문제)
+2025-10-28 09:59:03,939 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:59:23,253 - INFO - 자산운용 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_15.json
+2025-10-28 09:59:23,253 - INFO - 자산운용 배치 16 처리 중... (50개 문제)
+2025-10-28 09:59:23,822 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 09:59:43,548 - INFO - 자산운용 배치 17 처리 중... (50개 문제)
+2025-10-28 09:59:44,550 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:00:02,877 - INFO - 자산운용 배치 18 처리 중... (50개 문제)
+2025-10-28 10:00:03,477 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:00:29,004 - INFO - 자산운용 배치 19 처리 중... (50개 문제)
+2025-10-28 10:00:29,830 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:00:51,322 - INFO - 자산운용 배치 20 처리 중... (50개 문제)
+2025-10-28 10:00:51,869 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:01:22,285 - INFO - 자산운용 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_20.json
+2025-10-28 10:01:22,286 - INFO - 자산운용 배치 21 처리 중... (50개 문제)
+2025-10-28 10:01:23,124 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:01:45,937 - WARNING - 분류 결과를 찾을 수 없음: SS0423_q_0077_0008
+2025-10-28 10:01:45,938 - INFO - 분류실패 응답 저장: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_분류실패.json
+2025-10-28 10:01:46,939 - INFO - 자산운용 배치 22 처리 중... (50개 문제)
+2025-10-28 10:01:47,851 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:02:08,796 - INFO - 자산운용 배치 23 처리 중... (50개 문제)
+2025-10-28 10:02:09,401 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:02:32,461 - INFO - 자산운용 배치 24 처리 중... (50개 문제)
+2025-10-28 10:02:33,097 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:02:53,180 - INFO - 자산운용 배치 25 처리 중... (50개 문제)
+2025-10-28 10:02:53,809 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:03:20,382 - INFO - 자산운용 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_25.json
+2025-10-28 10:03:20,382 - INFO - 자산운용 배치 26 처리 중... (35개 문제)
+2025-10-28 10:03:21,454 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:03:41,446 - INFO - 자산운용 도메인 처리 완료 - 1285개 문제
+2025-10-28 10:03:41,466 - INFO - 자산운용 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified.json
+2025-10-28 10:03:41,467 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_10.json
+2025-10-28 10:03:41,467 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_20.json
+2025-10-28 10:03:41,467 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_15.json
+2025-10-28 10:03:41,467 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_5.json
+2025-10-28 10:03:41,468 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/자산운용_subdomain_classified_batch_25.json
+2025-10-28 10:03:41,468 - INFO - 세무 도메인 처리 시작 - 총 182개 문제
+2025-10-28 10:03:41,468 - INFO - 세무 배치 1 처리 중... (50개 문제)
+2025-10-28 10:03:42,651 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:04:13,078 - INFO - 세무 배치 2 처리 중... (50개 문제)
+2025-10-28 10:04:13,657 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:04:40,258 - INFO - 세무 배치 3 처리 중... (50개 문제)
+2025-10-28 10:04:41,215 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:05:06,715 - INFO - 세무 배치 4 처리 중... (32개 문제)
+2025-10-28 10:05:07,424 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:05:26,423 - INFO - 세무 도메인 처리 완료 - 182개 문제
+2025-10-28 10:05:26,430 - INFO - 세무 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/세무_subdomain_classified.json
+2025-10-28 10:05:26,430 - INFO - 보험계약 도메인 처리 시작 - 총 121개 문제
+2025-10-28 10:05:26,430 - INFO - 보험계약 배치 1 처리 중... (50개 문제)
+2025-10-28 10:05:27,213 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:05:51,836 - INFO - 보험계약 배치 2 처리 중... (50개 문제)
+2025-10-28 10:05:53,082 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:06:11,219 - INFO - 보험계약 배치 3 처리 중... (21개 문제)
+2025-10-28 10:06:11,863 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:06:25,264 - INFO - 보험계약 도메인 처리 완료 - 121개 문제
+2025-10-28 10:06:25,270 - INFO - 보험계약 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/보험계약_subdomain_classified.json
+2025-10-28 10:06:25,271 - INFO - 보상처리 도메인 처리 시작 - 총 24개 문제
+2025-10-28 10:06:25,272 - INFO - 보상처리 배치 1 처리 중... (24개 문제)
+2025-10-28 10:06:26,311 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:06:38,278 - INFO - 보상처리 도메인 처리 완료 - 24개 문제
+2025-10-28 10:06:38,281 - INFO - 보상처리 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/보상처리_subdomain_classified.json
+2025-10-28 10:06:38,281 - INFO - 회계 도메인 처리 시작 - 총 102개 문제
+2025-10-28 10:06:38,282 - INFO - 회계 배치 1 처리 중... (50개 문제)
+2025-10-28 10:06:38,861 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:07:03,094 - INFO - 회계 배치 2 처리 중... (50개 문제)
+2025-10-28 10:07:03,977 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:07:24,144 - INFO - 회계 배치 3 처리 중... (2개 문제)
+2025-10-28 10:07:24,990 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:07:29,960 - INFO - 회계 도메인 처리 완료 - 102개 문제
+2025-10-28 10:07:29,965 - INFO - 회계 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/회계_subdomain_classified.json
+2025-10-28 10:07:29,967 - INFO - 통계 도메인 처리 시작 - 총 24개 문제
+2025-10-28 10:07:29,967 - INFO - 통계 배치 1 처리 중... (24개 문제)
+2025-10-28 10:07:30,473 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:07:41,628 - INFO - 통계 도메인 처리 완료 - 24개 문제
+2025-10-28 10:07:41,632 - INFO - 통계 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/통계_subdomain_classified.json
+2025-10-28 10:07:41,633 - INFO - 리스크관리 도메인 처리 시작 - 총 292개 문제
+2025-10-28 10:07:41,634 - INFO - 리스크관리 배치 1 처리 중... (50개 문제)
+2025-10-28 10:07:42,281 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:08:05,052 - INFO - 리스크관리 배치 2 처리 중... (50개 문제)
+2025-10-28 10:08:05,586 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:08:22,909 - INFO - 리스크관리 배치 3 처리 중... (50개 문제)
+2025-10-28 10:08:23,619 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:08:43,723 - INFO - 리스크관리 배치 4 처리 중... (50개 문제)
+2025-10-28 10:08:45,517 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:09:06,054 - INFO - 리스크관리 배치 5 처리 중... (50개 문제)
+2025-10-28 10:09:06,893 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:09:27,524 - INFO - 리스크관리 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/리스크관리_subdomain_classified_batch_5.json
+2025-10-28 10:09:27,525 - INFO - 리스크관리 배치 6 처리 중... (42개 문제)
+2025-10-28 10:09:28,129 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:09:48,347 - INFO - 리스크관리 도메인 처리 완료 - 292개 문제
+2025-10-28 10:09:48,354 - INFO - 리스크관리 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/리스크관리_subdomain_classified.json
+2025-10-28 10:09:48,355 - INFO - 임시 파일 삭제: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/리스크관리_subdomain_classified_batch_5.json
+2025-10-28 10:09:48,355 - INFO - 영업 도메인 처리 시작 - 총 65개 문제
+2025-10-28 10:09:48,355 - INFO - 영업 배치 1 처리 중... (50개 문제)
+2025-10-28 10:09:49,100 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:10:17,010 - INFO - 영업 배치 2 처리 중... (15개 문제)
+2025-10-28 10:10:17,992 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:10:29,293 - INFO - 영업 도메인 처리 완료 - 65개 문제
+2025-10-28 10:10:29,296 - INFO - 영업 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/영업_subdomain_classified.json
+2025-10-28 10:10:29,296 - INFO - 노무 도메인 처리 시작 - 총 5개 문제
+2025-10-28 10:10:29,297 - INFO - 노무 배치 1 처리 중... (5개 문제)
+2025-10-28 10:10:30,106 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-28 10:10:53,419 - INFO - 노무 도메인 처리 완료 - 5개 문제
+2025-10-28 10:10:53,422 - INFO - 노무 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/노무_subdomain_classified.json
+2025-10-28 10:10:53,449 - INFO - 전체 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/all_domains_subdomain_classified.json
+2025-10-28 10:10:53,450 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/short_with_subdomain/classification_statistics.json
+2025-10-28 10:10:53,450 - INFO - 모든 도메인 처리 완료!

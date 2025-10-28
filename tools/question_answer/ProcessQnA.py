@@ -14,8 +14,9 @@ def analyze_extracted_qna(qna_info: dict):
             options = qna_info['description']['options']
             answer = qna_info['description']['answer']
             # 객관식 판별: O/X 선택 또는 ①②③④⑤ 번호 선택만
-            if (answer in ['O', 'X']) or \
-               (answer in ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']):
+            # if (answer in ['O', 'X']) or \
+            #     (answer in ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']) or \
+            if (len(options) > 2):
                 # 객관식
                 return 'multiple-choice'
             else:
