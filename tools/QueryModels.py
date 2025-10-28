@@ -2,6 +2,8 @@ import configparser
 import os
 from openai import OpenAI
 import pandas as pd
+from transformers import AutoTokenizer
+from vllm import LLM, SamplingParams
 import argparse
 
 # 프로젝트 루트에서 llm_config.ini 찾기
@@ -50,10 +52,6 @@ def query_openrouter(config, system_prompt: str, user_prompt: str, model_name = 
 
 
 def load_model(model_path, config):
-    # 지연 import (vLLM 모드에서만 필요)
-    from vllm import LLM, SamplingParams
-    from transformers import AutoTokenizer
-    
     print(f"[DEBUG] Config file path: {INI_PATH}")
     config.read(INI_PATH, encoding='utf-8')
     os.environ["CUDA_VISIBLE_DEVICES"] = config["VLLM"]["gpu"]
@@ -86,7 +84,7 @@ def load_model(model_path, config):
 
 
 
-def query_vllm(config, system_prompt: str, user_prompt: str, model_name: str):
+def query_vllm(llm, tokenizer, sampling_params, system_prompt: str, user_prompt: str, model_name: str):
     """
     vLLM 모델을 직접 호출하여 system_prompt와 user_prompt를 처리합니다.
     
@@ -101,7 +99,6 @@ def query_vllm(config, system_prompt: str, user_prompt: str, model_name: str):
     Returns:
         str: 모델 응답 텍스트
     """
-    llm, tokenizer, sampling_params = load_model(model_name, config)
     try:
         # 채팅 템플릿 적용
         prompt = tokenizer.apply_chat_template(

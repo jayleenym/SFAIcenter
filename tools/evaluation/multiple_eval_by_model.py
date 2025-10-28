@@ -6,14 +6,13 @@ O, X 문제를 포함한 객관식 문제 평가 시스템
 
 사용법:
     # OpenRouter API 모드 (기본값)
-    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 100 --api --mock_mode
+    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 1000 --api --mock_mode
     
     # vLLM 서버 모드
-    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 100 --server --mock_mode
+    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 1000 --server --mock_mode
 """
 
 import os
-import sys
 import pandas as pd
 import numpy as np
 import re
@@ -31,7 +30,9 @@ import argparse
 # 로깅 설정
 # -----------------------------
 # 홈 디렉토리에서 프로젝트 루트 찾기
+global home_dir
 home_dir = os.path.expanduser("~")
+global project_root
 project_root = None
 
 # 홈 디렉토리에서 SFAIcenter 프로젝트 찾기
@@ -43,11 +44,7 @@ for root, dirs, files in os.walk(home_dir):
 # 프로젝트 루트를 찾지 못한 경우 현재 스크립트 기준으로 설정
 if project_root is None:
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(os.path.dirname(script_dir))
-
-# QueryModels import
-sys.path.append(project_root)
-import tools.QueryModels as QueryModels
+    project_root = os.path.dirname(script_dir)
 
 log_dir = os.path.join(project_root, 'logs')
 log_file = os.path.join(log_dir, 'multiple_eval_by_model.log')
@@ -289,6 +286,77 @@ def build_user_prompt(batch_df: pd.DataFrame) -> str:
 # LLM 호출 추상화
 # -----------------------------
 
+# 모델 캐시를 위한 전역 변수
+_model_cache = {}
+_config_cache = None
+_query_models_module = None
+
+def _load_config():
+    """Config 파일을 한 번만 로드하고 캐시"""
+    global _config_cache
+    if _config_cache is None:
+        import configparser
+        config_path = os.popen(f"find {home_dir} -type f -name 'llm_config.ini'").read().strip()
+        if not os.path.exists(config_path):
+            raise FileNotFoundError(f"Config 파일을 찾을 수 없습니다: {config_path}")
+        
+        _config_cache = configparser.ConfigParser()
+        _config_cache.read(config_path, encoding='utf-8')
+        logger.info(f"[CACHE] Config 파일 로드 완료: {config_path}")
+    
+    return _config_cache
+
+def _load_query_models():
+    """QueryModels 모듈을 한 번만 로드하고 캐시"""
+    global _query_models_module
+    if _query_models_module is None:
+        import sys
+        import os
+        tools_dir = os.popen(f"find {home_dir}/SFAIcenter/ -type d -name 'tools'").read().strip()
+        sys.path.append(tools_dir)
+        try:
+            import QueryModels
+            _query_models_module = QueryModels
+            logger.info(f"[CACHE] QueryModels 모듈 로드 완료: {tools_dir}")
+        except Exception as e:
+            logger.error(f"[CACHE] QueryModels 모듈 로드 실패: {e}")
+            raise
+    return _query_models_module
+
+def _load_model_cached(model_name: str):
+    """모델을 캐시에서 로드하거나 새로 로드"""
+    global _model_cache
+    
+    if model_name not in _model_cache:
+        logger.info(f"[CACHE] 모델 로드 중: {model_name}")
+        config = _load_config()
+        QueryModels = _load_query_models()
+        
+        llm, tokenizer, sampling_params = QueryModels.load_model(model_name, config)
+        _model_cache[model_name] = (llm, tokenizer, sampling_params)
+        logger.info(f"[CACHE] 모델 로드 완료: {model_name}")
+    else:
+        logger.debug(f"[CACHE] 캐시된 모델 사용: {model_name}")
+    
+    return _model_cache[model_name]
+
+def clear_model_cache():
+    """모델 캐시를 정리하여 메모리 해제"""
+    global _model_cache
+    if _model_cache:
+        logger.info(f"[CACHE] {len(_model_cache)}개 모델 캐시 정리 중...")
+        _model_cache.clear()
+        logger.info("[CACHE] 모델 캐시 정리 완료")
+
+def get_cache_info():
+    """현재 캐시 상태 정보 반환"""
+    global _model_cache, _config_cache, _query_models_module
+    return {
+        "cached_models": list(_model_cache.keys()),
+        "config_loaded": _config_cache is not None,
+        "query_models_loaded": _query_models_module is not None
+    }
+
 def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: bool=False, use_server_mode: bool=False, max_retries: int=3) -> str:
     """
     - mock_mode=True면 임의 번호(1~5)를 생성해 파이프라인 검증용 출력 반환.
@@ -315,33 +383,15 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
         for attempt in range(max_retries):
             try:
                 if use_server_mode:
-                    # vLLM 서버 모드
+                    # vLLM 서버 모드 - 캐시된 모델 사용
                     logger.info(f"[VLLM] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
                     start_time = time.time()
                     
-                    import configparser
+                    # 캐시된 모델 로드
+                    llm, tokenizer, sampling_params = _load_model_cached(model_name)
+                    QueryModels = _load_query_models()
                     
-                    # config 파일 찾기
-                    config_path = os.path.join(project_root, 'llm_config.ini')
-                    
-                    if not os.path.exists(config_path):
-                        raise FileNotFoundError(f"Config 파일을 찾을 수 없습니다: {config_path}")
-                    
-                    # 모델 로드 (캐시 사용)
-                    if not hasattr(call_llm, '_vllm_cache'):
-                        call_llm._vllm_cache = {}
-                    
-                    cache_key = model_name
-                    if cache_key not in call_llm._vllm_cache:
-                        logger.info(f"[VLLM] 모델 로드 중: {model_name}")
-                        config = configparser.ConfigParser()
-                        config.read(config_path, encoding='utf-8')
-                        call_llm._vllm_cache[cache_key] = config
-                    else:
-                        config = call_llm._vllm_cache[cache_key]
-                        
-                    # vLLM 직접 호출
-                    ans = QueryModels.query_vllm(config, system_prompt, user_prompt, model_name)
+                    ans = QueryModels.query_vllm(llm, tokenizer, sampling_params, system_prompt, user_prompt, model_name)
                     
                     elapsed_time = time.time() - start_time
                     logger.info(f"[VLLM] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
@@ -352,16 +402,9 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     logger.info(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
                     start_time = time.time()
                     
-                    import configparser
-                    
-                    # config 파일 찾기
-                    config_path = os.path.join(project_root, 'llm_config.ini')
-                    
-                    if not os.path.exists(config_path):
-                        raise FileNotFoundError(f"Config 파일을 찾을 수 없습니다: {config_path}")
-                    
-                    config = configparser.ConfigParser()
-                    config.read(config_path, encoding='utf-8')
+                    # 캐시된 config와 모듈 사용
+                    config = _load_config()
+                    QueryModels = _load_query_models()
                     
                     ans = QueryModels.query_openrouter(config, system_prompt, user_prompt, model_name)
                     
@@ -466,7 +509,11 @@ def run_eval_pipeline(
 
     # (2) 샘플링
     logger.info(f"2단계: {sample_size}개 샘플 추출 중...")
-    df_sample = df_all.sample(n=sample_size, random_state=seed).reset_index(drop=True)
+    # 샘플 크기가 전체 데이터보다 큰 경우, 전체 데이터 크기로 조정
+    actual_sample_size = min(sample_size, len(df_all))
+    if actual_sample_size < sample_size:
+        logger.warning(f"요청한 샘플 크기({sample_size})가 전체 데이터({len(df_all)})보다 큼. {actual_sample_size}개로 조정합니다.")
+    df_sample = df_all.sample(n=actual_sample_size, random_state=seed).reset_index(drop=True)
     logger.info(f"샘플 데이터: {len(df_sample)}개 문제")
 
     # (3) 배치 분할
@@ -575,6 +622,10 @@ def run_eval_pipeline(
     for _, row in acc_by_model.iterrows():
         logger.info(f"  {row['model_name']}: {row['accuracy']:.3f}")
     
+    # 캐시 정보 로깅
+    cache_info = get_cache_info()
+    logger.info(f"[CACHE] 평가 완료 후 캐시 상태: {len(cache_info['cached_models'])}개 모델 캐시됨")
+    
     # 무효 예측 응답 저장
     if 'invalid_responses' in locals() and invalid_responses:
         save_invalid_responses(invalid_responses, "evaluation")
@@ -611,7 +662,11 @@ def run_eval_pipeline_improved(
 
     # (2) 샘플링
     logger.info(f"2단계: {sample_size}개 샘플 추출 중...")
-    df_sample = df_all.sample(n=sample_size, random_state=seed).reset_index(drop=True)
+    # 샘플 크기가 전체 데이터보다 큰 경우, 전체 데이터 크기로 조정
+    actual_sample_size = min(sample_size, len(df_all))
+    if actual_sample_size < sample_size:
+        logger.warning(f"요청한 샘플 크기({sample_size})가 전체 데이터({len(df_all)})보다 큼. {actual_sample_size}개로 조정합니다.")
+    df_sample = df_all.sample(n=actual_sample_size, random_state=seed).reset_index(drop=True)
     logger.info(f"샘플 데이터: {len(df_sample)}개 문제")
 
     # 샘플에서 O, X 문제 비율 확인
@@ -736,6 +791,10 @@ def run_eval_pipeline_improved(
         logger.info("O, X 문제 정확도:")
         for model, acc in ox_accuracy.items():
             logger.info(f"  {model}: {acc:.3f}")
+    
+    # 캐시 정보 로깅
+    cache_info = get_cache_info()
+    logger.info(f"[CACHE] 평가 완료 후 캐시 상태: {len(cache_info['cached_models'])}개 모델 캐시됨")
     
     # 무효 예측 응답 저장
     if 'invalid_responses' in locals() and invalid_responses:
@@ -971,8 +1030,9 @@ def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd
     """결과를 Excel 파일로 저장 (domain, subdomain 분석 포함)"""
     
     # 기본 저장 경로 설정 (현재 사용자 기준)
-    current_user = os.path.expanduser("~").split("/")[-1]  # 현재 사용자명 추출
-    default_base_path = f"/Users/{current_user}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/result/"
+    # current_user = os.path.expanduser("~").split("/")[-1]  # 현재 사용자명 추출
+    current_user = os.path.dirname(__file__)
+    default_base_path = f"{home_dir}/result/"
     
     if filename is None:
         timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
@@ -1006,7 +1066,6 @@ def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd
     
     # 디렉토리가 없으면 생성
     os.makedirs(os.path.dirname(filename), exist_ok=True)
-    
     logger.info(f"결과를 {filename}에 저장 중...")
     
     # 분석 결과 변수 초기화
@@ -1314,8 +1373,8 @@ def filter_multiple_choice_questions(data: List[dict]) -> List[dict]:
 def main():
     parser = argparse.ArgumentParser(description='LLM 평가 시스템')
     parser.add_argument('--data_path', type=str, required=True, help='데이터 디렉토리 경로')
-    parser.add_argument('--sample_size', type=int, default=100, help='샘플 크기 (기본값: 100)')
-    parser.add_argument('--batch_size', type=int, default=5, help='배치 크기 (기본값: 5)')
+    parser.add_argument('--sample_size', type=int, default=1000, help='샘플 크기 (기본값: 1000)')
+    parser.add_argument('--batch_size', type=int, default=10, help='배치 크기 (기본값: 10)')
     parser.add_argument('--models', nargs='+', default=['anthropic/claude-sonnet-4.5', 'google/gemini-2.5-flash', 'openai/gpt-5', 'google/gemini-2.5-pro', 'google/gemma-3-27b-it:free'], help='평가할 모델 목록')
     parser.add_argument('--mock_mode', action='store_true', help='Mock 모드로 실행 (실제 API 호출 없음)')
     parser.add_argument('--use_ox_support', action='store_true', help='O, X 문제 지원 활성화')
@@ -1434,7 +1493,7 @@ def main():
                 print(f"일반 객관식: {regular_correct}/{regular_total} ({regular_acc:.1%})")
         
         # 상세 로그 저장
-        save_detailed_logs(pred_long, "evaluation")
+        # save_detailed_logs(pred_long, "evaluation")
         
         # Excel 파일 저장
         save_results_to_excel(df_all, pred_wide, acc, pred_long, args.output_filename, args.mock_mode)
@@ -1443,8 +1502,17 @@ def main():
         logger.info("평가 완료")
         logger.info("=" * 60)
         
+        # 평가 완료 후 캐시 정리 (선택적)
+        if not use_server_mode:  # API 모드에서는 캐시 정리하지 않음 (재사용 가능)
+            logger.info("[CACHE] API 모드이므로 캐시를 유지합니다.")
+        else:
+            logger.info("[CACHE] vLLM 서버 모드이므로 캐시를 정리합니다.")
+            clear_model_cache()
+        
     except Exception as e:
         logger.error(f"평가 실행 중 오류 발생: {str(e)}")
+        # 오류 발생 시에도 캐시 정리
+        clear_model_cache()
         raise
 
 if __name__ == "__main__":
