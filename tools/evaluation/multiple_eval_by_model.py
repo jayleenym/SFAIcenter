@@ -296,7 +296,7 @@ def _load_config():
     global _config_cache
     if _config_cache is None:
         import configparser
-        config_path = os.popen(f"find {home_dir} -type f -name 'llm_config.ini'").read().strip()
+        config_path = os.popen(f"find {project_root} -type f -name 'llm_config.ini'").read().strip()
         if not os.path.exists(config_path):
             raise FileNotFoundError(f"Config 파일을 찾을 수 없습니다: {config_path}")
         
@@ -312,7 +312,7 @@ def _load_query_models():
     if _query_models_module is None:
         import sys
         import os
-        tools_dir = os.popen(f"find {home_dir}/SFAIcenter/ -type d -name 'tools'").read().strip()
+        tools_dir = os.popen(f"find {project_root}/ -type d -name 'tools'").read().strip()
         sys.path.append(tools_dir)
         try:
             import QueryModels
