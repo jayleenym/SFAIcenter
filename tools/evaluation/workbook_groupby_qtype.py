@@ -16,11 +16,11 @@ except ImportError:
     from multiple_eval_by_model import replace_tags_in_qna_data
 
 
-EXTRACTED_DIR = '/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/FIN_workbook'
+EXTRACTED_DIR = '/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/workbook_data'
 EVAL_DATA_DIR = '/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data'
-BRONZE_LAYER_0_DIR = os.path.join(EVAL_DATA_DIR, '0_bronze_layer_grpby')
-BRONZE_LAYER_1_DIR = os.path.join(EVAL_DATA_DIR, '1_bronze_layer_filter')
-BRONZE_LAYER_2_DIR = os.path.join(EVAL_DATA_DIR, '2_bronze_layer_subdomain')
+# BRONZE_LAYER_0_DIR = os.path.join(EVAL_DATA_DIR, '0_grpby')
+BRONZE_LAYER_1_DIR = os.path.join(EVAL_DATA_DIR, '1_filter')
+BRONZE_LAYER_2_DIR = os.path.join(EVAL_DATA_DIR, '2_subdomain')
 
 def get_json_files(final_data_path):
     """
@@ -64,18 +64,13 @@ def get_qna_type(data: list):
                 elif qna.get('qna_type') == "essay":
                     essay.append(qna)
     
-    print("multiple-choice: ", len(multiple))
-    print("short-answer: ", len(short))
-    print("essay: ", len(essay))
-
-    with open(os.path.join(BRONZE_LAYER_0_DIR, 'multiple.json'), "w", encoding="utf-8") as f:
-        json.dump(multiple, f, ensure_ascii=False, indent=4)
-    with open(os.path.join(BRONZE_LAYER_0_DIR, 'short.json'), "w", encoding="utf-8") as f:
-        json.dump(short, f, ensure_ascii=False, indent=4)
-    with open(os.path.join(BRONZE_LAYER_0_DIR, 'essay.json'), "w", encoding="utf-8") as f:
-        json.dump(essay, f, ensure_ascii=False, indent=4)
-
-    return multiple, short, essay
+    print("------------- 데이터 형식 변경 & 필터링 -------------------")
+    print("기본 multiple-choice: ", len(multiple))
+    rearrange_data(multiple, "multiple")
+    print("기본 short-answer: ", len(short))
+    rearrange_data(short, "short")
+    print("기본 essay: ", len(essay))
+    rearrange_data(essay, "essay")
 
 
 
@@ -116,34 +111,55 @@ def rearrange_data(data_path: list or str = None, qtype: str = None):
                     'title': m.get('title'),
                     'chapter': m.get('chapter'),
                     'tag': qna_data.get('tag'),
-                    'domain': m.get('qna_domain'),
-                    'domain_reason': m.get('qna_reason'),
+                    # 'domain': m.get('qna_domain'),
+                    # 'domain_reason': m.get('qna_reason'),
+                    "domain": "",
+                    "domain_reason": "",
                     "subdomain": "",
                     "subdomain_reason": "",
+                    "calculation_needed": False,
                     'question': qna_data.get('description').get('question'),
                     'options': qna_data.get('description').get('options'),
                     'answer': qna_data.get('description').get('answer'),
                     'explanation': qna_data.get('description').get('explanation')
                 }
         rearranged_data.append(qna)
-        print(f"정제된 {qtype} 문제 수: ", len(rearranged_data))
-        with open(os.path.join(BRONZE_LAYER_1_DIR, f'{qtype}.json'), "w", encoding="utf-8") as f:
-            json.dump(rearranged_data, f, ensure_ascii=False, indent=4)
+    print(f"정제된 {qtype} 수: ", len(rearranged_data))
+    with open(os.path.join(BRONZE_LAYER_1_DIR, f'{qtype}.json'), "w", encoding="utf-8") as f:
+        json.dump(rearranged_data, f, ensure_ascii=False, indent=4)
 
 
+def classify_subdomain(data_path: list or str = None, qtype: str = None):
+    """
+    subdomain 분류
+    Args:
+        data_path: subdomain 분류 문제 파일 경로 또는 문제 리스트
+        qtype: 문제 타입
+    Returns:
+        subdomain_classified: 분류된 문제 리스트
+    """
+    if isinstance(data_path, str):
+        data = json.load(open(data_path, 'r', encoding='utf-8'))
+    elif isinstance(data_path, list):
+        data = data_path
+    else:
+        raise ValueError("data_path는 문제 파일 경로 또는 문제 리스트여야 합니다.")
+    
+    subdomain_classified = []
+    for m in data:
+        subdomain_classified.append(m)
+    print(f"분류된 {qtype} 수: ", len(subdomain_classified))
+    with open(os.path.join(BRONZE_LAYER_2_DIR, f'{qtype}.json'), "w", encoding="utf-8") as f:
+        json.dump(subdomain_classified, f, ensure_ascii=False, indent=4)
 
 
 def main():
-
     # 1. FIN_workbook 하위 extracted_qna.json 파일 찾기
     json_files = get_json_files(EXTRACTED_DIR)
     # 2. 0_bronze_layer_grpby 하위 multiple.json, short.json, essay.json 파일 생성
-    multiple, short, essay = get_qna_type(json_files)
+    get_qna_type(json_files)
     # 3. 1_bronze_layer_filter 하위 multiple.json, short.json, essay.json 파일 생성
-    rearrange_data(multiple, "multiple")
-    rearrange_data(short, "short")
-    rearrange_data(essay, "essay")
-
+    
     # 4. 2_bronze_layer_subdomain 하위 multiple.json, short.json, essay.json 파일 생성
     # qna_subdomain_classifier.py 실행
     # subprocess.run(["python", "qna_subdomain_classifier.py", "--data_path", os.path.join(BRONZE_LAYER_1_DIR, "multiple.json"), "--model", "x-ai/grok-4-fast", "--batch_size", "50", "--mode", "multiple"])
