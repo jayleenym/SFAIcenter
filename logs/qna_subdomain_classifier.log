@@ -3775,3 +3775,13 @@
 2025-10-28 15:02:18,735 - INFO - 전체 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/essay_with_subdomain/all_domains_subdomain_classified.json
 2025-10-28 15:02:18,735 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/essay_with_subdomain/classification_statistics.json
 2025-10-28 15:02:18,736 - INFO - 모든 도메인 처리 완료!
+2025-11-03 18:01:48,260 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-03 18:01:48,291 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-03 18:01:48,291 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-03 18:01:48,291 - INFO - 모든 도메인을 처리합니다.
+2025-11-03 18:01:48,291 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/1_filter/multiple.json
+2025-11-03 18:01:48,754 - INFO - 도메인별 문제 수: [('', 54314)]
+2025-11-03 18:01:48,754 - WARNING - 도메인 ''에 대한 서브도메인 매핑이 없습니다. 건너뜁니다.
+2025-11-03 18:01:48,754 - INFO - 전체 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/all_domains_subdomain_classified.json
+2025-11-03 18:01:48,754 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-03 18:01:48,773 - INFO - 모든 도메인 처리 완료!
