@@ -428,10 +428,11 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
 # 모델 출력 파싱 
 # -----------------------------
 
-def parse_model_output(raw: str, expected_ids: List[str]) -> Dict[str, float]:
+def parse_model_output(raw: str, expected_ids: List[str], reasoning: bool = False) -> Dict[str, float]:
     """
     모델 원시 출력(raw)을 {id: answer(1~5)}로 변환.
-    - 'ID\\t번호' 포맷 기준
+    - 'ID\\t번호' 포맷 기준 (일반 모델)
+    - reasoning=True일 경우, 답변에서 ID와 정답을 직접 찾음
     - 잘못된 줄/누락 줄은 NaN 처리
     """
     id_set = set(expected_ids)
@@ -441,6 +442,36 @@ def parse_model_output(raw: str, expected_ids: List[str]) -> Dict[str, float]:
         logger.warning("모델 출력이 비어있습니다.")
         return out
 
+    # 추론 모델일 경우, 전체 텍스트에서 ID와 정답을 직접 찾기
+    if reasoning:
+        logger.debug("추론 모델 모드: 답변에서 ID와 정답을 직접 찾는 중...")
+        for _id in expected_ids:
+            # ID 패턴으로 해당 ID가 포함된 부분 찾기
+            id_pattern = re.escape(_id)
+            # 여러 패턴을 시도 (우선순위 순서)
+            patterns = [
+                rf"{id_pattern}.*?정답은\s*(?:보기\s*)?([1-5])",  # "정답은 4" 또는 "정답은 보기 4"
+                rf"{id_pattern}.*?가장\s*근접한\s*것은\s*(?:보기\s*)?([1-5])",  # "가장 근접한 것은 4" 또는 "가장 근접한 것은 보기 4"
+                rf"{id_pattern}.*?가장\s*근접한\s*것은\s*([1-5])\s*번",  # "가장 근접한 것은 4번"
+            ]
+            
+            found = False
+            for pattern in patterns:
+                match = re.search(pattern, raw, re.IGNORECASE | re.DOTALL)
+                if match:
+                    answer = float(match.group(1))
+                    out[_id] = answer
+                    logger.debug(f"ID '{_id}' -> 답변 {answer} (추론 모델에서 추출)")
+                    found = True
+                    break
+            
+            if not found:
+                # '정답은' 또는 '가장 근접한 것은' 키워드가 없으면 0으로 표시
+                out[_id] = 0.0
+                logger.debug(f"ID '{_id}' -> '정답은' 또는 '가장 근접한 것은' 키워드를 찾을 수 없어 0으로 설정")
+        return out
+
+    # 일반 모델: 탭 구분 포맷 처리
     lines = raw.splitlines()
     logger.debug(f"파싱할 줄 수: {len(lines)}")
     
@@ -491,6 +522,7 @@ def run_eval_pipeline(
     seed: int = 42,
     mock_mode: bool = False,
     use_server_mode: bool = False,
+    reasoning: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     반환:
@@ -538,7 +570,13 @@ def run_eval_pipeline(
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
                     raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
-                    parsed = parse_model_output(raw, ids)
+                    if reasoning:
+                        logger.info(f"추론 모델 원시 출력 저장 완료")
+                        with open(f"reasoning_model_output_{model}.txt", "w") as f:
+                            f.write(raw)
+                    else:
+                        pass
+                    parsed = parse_model_output(raw, ids, reasoning=reasoning)
                     
                     # 파싱 결과 검증
                     valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
@@ -640,6 +678,7 @@ def run_eval_pipeline_improved(
     seed: int = 42,
     mock_mode: bool = False,
     use_server_mode: bool = False,
+    reasoning: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     O, X 문제를 지원하는 개선된 평가 파이프라인
@@ -683,6 +722,11 @@ def run_eval_pipeline_improved(
     rows = []
     invalid_responses = []  # 무효 예측 응답 저장용
     total_calls = len(batches) * len(models)
+
+    if reasoning:
+        SYSTEM_PROMPT = SYSTEM_PROMPT + "<think> </think>"
+    else:
+        pass
     
     # 전체 진행상황 표시
     with tqdm(total=total_calls, desc="모델 호출 진행", unit="call") as pbar:
@@ -696,7 +740,7 @@ def run_eval_pipeline_improved(
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
                     raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
-                    parsed = parse_model_output(raw, ids)
+                    parsed = parse_model_output(raw, ids, reasoning=reasoning)
                     
                     # 파싱 결과 검증
                     valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
@@ -1383,6 +1427,7 @@ def main():
     parser.add_argument('--seed', type=int, default=42, help='랜덤 시드 (기본값: 42)')
     parser.add_argument('--output_filename', type=str, help='결과 Excel 파일명 (기본값: 자동 생성)')
     parser.add_argument('--debug', action='store_true', help='디버그 로그 활성화')
+    parser.add_argument('--reasoning', action='store_true', default=False, help='추론 모델 여부')
     
     # API 모드 옵션 추가
     mode_group = parser.add_mutually_exclusive_group()
@@ -1405,6 +1450,7 @@ def main():
     logger.info(f"모델: {args.models}")
     logger.info(f"Mock 모드: {args.mock_mode}")
     logger.info(f"O, X 문제 지원: {args.use_ox_support}")
+    logger.info(f"추론 모델 여부: {args.reasoning}")
     logger.info(f"출력 파일명: {args.output_filename or '자동 생성'}")
     
     # API 모드 확인
@@ -1459,11 +1505,11 @@ def main():
         logger.info("평가 실행 중...")
         if args.use_ox_support:
             df_all, pred_long, pred_wide, acc = run_eval_pipeline_improved(
-                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode
+                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode, args.reasoning
             )
         else:
             df_all, pred_long, pred_wide, acc = run_eval_pipeline(
-                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode
+                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode, args.reasoning
             )
         
         # 결과 출력
