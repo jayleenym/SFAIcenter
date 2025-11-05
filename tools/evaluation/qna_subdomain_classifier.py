@@ -499,13 +499,23 @@ class QnASubdomainClassifier:
                     with open(os.path.join(self.output_dir, filename), 'r', encoding='utf-8') as f:
                         all_results[domain] = json.load(f)
         else:
-            pass
+            # all_results가 리스트 형태인 경우 처리
+            if isinstance(all_results, list):
+                # 도메인별로 그룹화
+                domain_groups = {}
+                for qna in all_results:
+                    domain = qna.get('domain', '미분류')
+                    if domain not in domain_groups:
+                        domain_groups[domain] = []
+                    domain_groups[domain].append(qna)
+                all_results = domain_groups
         
         stats = {}
         for domain, questions in all_results.items():
             subdomain_counts = {}
             for qna in questions:
-                subdomain = qna.get('qna_subdomain', '미분류')
+                # subdomain 키를 우선 사용, 없으면 qna_subdomain 사용
+                subdomain = qna.get('subdomain', '미분류')
                 subdomain_counts[subdomain] = subdomain_counts.get(subdomain, 0) + 1
             
             stats[domain] = {
