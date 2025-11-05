@@ -19,17 +19,26 @@ qtype = input("qtype을 입력하세요: ")
 with open('/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/domain_subdomain.json', 'r', encoding='utf-8') as f:
     domain_subdomain = json.load(f)
 
-
-with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/1_filter/{qtype}.json', 'r', encoding='utf-8') as f:
-    questions = json.load(f)
+if qtype == 'short-fail':
+    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/short_subdomain_classified_ALL_fail_response.json', 'r', encoding='utf-8') as f:
+        questions = json.load(f)
+elif qtype == 'multiple-fail':
+    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple_subdomain_classified_ALL_fail_response.json', 'r', encoding='utf-8') as f:
+        questions = json.load(f)
+elif qtype == 'multiple-re':
+    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple.json', 'r', encoding='utf-8') as f:
+        questions = json.load(f)
+else:
+    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/1_filter/{qtype}.json', 'r', encoding='utf-8') as f:
+        questions = json.load(f)
 
 print("총 문제 수: ", len(questions))
 
 prompt_domain = ''
 
 for domain in domain_subdomain.keys():
-    if domain == '디지털' or domain == '통계':
-        continue
+    # if domain == '디지털' or domain == '통계':
+    #     continue
     subdomain_list = domain_subdomain[domain]
     # domain_list = []
     prompt_domain += f'{domain}\n'
@@ -137,24 +146,24 @@ def parse_api_response(response: str) -> List[Dict[str, Any]]:
             
             if start_idx == -1 or end_idx == 0:
                 print("JSON 배열을 찾을 수 없습니다.")
-                return []
+                return response
             
             json_str = response[start_idx:end_idx]
             parsed_data = json.loads(json_str)
             
             if not isinstance(parsed_data, list):
                 print("응답이 배열 형태가 아닙니다.")
-                return []
+                return response
             
             return parsed_data
             
         except json.JSONDecodeError as e:
             print(f"JSON 파싱 실패: {e}")
-            print(f"응답 내용: {response[:500]}...")
-            return []
+            print(f"응답 내용: {response}...")
+            return response
         except Exception as e:
             print(f"응답 파싱 중 오류: {e}")
-            return []
+            return response
         
 
 
@@ -196,6 +205,7 @@ def update_qna_subdomain(questions: List[Dict[str, Any]],
 batch_size = 10
 all_updated_questions = []
 fail_response = []
+fail_question = []
 
 
 for i in tqdm(range(0, len(questions), batch_size)):
@@ -208,15 +218,11 @@ for i in tqdm(range(0, len(questions), batch_size)):
     user_prompt = create_user_prompt(batch)
     
     # API 호출
-    response = call_api(system_prompt, user_prompt, 'x-ai/grok-4-fast')
-    
-    if response is None:
-        print(f"배치 {batch_num} API 호출 실패")
-        fail_response.append(response)
-        # # API 호출 실패를 파일에 저장
-        # self.save_failure_response(domain, batch_num, "API호출실패", 
-        #                          error_message="API 호출에 실패했습니다", batch=batch)
-        
+    try:
+        response = call_api(system_prompt, user_prompt, 'x-ai/grok-4-fast')
+    except Exception as e:
+        print(f"배치 {batch_num} API 호출 실패: {e}")
+        fail_response.append(response)    
         # 실패한 경우 기본값으로 설정
         for qna in batch:
             qna['subdomain'] = "API호출실패"
@@ -225,38 +231,50 @@ for i in tqdm(range(0, len(questions), batch_size)):
         continue
 
     # 응답 파싱
-    classifications = parse_api_response(response)
-    
-    if not classifications:
-        print(f"{domain} 배치 {batch_num} 응답 파싱 실패")
-        # 파싱 실패한 경우 응답 결과를 별도 파일에 저장
-        # save_parsing_failure_response(domain, batch_num, response, batch)
+    try:
+        classifications = parse_api_response(response)
+    except Exception as e:
+        print(f"배치 {batch_num} 응답 파싱 실패: {e}")
         fail_response.append(response)
         # 파싱 실패한 경우 기본값으로 설정
         for qna in batch:
-            qna['is_calculation'] = "분류실패"
-            qna['domain'] = "분류실패"
+            qna['is_calculation'] = "파싱실패"
+            qna['domain'] = "파싱실패"
             qna['subdomain'] = "파싱실패"
             qna['classification_reason'] = "API 응답 파싱에 실패했습니다"
         all_updated_questions.extend(batch)
         continue
     
     # Q&A 데이터 업데이트
-    updated_batch, fail_batch = update_qna_subdomain(batch, classifications)
-    all_updated_questions.extend(updated_batch)
-    fail_response.extend(fail_batch)
+    try:
+        updated_batch, fail_batch = update_qna_subdomain(batch, classifications)
+        all_updated_questions.extend(updated_batch)
+        fail_question.extend(fail_batch)
+    except Exception as e:
+        fail_response.append(response)
     
     # API 호출 간격 조절
     time.sleep(1.2)
     
     # 중간 결과 저장
     if batch_num:  # 중간 저장
-        filename = f"{qtype}_subdomain_classified_ALL.json"
+        if qtype == 'multiple-fail':
+            filename = f"{qtype}_response.json"
+        else:
+            filename = f"{qtype}_subdomain_classified_ALL.json"
         filepath = '/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain'
         
         with open(os.path.join(filepath, filename), 'w', encoding='utf-8') as f:
             json.dump(questions, f, ensure_ascii=False, indent=2)
-
-        with open(os.path.join(filepath, f"{qtype}_subdomain_classified_ALL_fail_response.json"), 'w', encoding='utf-8') as f:
-            json.dump(fail_response, f, ensure_ascii=False, indent=2)
+        
+        if qtype == 'multiple-fail' or qtype == 'multiple-re':
+            with open(os.path.join(filepath, f"{qtype}_response_fail_again.json"), 'w', encoding='utf-8') as f:
+                json.dump(fail_response, f, ensure_ascii=False, indent=2)
+            with open(os.path.join(filepath, f"{qtype}_response_fail_q_again.json"), 'w', encoding='utf-8') as f:
+                json.dump(fail_question, f, ensure_ascii=False, indent=2)
+        else:
+            with open(os.path.join(filepath, f"{qtype}_subdomain_classified_ALL_fail_response.json"), 'w', encoding='utf-8') as f:
+                json.dump(fail_response, f, ensure_ascii=False, indent=2)
+            with open(os.path.join(filepath, f"{qtype}_subdomain_classified_ALL_fail_q.json"), 'w', encoding='utf-8') as f:
+                json.dump(fail_question, f, ensure_ascii=False, indent=2)
     # break
