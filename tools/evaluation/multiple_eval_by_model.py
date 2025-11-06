@@ -291,12 +291,24 @@ _model_cache = {}
 _config_cache = None
 _query_models_module = None
 
+def _find_config_file():
+    """Config 파일 경로를 찾습니다 (QueryModels.find_config_file과 동일한 로직)"""
+    # 프로젝트 루트에서 llm_config.ini 찾기
+    config_path = os.popen(f"find {project_root} -type f -name 'llm_config.ini'").read().strip()
+    if os.path.exists(config_path):
+        return config_path
+    
+    # 찾지 못한 경우 기본값 반환
+    default_path = os.path.join(project_root, 'llm_config.ini')
+    return default_path
+
 def _load_config():
     """Config 파일을 한 번만 로드하고 캐시"""
     global _config_cache
     if _config_cache is None:
         import configparser
-        config_path = os.popen(f"find {home_dir} -type f -name 'llm_config.ini'").read().strip()
+        # QueryModels와 동일한 방식으로 config 파일 찾기
+        config_path = _find_config_file()
         if not os.path.exists(config_path):
             raise FileNotFoundError(f"Config 파일을 찾을 수 없습니다: {config_path}")
         
@@ -312,7 +324,7 @@ def _load_query_models():
     if _query_models_module is None:
         import sys
         import os
-        tools_dir = os.popen(f"find {home_dir}/SFAIcenter/ -type d -name 'tools'").read().strip()
+        tools_dir = os.popen(f"find {project_root}/ -type d -name 'tools'").read().strip()
         sys.path.append(tools_dir)
         try:
             import QueryModels
@@ -406,10 +418,12 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     config = _load_config()
                     QueryModels = _load_query_models()
                     
-                    ans = QueryModels.query_openrouter(config, system_prompt, user_prompt, model_name)
+                    # query_openrouter 함수 시그니처: (system_prompt, user_prompt, config, model_name)
+                    ans = QueryModels.query_openrouter(system_prompt, user_prompt, config, model_name)
                     
                     elapsed_time = time.time() - start_time
                     logger.info(f"[API] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
+                    time.sleep(1.5)
                     
                     return ans
                 
@@ -1422,7 +1436,7 @@ def main():
     parser.add_argument('--models', nargs='+', default=['anthropic/claude-sonnet-4.5', 'google/gemini-2.5-flash', 'openai/gpt-5', 'google/gemini-2.5-pro', 'google/gemma-3-27b-it:free'], help='평가할 모델 목록')
     parser.add_argument('--mock_mode', action='store_true', help='Mock 모드로 실행 (실제 API 호출 없음)')
     parser.add_argument('--use_ox_support', action='store_true', help='O, X 문제 지원 활성화')
-    parser.add_argument('--apply_tag_replacement', action='store_true', help='태그 대치 적용 (기본값: True)')
+    parser.add_argument('--apply_tag_replacement', action='store_true', default=False, help='태그 대치 적용 (기본값: True)')
     parser.add_argument('--no_tag_replacement', action='store_true', help='태그 대치 비활성화')
     parser.add_argument('--seed', type=int, default=42, help='랜덤 시드 (기본값: 42)')
     parser.add_argument('--output_filename', type=str, help='결과 Excel 파일명 (기본값: 자동 생성)')

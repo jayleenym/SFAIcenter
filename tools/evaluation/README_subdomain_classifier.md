@@ -112,14 +112,15 @@ top_p = 0.9
     "file_id": "SS0000",
     "title": "책 제목",
     "chapter": "챕터명",
-    "qna_id": "SS0000_q_0000_0000",
-    "qna_domain": "경제",
-    "qna_subdomain": "미시경제학",
-    "qna_subdomain_reason": "수요·공급 이론 관련 문제",
-    "qna_question": "문제 내용",
-    "qna_answer": "정답",
-    "qna_options": ["선지1", "선지2", "선지3", "선지4"],
-    "qna_explanation": "해설"
+    "tag": "SS0000_q_0000_0000",
+    "domain": "경제",
+    "domain_reason": "",
+    "subdomain": "미시경제학",
+    "subdomain_reason": "수요·공급 이론 관련 문제",
+    "question": "문제 내용",
+    "answer": "정답",
+    "options": ["선지1", "선지2", "선지3", "선지4"],
+    "explanation": "해설"
   }
 ]
 ```

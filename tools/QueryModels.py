@@ -10,6 +10,7 @@ import argparse
 def find_config_file():
     """프로젝트 루트에서 llm_config.ini 파일을 찾습니다."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
+    print(current_dir)
     
     # tools 디렉토리에서 시작해서 프로젝트 루트까지 올라가면서 찾기
     search_dirs = [
@@ -28,22 +29,24 @@ def find_config_file():
 INI_PATH = find_config_file()
 
 
-def query_openrouter(config, system_prompt: str, user_prompt: str, model_name = 'openai/gpt-5'):
-    config = configparser.ConfigParser()
-    # config.read(args.config_path, encoding='utf-8')
-    print(f"[DEBUG] Config file path: {INI_PATH}")
-    config.read(INI_PATH, encoding='utf-8')
+def query_openrouter(system_prompt: str, user_prompt: str, config = None, model_name = 'openai/gpt-5'):
+    if config is None:
+        INI_PATH = find_config_file()
+        config = configparser.ConfigParser()
+        print(f"[DEBUG] Config file path: {INI_PATH}")
+        config.read(INI_PATH, encoding='utf-8')
 
-    client = OpenAI(api_key=config["OPENROUTER"]["key"], base_url=config["OPENROUTER"]["url"])
+    # print(config)
+    client = OpenAI(api_key=config.get("OPENROUTER", "key"), base_url=config.get("OPENROUTER", "url"))
 
 
     response = client.chat.completions.create(
                 model=model_name,
-                temperature=float(config["PARAMS"]["temperature"]),
-                frequency_penalty=float(config["PARAMS"]["frequency_penalty"]), 
-                presence_penalty=float(config["PARAMS"]["presence_penalty"]),
-                top_p=float(config["PARAMS"]["top_p"]), 
-                # max_tokens=int(config["PARAMS"]["max_tokens"]), 
+                temperature=float(config.get("PARAMS", "temperature")),
+                frequency_penalty=float(config.get("PARAMS", "frequency_penalty")), 
+                presence_penalty=float(config.get("PARAMS", "presence_penalty")),
+                top_p=float(config.get("PARAMS", "top_p")), 
+                # max_tokens=int(config.get("PARAMS", "max_tokens")), 
                 messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
             )
     llm_result = response.choices[0].message.content
@@ -52,13 +55,26 @@ def query_openrouter(config, system_prompt: str, user_prompt: str, model_name = 
 
 
 def load_model(model_path, config):
-    print(f"[DEBUG] Config file path: {INI_PATH}")
-    config.read(INI_PATH, encoding='utf-8')
-    os.environ["CUDA_VISIBLE_DEVICES"] = config["VLLM"]["gpu"]
+    """모델을 로드합니다.
+    
+    Args:
+        model_path: 모델 경로
+        config: 이미 로드된 ConfigParser 객체 또는 None (None인 경우 자동으로 찾아서 로드)
+    """
+    # config가 None이거나 비어있는 경우에만 로드
+    if config is None or len(config.sections()) == 0:
+        config_path = find_config_file()
+        print(f"[DEBUG] Config file path: {config_path}")
+        if config is None:
+            import configparser
+            config = configparser.ConfigParser()
+        config.read(config_path, encoding='utf-8')
+    
+    os.environ["CUDA_VISIBLE_DEVICES"] = config.get("VLLM", "gpu")
 
     llm = LLM(model = model_path, \
-        tensor_parallel_size = len(config["VLLM"]["gpu"].split(",")), \
-        max_model_len = int(config["VLLM"]["max_model_len"]), \
+        tensor_parallel_size = len(config.get("VLLM", "gpu").split(",")), \
+        max_model_len = int(config.get("VLLM", "max_model_len")), \
         distributed_executor_backend = "mp", \
         dtype='bfloat16', \
         # disable_custom_all_reduce=True, \
@@ -67,16 +83,16 @@ def load_model(model_path, config):
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     stop_token_ids = [tokenizer.eos_token_id] \
-        + [tokenizer.convert_tokens_to_ids(stop_token) for stop_token in config["PARAMS"]["stop_tokens"].split(",")]
+        + [tokenizer.convert_tokens_to_ids(stop_token) for stop_token in config.get("PARAMS", "stop_tokens").split(",")]
     stop_token_ids = [token_id for token_id in stop_token_ids if token_id is not None]
 
     sampling_params = SamplingParams(
-        temperature = float(config["PARAMS"]["temperature"]), 
-        top_p = float(config["PARAMS"]["top_p"]), 
-        top_k = int(config["PARAMS"]["top_k"]), 
-        max_tokens = int(config["PARAMS"]["max_tokens"]), 
-        frequency_penalty = float(config["PARAMS"]["frequency_penalty"]), 
-        presence_penalty = float(config["PARAMS"]["presence_penalty"]), 
+        temperature = float(config.get("PARAMS", "temperature")), 
+        top_p = float(config.get("PARAMS", "top_p")), 
+        top_k = int(config.get("PARAMS", "top_k")), 
+        max_tokens = int(config.get("PARAMS", "max_tokens")), 
+        frequency_penalty = float(config.get("PARAMS", "frequency_penalty")), 
+        presence_penalty = float(config.get("PARAMS", "presence_penalty")), 
         stop_token_ids = stop_token_ids
     )
 

@@ -206,24 +206,24 @@ class QnASubdomainClassifier:
             
             if start_idx == -1 or end_idx == 0:
                 logger.error("JSON 배열을 찾을 수 없습니다.")
-                return []
+                return response
             
             json_str = response[start_idx:end_idx]
             parsed_data = json.loads(json_str)
             
             if not isinstance(parsed_data, list):
                 logger.error("응답이 배열 형태가 아닙니다.")
-                return []
+                return response
             
             return parsed_data
             
         except json.JSONDecodeError as e:
             logger.error(f"JSON 파싱 실패: {e}")
             logger.error(f"응답 내용: {response[:500]}...")
-            return []
+            return response
         except Exception as e:
             logger.error(f"응답 파싱 중 오류: {e}")
-            return []
+            return response
     
     def update_qna_subdomain(self, questions: List[Dict[str, Any]], 
                            classifications: List[Dict[str, Any]], 
@@ -499,13 +499,23 @@ class QnASubdomainClassifier:
                     with open(os.path.join(self.output_dir, filename), 'r', encoding='utf-8') as f:
                         all_results[domain] = json.load(f)
         else:
-            pass
+            # all_results가 리스트 형태인 경우 처리
+            if isinstance(all_results, list):
+                # 도메인별로 그룹화
+                domain_groups = {}
+                for qna in all_results:
+                    domain = qna.get('domain', '미분류')
+                    if domain not in domain_groups:
+                        domain_groups[domain] = []
+                    domain_groups[domain].append(qna)
+                all_results = domain_groups
         
         stats = {}
         for domain, questions in all_results.items():
             subdomain_counts = {}
             for qna in questions:
-                subdomain = qna.get('qna_subdomain', '미분류')
+                # subdomain 키를 우선 사용, 없으면 qna_subdomain 사용
+                subdomain = qna.get('subdomain', '미분류')
                 subdomain_counts[subdomain] = subdomain_counts.get(subdomain, 0) + 1
             
             stats[domain] = {

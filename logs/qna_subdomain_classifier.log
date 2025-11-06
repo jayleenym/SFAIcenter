@@ -3775,3 +3775,109 @@
 2025-10-28 15:02:18,735 - INFO - 전체 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/essay_with_subdomain/all_domains_subdomain_classified.json
 2025-10-28 15:02:18,735 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/essay_with_subdomain/classification_statistics.json
 2025-10-28 15:02:18,736 - INFO - 모든 도메인 처리 완료!
+2025-11-03 18:01:48,260 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-03 18:01:48,291 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-03 18:01:48,291 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-03 18:01:48,291 - INFO - 모든 도메인을 처리합니다.
+2025-11-03 18:01:48,291 - INFO - 데이터 로딩 중: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/1_filter/multiple.json
+2025-11-03 18:01:48,754 - INFO - 도메인별 문제 수: [('', 54314)]
+2025-11-03 18:01:48,754 - WARNING - 도메인 ''에 대한 서브도메인 매핑이 없습니다. 건너뜁니다.
+2025-11-03 18:01:48,754 - INFO - 전체 결과 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/all_domains_subdomain_classified.json
+2025-11-03 18:01:48,754 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-03 18:01:48,773 - INFO - 모든 도메인 처리 완료!
+2025-11-05 09:59:55,087 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 09:59:55,088 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:06:17,514 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:06:17,519 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:06:17,530 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:09:28,996 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:09:28,997 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:09:29,008 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:12:03,930 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:12:03,931 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:12:03,943 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:14:20,782 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:14:20,782 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:14:20,798 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:14:54,129 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:14:54,130 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:14:54,142 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:17:09,861 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:17:09,862 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:17:09,874 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:20:59,518 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:20:59,519 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:20:59,532 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:24:41,299 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:24:51,520 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:24:51,520 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:24:51,532 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:24:52,294 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:26:12,712 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:26:12,712 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:26:12,725 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:26:27,419 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:27:36,900 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:27:36,901 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:27:36,915 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:32:19,927 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:32:19,928 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:32:19,941 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:52:45,742 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:52:45,742 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:52:45,755 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-05 10:56:23,300 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-05 10:56:23,301 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-05 10:56:23,314 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 09:24:54,244 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 09:24:54,245 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 09:24:54,260 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 09:26:22,680 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 09:31:24,262 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 09:31:24,263 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 09:31:24,279 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 09:32:38,924 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 09:32:38,925 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 09:32:38,941 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 09:32:54,463 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 09:36:55,821 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 09:36:55,826 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 09:36:55,837 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 09:45:56,949 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 09:45:56,950 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 09:45:56,962 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 10:06:34,128 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 10:06:34,128 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 10:06:34,142 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 10:13:06,480 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 10:13:06,480 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 10:13:06,494 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 11:19:26,849 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 11:19:26,849 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 11:19:26,863 - INFO - 통계 정보 저장 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain/classification_statistics.json
+2025-11-06 16:20:11,740 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 16:20:11,741 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 16:20:12,416 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 16:29:58,922 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 16:29:58,923 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 16:30:00,709 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 16:32:16,371 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 16:35:06,474 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 17:50:22,015 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 17:50:22,016 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 17:50:22,647 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 17:55:45,158 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 18:00:38,920 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 18:00:38,925 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 18:00:46,300 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 18:00:46,301 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 18:00:58,399 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 18:00:58,400 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 18:01:14,645 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 18:01:14,645 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 18:01:15,404 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 18:04:32,397 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 18:06:46,462 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-06 18:12:51,409 - WARNING - evaluation_yejin 디렉토리를 찾을 수 없어 /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation을 사용합니다.
+2025-11-06 18:12:51,410 - INFO - 출력 디렉토리: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/multiple_with_subdomain
+2025-11-06 18:12:55,010 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
