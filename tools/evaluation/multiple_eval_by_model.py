@@ -572,7 +572,7 @@ def run_eval_pipeline(
                     raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
                     if reasoning:
                         logger.info(f"추론 모델 원시 출력 저장 완료")
-                        with open(f"reasoning_model_output_{model}.txt", "w") as f:
+                        with open(f"reasoning_model_output_{model.replace('/', '_')}.txt", "w") as f:
                             f.write(raw)
                     else:
                         pass
