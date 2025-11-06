@@ -36,7 +36,7 @@ def query_openrouter(system_prompt: str, user_prompt: str, config = None, model_
         print(f"[DEBUG] Config file path: {INI_PATH}")
         config.read(INI_PATH, encoding='utf-8')
 
-    print(config)
+    # print(config)
     client = OpenAI(api_key=config.get("OPENROUTER", "key"), base_url=config.get("OPENROUTER", "url"))
 
 

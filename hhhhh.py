@@ -23,7 +23,7 @@ if qtype == 'short-fail':
     with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/short_subdomain_classified_ALL_fail_response.json', 'r', encoding='utf-8') as f:
         questions = json.load(f)
 elif qtype == 'multiple-fail':
-    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple_subdomain_classified_ALL_fail_response.json', 'r', encoding='utf-8') as f:
+    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple-re_re_run.json', 'r', encoding='utf-8') as f:
         questions = json.load(f)
 elif qtype == 'multiple-re':
     with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple.json', 'r', encoding='utf-8') as f:
@@ -268,9 +268,9 @@ for i in tqdm(range(0, len(questions), batch_size)):
             json.dump(questions, f, ensure_ascii=False, indent=2)
         
         if qtype == 'multiple-fail' or qtype == 'multiple-re':
-            with open(os.path.join(filepath, f"{qtype}_response_fail_again.json"), 'w', encoding='utf-8') as f:
+            with open(os.path.join(filepath, f"{qtype}_fail_response.json"), 'w', encoding='utf-8') as f:
                 json.dump(fail_response, f, ensure_ascii=False, indent=2)
-            with open(os.path.join(filepath, f"{qtype}_response_fail_q_again.json"), 'w', encoding='utf-8') as f:
+            with open(os.path.join(filepath, f"{qtype}_fail_q.json"), 'w', encoding='utf-8') as f:
                 json.dump(fail_question, f, ensure_ascii=False, indent=2)
         else:
             with open(os.path.join(filepath, f"{qtype}_subdomain_classified_ALL_fail_response.json"), 'w', encoding='utf-8') as f:

@@ -206,24 +206,24 @@ class QnASubdomainClassifier:
             
             if start_idx == -1 or end_idx == 0:
                 logger.error("JSON 배열을 찾을 수 없습니다.")
-                return []
+                return response
             
             json_str = response[start_idx:end_idx]
             parsed_data = json.loads(json_str)
             
             if not isinstance(parsed_data, list):
                 logger.error("응답이 배열 형태가 아닙니다.")
-                return []
+                return response
             
             return parsed_data
             
         except json.JSONDecodeError as e:
             logger.error(f"JSON 파싱 실패: {e}")
             logger.error(f"응답 내용: {response[:500]}...")
-            return []
+            return response
         except Exception as e:
             logger.error(f"응답 파싱 중 오류: {e}")
-            return []
+            return response
     
     def update_qna_subdomain(self, questions: List[Dict[str, Any]], 
                            classifications: List[Dict[str, Any]], 
