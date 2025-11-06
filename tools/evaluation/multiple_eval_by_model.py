@@ -586,8 +586,13 @@ def run_eval_pipeline(
                     raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
                     if reasoning:
                         logger.info(f"추론 모델 원시 출력 저장 완료")
-                        with open(f"reasoning_model_output_{model.replace('/', '_')}.txt", "w") as f:
+                        with open(f"reasoning_model_output_{model.replace('/', '_')}.txt", "a", encoding="utf-8") as f:
+                            f.write(f"\n{'='*80}\n")
+                            f.write(f"배치: {bidx}/{len(batches)}, 모델: {model}, 시간: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                            f.write(f"ID 목록: {ids}\n")
+                            f.write(f"{'='*80}\n")
                             f.write(raw)
+                            f.write(f"\n{'='*80}\n\n")
                     else:
                         pass
                     parsed = parse_model_output(raw, ids, reasoning=reasoning)
@@ -738,7 +743,7 @@ def run_eval_pipeline_improved(
     total_calls = len(batches) * len(models)
 
     if reasoning:
-        SYSTEM_PROMPT = SYSTEM_PROMPT + "<think> </think>"
+        SYSTEM_PROMPT += "- 반드시 추론 과정 등 추가 설명 없이 1~5 중 하나의 정답만 출력하세요."
     else:
         pass
     
