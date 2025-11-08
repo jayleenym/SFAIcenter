@@ -364,7 +364,7 @@ def save_detailed_report(stats, output_file):
 
 def main():
     """메인 함수"""
-    base_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/data/FIN_workbook"
+    base_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/workbook_data"
     
     print("🔍 FIN_workbook 하위의 extracted_qna.json 파일들을 찾는 중...")
     files = find_extracted_qna_files(base_path)
