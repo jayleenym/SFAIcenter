@@ -29,22 +29,20 @@ import argparse
 # -----------------------------
 # 로깅 설정
 # -----------------------------
-# 홈 디렉토리에서 프로젝트 루트 찾기
-global home_dir
-home_dir = os.path.expanduser("~")
-global project_root
-project_root = None
-
-# 홈 디렉토리에서 SFAIcenter 프로젝트 찾기
-for root, dirs, files in os.walk(home_dir):
-    if 'SFAIcenter' in dirs:
-        project_root = os.path.join(root, 'SFAIcenter')
-        break
-
-# 프로젝트 루트를 찾지 못한 경우 현재 스크립트 기준으로 설정
-if project_root is None:
+# pipeline/config에서 PROJECT_ROOT_PATH, ONEDRIVE_PATH import 시도
+try:
+    import sys
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root_dir = os.path.dirname(current_dir)  # tools_arrange
+    sys.path.insert(0, project_root_dir)
+    from pipeline.config import PROJECT_ROOT_PATH, ONEDRIVE_PATH
+    project_root = PROJECT_ROOT_PATH
+    onedrive_path = ONEDRIVE_PATH
+except ImportError:
+    # fallback: pipeline이 없는 경우 현재 스크립트 기준으로 설정
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
+    onedrive_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
 
 log_dir = os.path.join(project_root, 'logs')
 log_file = os.path.join(log_dir, 'multiple_eval_by_model.log')
@@ -294,12 +292,16 @@ _query_models_module = None
 def _find_config_file():
     """Config 파일 경로를 찾습니다 (QueryModels.find_config_file과 동일한 로직)"""
     # 프로젝트 루트에서 llm_config.ini 찾기
-    config_path = os.popen(f"find {project_root} -type f -name 'llm_config.ini'").read().strip()
-    if os.path.exists(config_path):
+    default_path = os.path.join(project_root, 'llm_config.ini')
+    if os.path.exists(default_path):
+        return default_path
+    
+    # 찾지 못한 경우 find 명령어로 검색 (fallback)
+    config_path = os.popen(f"find {project_root} -type f -name 'llm_config.ini' 2>/dev/null").read().strip()
+    if config_path and os.path.exists(config_path):
         return config_path
     
     # 찾지 못한 경우 기본값 반환
-    default_path = os.path.join(project_root, 'llm_config.ini')
     return default_path
 
 def _load_config():
@@ -324,15 +326,24 @@ def _load_query_models():
     if _query_models_module is None:
         import sys
         import os
-        tools_dir = os.popen(f"find {project_root}/ -type d -name 'tools'").read().strip()
-        sys.path.append(tools_dir)
-        try:
-            import QueryModels
-            _query_models_module = QueryModels
-            logger.info(f"[CACHE] QueryModels 모듈 로드 완료: {tools_dir}")
-        except Exception as e:
-            logger.error(f"[CACHE] QueryModels 모듈 로드 실패: {e}")
-            raise
+        # tools 폴더 찾기 (PROJECT_ROOT_PATH/tools 또는 현재 스크립트 기준)
+        tools_dir = os.path.join(project_root, 'tools')
+        if not os.path.exists(tools_dir):
+            # fallback: find 명령어로 검색
+            tools_dir = os.popen(f"find {project_root}/ -type d -name 'tools' 2>/dev/null").read().strip()
+        
+        if tools_dir and os.path.exists(tools_dir):
+            sys.path.append(tools_dir)
+            try:
+                import QueryModels
+                _query_models_module = QueryModels
+                logger.info(f"[CACHE] QueryModels 모듈 로드 완료: {tools_dir}")
+            except Exception as e:
+                logger.error(f"[CACHE] QueryModels 모듈 로드 실패: {e}")
+                raise
+        else:
+            logger.error(f"[CACHE] tools 디렉토리를 찾을 수 없습니다: {project_root}")
+            raise FileNotFoundError(f"tools 디렉토리를 찾을 수 없습니다: {project_root}")
     return _query_models_module
 
 def _load_model_cached(model_name: str):
@@ -396,7 +407,7 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
             try:
                 if use_server_mode:
                     # vLLM 서버 모드 - 캐시된 모델 사용
-                    logger.info(f"[VLLM] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
+                    logger.debug(f"[VLLM] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
                     start_time = time.time()
                     
                     # 캐시된 모델 로드
@@ -406,12 +417,12 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     ans = QueryModels.query_vllm(llm, tokenizer, sampling_params, system_prompt, user_prompt, model_name)
                     
                     elapsed_time = time.time() - start_time
-                    logger.info(f"[VLLM] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
+                    logger.debug(f"[VLLM] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
                     
                     return ans
                 else:
                     # OpenRouter API 모드
-                    logger.info(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
+                    logger.debug(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
                     start_time = time.time()
                     
                     # 캐시된 config와 모듈 사용
@@ -422,7 +433,7 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     ans = QueryModels.query_openrouter(system_prompt, user_prompt, config, model_name)
                     
                     elapsed_time = time.time() - start_time
-                    logger.info(f"[API] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
+                    logger.debug(f"[API] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
                     time.sleep(1.5)
                     
                     return ans
@@ -585,8 +596,18 @@ def run_eval_pipeline(
                     
                     raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
                     if reasoning:
+                        # ONEDRIVE_PATH 기반 경로 사용
+                        try:
+                            from pipeline.config import ONEDRIVE_PATH
+                            base_path = ONEDRIVE_PATH
+                        except ImportError:
+                            base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+                        
+                        reasoning_output_dir = os.path.join(base_path, 'evaluation/result/log')
+                        os.makedirs(reasoning_output_dir, exist_ok=True)
+                        reasoning_file = os.path.join(reasoning_output_dir, f"reasoning_model_output_{model.replace('/', '_')}.txt")
                         logger.info(f"추론 모델 원시 출력 저장 완료")
-                        with open(f"reasoning_model_output_{model.replace('/', '_')}.txt", "a", encoding="utf-8") as f:
+                        with open(reasoning_file, "a", encoding="utf-8") as f:
                             f.write(f"\n{'='*80}\n")
                             f.write(f"배치: {bidx}/{len(batches)}, 모델: {model}, 시간: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                             f.write(f"ID 목록: {ids}\n")
@@ -742,10 +763,10 @@ def run_eval_pipeline_improved(
     invalid_responses = []  # 무효 예측 응답 저장용
     total_calls = len(batches) * len(models)
 
+    # SYSTEM_PROMPT를 로컬 변수로 복사 (전역 변수 수정 방지)
+    local_system_prompt = SYSTEM_PROMPT
     if reasoning:
-        SYSTEM_PROMPT += "- 반드시 추론 과정 등 추가 설명 없이 1~5 중 하나의 정답만 출력하세요."
-    else:
-        pass
+        local_system_prompt += "- 반드시 추론 과정 등 추가 설명 없이 1~5 중 하나의 정답만 출력하세요."
     
     # 전체 진행상황 표시
     with tqdm(total=total_calls, desc="모델 호출 진행", unit="call") as pbar:
@@ -755,19 +776,18 @@ def run_eval_pipeline_improved(
             
             for model in models:
                 try:
-                    # 배치별 진행상황 표시
+                    # 배치별 진행상황 표시 (tqdm 진행바에만 표시, 로그는 최소화)
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
-                    raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
+                    raw = call_llm(model, local_system_prompt, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
                     parsed = parse_model_output(raw, ids, reasoning=reasoning)
                     
                     # 파싱 결과 검증
                     valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
-                    logger.info(f"배치 {bidx} - {model}: {valid_predictions}/{len(ids)}개 유효 예측")
                     
-                    # 무효 예측이 있는 경우 디버깅 정보 출력 및 저장
+                    # 무효 예측이 있는 경우에만 로그 출력
                     if valid_predictions < len(ids):
-                        logger.warning(f"배치 {bidx} - {model}: 무효 예측 감지!")
+                        logger.warning(f"배치 {bidx} - {model}: {valid_predictions}/{len(ids)}개 유효 예측 (무효 예측 감지)")
                         logger.warning(f"예상 ID: {ids}")
                         logger.warning(f"모델 원시 출력:\n{raw}")
                         logger.warning(f"파싱된 결과: {parsed}")
@@ -925,8 +945,15 @@ def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str =
         logger.info("무효 예측이 없어 저장할 파일이 없습니다.")
         return
     
+    # ONEDRIVE_PATH 기반 경로 사용
+    try:
+        from pipeline.config import ONEDRIVE_PATH
+        base_path = ONEDRIVE_PATH
+    except ImportError:
+        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    invalid_filename = f"evaluation/result/{filename_prefix}_invalid_responses_{timestamp}.json"
+    invalid_filename = os.path.join(base_path, f"evaluation/result/{filename_prefix}_invalid_responses_{timestamp}.json")
     
     # 디렉토리가 없으면 생성
     os.makedirs(os.path.dirname(invalid_filename), exist_ok=True)
@@ -952,10 +979,17 @@ def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str =
 
 def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evaluation"):
     """상세한 로그를 CSV로 저장"""
+    # ONEDRIVE_PATH 기반 경로 사용
+    try:
+        from pipeline.config import ONEDRIVE_PATH
+        base_path = ONEDRIVE_PATH
+    except ImportError:
+        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
     
     # 예측 결과 상세 로그
-    pred_log_filename = f"evaluation/result/log/{filename_prefix}_predictions_{timestamp}.csv"
+    pred_log_filename = os.path.join(base_path, f"evaluation/result/log/{filename_prefix}_predictions_{timestamp}.csv")
     os.makedirs(os.path.dirname(pred_log_filename), exist_ok=True)
     pred_long_df.to_csv(pred_log_filename, index=False, encoding='utf-8-sig')
     logger.info(f"상세 예측 로그 저장: {pred_log_filename}")
@@ -967,7 +1001,7 @@ def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evalu
     model_stats.columns = ['총_예측수', '유효_예측수', '무효_예측수']
     model_stats['유효율'] = (model_stats['유효_예측수'] / model_stats['총_예측수'] * 100).round(1)
     
-    stats_filename = f"evaluation/result/log/{filename_prefix}_model_stats_{timestamp}.csv"
+    stats_filename = os.path.join(base_path, f"evaluation/result/log/{filename_prefix}_model_stats_{timestamp}.csv")
     os.makedirs(os.path.dirname(stats_filename), exist_ok=True)
     model_stats.to_csv(stats_filename, encoding='utf-8-sig')
     logger.info(f"모델 통계 저장: {stats_filename}")
@@ -1092,10 +1126,12 @@ def calculate_subject_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) ->
 def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd.DataFrame, pred_long: pd.DataFrame = None, filename: str = None, mock_mode: bool = False):
     """결과를 Excel 파일로 저장 (domain, subdomain 분석 포함)"""
     
-    # 기본 저장 경로 설정 (현재 사용자 기준)
-    # current_user = os.path.expanduser("~").split("/")[-1]  # 현재 사용자명 추출
-    current_user = os.path.dirname(__file__)
-    default_base_path = f"{home_dir}/result/"
+    # ONEDRIVE_PATH 기반 경로 사용
+    try:
+        from pipeline.config import ONEDRIVE_PATH
+        default_base_path = os.path.join(ONEDRIVE_PATH, 'evaluation/result/')
+    except ImportError:
+        default_base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/result/")
     
     if filename is None:
         timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
@@ -1369,7 +1405,11 @@ def extract_subject_from_filename(filename: str) -> str:
 # -----------------------------
 
 def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False) -> Tuple[List[dict], bool]:
-    """디렉토리에서 JSON 파일들을 로드하여 데이터 리스트 반환
+    """디렉토리 또는 파일 경로에서 JSON 파일들을 로드하여 데이터 리스트 반환
+    
+    Args:
+        data_path: 디렉토리 경로 또는 JSON 파일 경로
+        apply_tag_replacement: 태그 대치 적용 여부
     
     Returns:
         Tuple[List[dict], bool]: (데이터 리스트, mock_exam 파일 포함 여부)
@@ -1377,13 +1417,47 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
     json_files = []
     is_mock_exam = False
     
-    for root, _, files in os.walk(data_path):
-        for f in files:
-            if f.endswith(".json") and ('merged' not in f):
-                json_files.append(os.path.join(root, f))
-                # mock_exam 파일인지 확인
-                if '_mock_exam' in f:
-                    is_mock_exam = True
+    # 파일 경로인지 디렉토리 경로인지 확인
+    # 먼저 경로가 존재하는지 확인
+    logger.info(f"경로 확인 중: {data_path}")
+    logger.info(f"  - 경로 존재: {os.path.exists(data_path)}")
+    logger.info(f"  - 파일인지: {os.path.isfile(data_path)}")
+    logger.info(f"  - 디렉토리인지: {os.path.isdir(data_path)}")
+    
+    if not os.path.exists(data_path):
+        logger.warning(f"경로를 찾을 수 없습니다: {data_path}")
+        return [], False
+    
+    if os.path.isfile(data_path):
+        # 파일 경로인 경우
+        logger.info(f"파일 경로로 인식: {data_path}")
+        if data_path.endswith(".json") and ('merged' not in os.path.basename(data_path)):
+            json_files.append(data_path)
+            logger.info(f"JSON 파일 추가: {data_path}")
+            # mock_exam 파일인지 확인
+            if '_mock_exam' in os.path.basename(data_path):
+                is_mock_exam = True
+        else:
+            logger.warning(f"JSON 파일이 아니거나 merged 파일입니다: {data_path}")
+            logger.warning(f"  - 파일명: {os.path.basename(data_path)}")
+            logger.warning(f"  - .json으로 끝나는지: {data_path.endswith('.json')}")
+            logger.warning(f"  - merged 포함: {'merged' in os.path.basename(data_path)}")
+    elif os.path.isdir(data_path):
+        # 디렉토리 경로인 경우
+        logger.debug(f"디렉토리 경로로 인식: {data_path}")
+        for root, _, files in os.walk(data_path):
+            for f in files:
+                if f.endswith(".json") and ('merged' not in f):
+                    json_files.append(os.path.join(root, f))
+                    # mock_exam 파일인지 확인
+                    if '_mock_exam' in f:
+                        is_mock_exam = True
+    else:
+        logger.warning(f"경로를 찾을 수 없습니다: {data_path}")
+        logger.warning(f"  - 파일 존재: {os.path.exists(data_path)}")
+        logger.warning(f"  - 파일인지: {os.path.isfile(data_path)}")
+        logger.warning(f"  - 디렉토리인지: {os.path.isdir(data_path)}")
+        return [], False
     
     logger.info(f"발견된 JSON 파일 수: {len(json_files)}")
     if is_mock_exam:

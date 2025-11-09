@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FIN_workbook 하위의 extracted_qna.json 파일들을 분석하여
+workbook_data 하위의 extracted_qna.json 파일들을 분석하여
 qna_domain/qna_type별 통계를 확인하는 스크립트
 """
 
@@ -20,7 +20,7 @@ VALID_DOMAINS = {
 }
 
 def find_extracted_qna_files(base_path):
-    """FIN_workbook 하위의 모든 extracted_qna.json 파일을 찾습니다."""
+    """workbook_data 하위의 모든 extracted_qna.json 파일을 찾습니다."""
     pattern = os.path.join(base_path, "**", "*extracted_qna.json")
     files = glob.glob(pattern, recursive=True)
     # merged로 시작하는 파일들과 백업 파일들 제외
@@ -364,9 +364,23 @@ def save_detailed_report(stats, output_file):
 
 def main():
     """메인 함수"""
-    base_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/workbook_data"
+    # pipeline/config에서 ONEDRIVE_PATH, PROJECT_ROOT_PATH import 시도
+    try:
+        import sys
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+        sys.path.insert(0, project_root)
+        from pipeline.config import ONEDRIVE_PATH, PROJECT_ROOT_PATH
+        base_path = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data')
+        txt_output_file = os.path.join(PROJECT_ROOT_PATH, 'qna_statistics_report.txt')
+        excel_output_file = os.path.join(PROJECT_ROOT_PATH, 'qna_statistics_report.xlsx')
+    except ImportError:
+        # fallback: pipeline이 없는 경우 기본값 사용
+        base_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/workbook_data"
+        txt_output_file = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/qna_statistics_report.txt"
+        excel_output_file = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/qna_statistics_report.xlsx"
     
-    print("🔍 FIN_workbook 하위의 extracted_qna.json 파일들을 찾는 중...")
+    print("🔍 workbook_data 하위의 extracted_qna.json 파일들을 찾는 중...")
     files = find_extracted_qna_files(base_path)
     
     if not files:
@@ -382,11 +396,9 @@ def main():
     print_statistics(stats)
     
     # txt 상세 보고서 저장
-    txt_output_file = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/qna_statistics_report.txt"
     save_txt_report(stats, txt_output_file)
     
     # Excel 상세 보고서 저장
-    excel_output_file = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/qna_statistics_report.xlsx"
     save_detailed_report(stats, excel_output_file)
     
     # print(f"\n🎉 분석이 완료되었습니다!")

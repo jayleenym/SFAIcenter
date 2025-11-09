@@ -16,7 +16,17 @@ except ImportError:
     from multiple_eval_by_model import replace_tags_in_qna_data
 
 
-ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+# pipeline/config에서 ONEDRIVE_PATH import 시도
+try:
+    import sys
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    sys.path.insert(0, project_root)
+    from pipeline.config import ONEDRIVE_PATH
+except ImportError:
+    # fallback: pipeline이 없는 경우 기본값 사용
+    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+
 
 EXTRACTED_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data')
 EVAL_DATA_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data')
@@ -173,7 +183,7 @@ def classify_subdomain(data_path: list or str = None, qtype: str = None):
 
 
 def main():
-    # 1. FIN_workbook 하위 extracted_qna.json 파일 찾기
+    # 1. workbook_data 하위 extracted_qna.json 파일 찾기
     json_files = get_json_files(EXTRACTED_DIR)
     # 2. 0_bronze_layer_grpby 하위 multiple.json, short.json, essay.json 파일 생성
     get_qna_type(json_files)

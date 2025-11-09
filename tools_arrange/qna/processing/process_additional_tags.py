@@ -13,7 +13,17 @@ import os
 import shutil
 from typing import Dict, List, Any
 
-ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+# pipeline/config에서 ONEDRIVE_PATH import 시도
+try:
+    import sys
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    sys.path.insert(0, project_root)
+    from pipeline.config import ONEDRIVE_PATH
+except ImportError:
+    # fallback: pipeline이 없는 경우 기본값 사용
+    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+
 
 def load_json_file(file_path: str) -> Dict[str, Any]:
     """JSON 파일을 로드합니다."""

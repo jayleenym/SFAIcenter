@@ -14,7 +14,17 @@ from pathlib import Path
 from typing import Dict, List, Any, Tuple
 from collections import defaultdict
 
-ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+# pipeline/config에서 ONEDRIVE_PATH import 시도
+try:
+    import sys
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    sys.path.insert(0, project_root)
+    from pipeline.config import ONEDRIVE_PATH
+except ImportError:
+    # fallback: pipeline이 없는 경우 기본값 사용
+    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+
 
 def extract_file_id_from_filename(filename: str) -> str:
     """Extract file ID from filename like SS0419_extracted_qna.json -> SS0419"""
@@ -147,7 +157,7 @@ def main():
     """Main function to analyze all extracted QnA files"""
     # Directory containing the extracted QnA files
     cycle = sys.argv[1]
-    extracted_dir = Path(os.path.join(ONEDRIVE_PATH, 'data/FIN_workbook/{cycle}C/extracted'))
+    extracted_dir = Path(os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5'))
     
     if not extracted_dir.exists():
         print(f"Error: Directory {extracted_dir} does not exist")
@@ -197,7 +207,7 @@ def main():
             break
     # Save report to file
     if len(all_missing_entries) > 0:
-        report_file = Path(os.path.join(ONEDRIVE_PATH, f'data/FIN_workbook/{cycle}C/additional_tags_report.json'))
+        report_file = Path(os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/additional_tags_report.json'))
         with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(all_missing_entries, f, ensure_ascii=False, indent=2)
         

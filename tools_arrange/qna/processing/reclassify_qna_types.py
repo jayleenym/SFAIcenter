@@ -105,7 +105,18 @@ def main():
     Main function to process all extracted_qna.json files.
     """
     # Find all extracted_qna.json files
-    pattern = "data/FIN_workbook/*/Lv5/*_extracted_qna.json"
+    # pipeline/config에서 ONEDRIVE_PATH import 시도
+    try:
+        import sys
+        import os
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+        sys.path.insert(0, project_root)
+        from pipeline.config import ONEDRIVE_PATH
+        pattern = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data/*/Lv5/*_extracted_qna.json')
+    except ImportError:
+        # fallback: pipeline이 없는 경우 기본값 사용
+        pattern = "evaluation/workbook_data/*/Lv5/*_extracted_qna.json"
     json_files = glob.glob(pattern, recursive=True)
     
     if not json_files:

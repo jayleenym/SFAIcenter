@@ -22,10 +22,20 @@ class FileManager:
             base_path: 기본 경로 (None이면 OneDrive 경로 사용)
         """
         if base_path is None:
-            self.base_path = os.path.join(
-                os.path.expanduser("~"), 
-                "Library/CloudStorage/OneDrive-개인/데이터L/selectstar"
-            )
+            # pipeline/config에서 ONEDRIVE_PATH import 시도
+            try:
+                import sys
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                project_root = os.path.dirname(os.path.dirname(current_dir))
+                sys.path.insert(0, project_root)
+                from pipeline.config import ONEDRIVE_PATH
+                self.base_path = ONEDRIVE_PATH
+            except ImportError:
+                # fallback: pipeline이 없는 경우 기본값 사용
+                self.base_path = os.path.join(
+                    os.path.expanduser("~"), 
+                    "Library/CloudStorage/OneDrive-개인/데이터L/selectstar"
+                )
         else:
             self.base_path = base_path
         
@@ -33,8 +43,8 @@ class FileManager:
         self.original_data_path = os.path.join(self.base_path, 'data', 'ORIGINAL')
         self.final_data_path = os.path.join(self.base_path, 'data', 'FINAL')
     
-    def get_excel_data(self, cycle: int, base_path: str = None) -> pd.DataFrame:
-        """Excel 데이터 읽기 및 병합"""
+    def load_excel_metadata(self, cycle: int, base_path: str = None) -> pd.DataFrame:
+        """Excel 파일에서 도서 메타데이터 읽기 및 병합"""
         if base_path is None:
             base_path = self.base_path
         
@@ -59,98 +69,81 @@ class FileManager:
         
         return merge_excel
     
-    def get_filelist(self, cycle: int, data_path: str = None) -> List[str]:
-        """JSON 파일 리스트 가져오기"""
-        if data_path:
-            final_data_path = data_path
-        else:
-            final_data_path = self.final_data_path
-        
-        final_data_path = os.path.join(final_data_path, self.cycle_path[cycle])
+    def get_json_file_list(self, cycle: int, data_path: str = None) -> List[str]:
+        """지정된 사이클의 JSON 파일 리스트 반환"""
+        base_path = data_path if data_path else self.final_data_path
+        target_path = os.path.join(base_path, self.cycle_path[cycle])
         
         json_files = []
-        for root, _, files in os.walk(final_data_path):
+        for root, _, files in os.walk(target_path):
             for f in files:
                 if f.endswith(".json") and ('_' not in f):
                     json_files.append(os.path.join(root, f))
         
         return sorted(json_files)
     
-    def move_jsons(self, cycle: int, final_data_path: str = None):
-        """JSON 파일을 레벨별로 이동"""
-        if final_data_path is None:
-            final_data_path = self.final_data_path
+    def organize_files_by_level(self, cycle: int, data_path: str = None):
+        """JSON 파일을 레벨(Lv2, Lv3/4, Lv5)별로 분류하여 이동"""
+        base_path = data_path if data_path else self.final_data_path
+        target_path = os.path.join(base_path, self.cycle_path[cycle])
         
-        excel = self.get_excel_data(cycle)
-        final_path = os.path.join(final_data_path, self.cycle_path[cycle])
+        excel = self.load_excel_metadata(cycle)
+        lv2_ids = {str(d) for d in excel[excel['분류'] == 'Lv2'].index}
+        lv3_ids = {str(d) for d in excel[excel['분류'] == 'Lv3/4'].index}
+        lv5_ids = {str(d) for d in excel[excel['분류'] == 'Lv5'].index}
         
-        Lv2_isbn_id = [str(d) for d in excel[excel['분류'] == 'Lv2'].index]
-        Lv3_isbn_id = [str(d) for d in excel[excel['분류'] == 'Lv3/4'].index]
-        Lv5_isbn_id = [str(d) for d in excel[excel['분류'] == 'Lv5'].index]
+        lv2_dir = os.path.join(target_path, "Lv2")
+        lv34_dir = os.path.join(target_path, "Lv3_4")
+        lv5_dir = os.path.join(target_path, "Lv5")
         
-        lv2 = os.path.join(final_path, "Lv2")
-        lv34 = os.path.join(final_path, "Lv3_4")
-        lv5 = os.path.join(final_path, "Lv5")
+        for dir_path in [lv2_dir, lv34_dir, lv5_dir]:
+            os.makedirs(dir_path, exist_ok=True)
         
-        os.makedirs(lv2, exist_ok=True)
-        os.makedirs(lv34, exist_ok=True)
-        os.makedirs(lv5, exist_ok=True)
-        
-        for id in os.listdir(final_path):
-            file_path = os.path.join(final_path, id)
-            if os.path.isfile(file_path):
-                file_id = os.path.splitext(id)[0]
-                if file_id in Lv3_isbn_id:
-                    shutil.move(file_path, lv34)
-                elif file_id in Lv5_isbn_id:
-                    shutil.move(file_path, lv5)
-                elif file_id in Lv2_isbn_id:
-                    shutil.move(file_path, lv2)
+        for filename in os.listdir(target_path):
+            file_path = os.path.join(target_path, filename)
+            if not os.path.isfile(file_path):
+                continue
+            
+            file_id = os.path.splitext(filename)[0]
+            if file_id in lv3_ids:
+                shutil.move(file_path, lv34_dir)
+            elif file_id in lv5_ids:
+                shutil.move(file_path, lv5_dir)
+            elif file_id in lv2_ids:
+                shutil.move(file_path, lv2_dir)
 
 
 class TextProcessor:
     """텍스트 처리 유틸리티 클래스"""
     
     @staticmethod
-    def n_split(txt: str, sep: str) -> List[str]:
-        """엔터 제거 후 분리"""
-        result = re.sub(r'(?<![.?!①②③④⑤\[\]])\n(?!\n)', ' ', txt)
-        return result.split(sep)
+    def remove_inline_newlines(text: str) -> str:
+        """문장 내 엔터 제거 (문장 끝 엔터는 유지)"""
+        return re.sub(r'(?<![.?!\]])\n(?!\n)(?![.?!])', ' ', text)
     
     @staticmethod
-    def remove_enter(txt: str) -> str:
-        """문장 내 엔터 처리"""
-        return re.sub(r'(?<![.?!\]])\n(?!\n)(?![.?!])', ' ', txt)
+    def split_text_with_newline_removal(text: str, separator: str) -> List[str]:
+        """엔터 제거 후 텍스트 분리"""
+        # remove_inline_newlines를 재사용
+        cleaned_text = TextProcessor.remove_inline_newlines(text)
+        return cleaned_text.split(separator)
     
     @staticmethod
-    def extract_options(txt: str) -> List[str]:
-        """선택지 추출"""
+    def extract_choice_options(text: str) -> List[str]:
+        """선택지(①~⑤) 추출"""
         pattern = r'([①②③④⑤]\s*[^①②③④⑤]*)'
-        options = re.findall(pattern, txt)
+        options = re.findall(pattern, text)
         return [opt.replace("\n", " ").strip() for opt in options if opt.strip()]
     
     @staticmethod
-    def replace_number(number: int) -> str:
-        """숫자를 원형 숫자로 변환"""
+    def convert_to_circle_number(number: int) -> str:
+        """숫자를 원형 숫자(①~⑤)로 변환"""
         circle_numbers = {'1': '①', '2': '②', '3': '③', '4': '④', '5': '⑤'}
         return circle_numbers.get(str(number), str(number))
     
     @staticmethod
-    def extract_chapter(page_data: Dict, page_offset: int) -> Dict:
-        """챕터 추출"""
-        page = int(page_data['page']) - page_offset
-        regex = fr"^(.*)\n{page}\n"
-        
-        chapter = re.findall(regex, page_data['page_contents'])
-        if chapter:
-            page_data['chapter'] = chapter[0].strip()
-            page_data['page_contents'] = re.sub(regex, "", page_data['page_contents'])
-        
-        return page_data
-    
-    @staticmethod
-    def fill_chapter(file_data: Dict) -> Dict:
-        """챕터 정보 채우기"""
+    def fill_missing_chapters(file_data: Dict) -> Dict:
+        """빈 챕터 정보를 이전 페이지의 챕터로 채우기"""
         pages = file_data["contents"]
         new_pages = []
         
@@ -167,8 +160,8 @@ class TextProcessor:
         return output
     
     @staticmethod
-    def merge_paragraphs(file_data: Dict) -> Dict:
-        """문단 병합"""
+    def merge_broken_paragraphs(file_data: Dict) -> Dict:
+        """페이지 경계에서 끊어진 문단 병합"""
         pages = file_data["contents"]
         merged_pages = []
         buffer = ""
@@ -183,7 +176,7 @@ class TextProcessor:
             lines = text.split("\n")
             last_line = lines[-1].strip()
             
-            if last_line and not last_line.endswith(("다.", "다."", "다.\"", "?", "!", ".", "…")):
+            if last_line and not last_line.endswith(("다.", "다.\"", "?", "!", ".", "…")):
                 buffer = lines.pop(-1)
             
             page["page_contents"] = "\n".join(lines)
@@ -224,9 +217,9 @@ class JSONHandler:
             json.dump(data, f, ensure_ascii=False, indent=indent)
     
     @staticmethod
-    def format_change(file_id: str, cycle: int, pages: List[Dict], file_manager: FileManager) -> Dict:
-        """JSON 포맷 변경"""
-        merge_excel = file_manager.get_excel_data(cycle)
+    def convert_json_format(file_id: str, cycle: int, pages: List[Dict], file_manager: FileManager) -> Dict:
+        """JSON 데이터 구조 변환 (원본 형식 → 표준 형식)"""
+        merge_excel = file_manager.load_excel_metadata(cycle)
         
         revision = {
             'file_id': str(merge_excel.loc[file_id, 'ISBN']),

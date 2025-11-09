@@ -7,10 +7,17 @@ import re
 import glob
 
 # 상위 디렉토리를 Python path에 추가
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+# pipeline/config에서 ONEDRIVE_PATH import
+try:
+    from pipeline.config import ONEDRIVE_PATH
+except ImportError:
+    # fallback: pipeline이 없는 경우 기본값 사용
+    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
 
 import ProcessFiles as pf
-from question_answer import ProcessQnA as pq
+from .process_qna import extract_qna_tags, get_qna_datas
 
 
 def find_last_processed_page(extracted_dir, file_name):
@@ -65,7 +72,6 @@ def get_remaining_pages(json_data, start_page):
     return remaining_pages
 
 
-ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
 
 def main(cycle: int):
     """
@@ -157,7 +163,7 @@ def main(cycle: int):
                     continue
                 
                 # file_id를 올바르게 설정
-                result = pq.extract_qna_tags(temp_json_data, name, os.path.join(extracted_dir, f"{name}.json"))
+                result = extract_qna_tags(temp_json_data, name, os.path.join(extracted_dir, f"{name}.json"))
                 
                 # 최종 파일 저장
                 if len(result['extracted_qna']) != 0:
@@ -215,7 +221,7 @@ def main(cycle: int):
             else:
                 print(f"- 처음부터 처리합니다.")
                 # 처음부터 처리
-                result = pq.get_qna_datas(json_file, os.path.join(extracted_dir, f"{name}.json"))
+                result = get_qna_datas(json_file, os.path.join(extracted_dir, f"{name}.json"))
             
             total_extracted += len(result['extracted_qna'])
             processed_files += 1

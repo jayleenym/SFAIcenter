@@ -292,8 +292,18 @@ if __name__ == "__main__":
     cycle = sys.argv[1]
     remove_duplicates = len(sys.argv) == 4 and sys.argv[3] == "--remove"
 
-    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
-    directory_path = os.path.join(ONEDRIVE_PATH, f'data/FIN_workbook/{cycle}C/extracted')
+# pipeline/config에서 ONEDRIVE_PATH import 시도
+try:
+    import sys
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    sys.path.insert(0, project_root)
+    from pipeline.config import ONEDRIVE_PATH
+except ImportError:
+    # fallback: pipeline이 없는 경우 기본값 사용
+    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+
+    directory_path = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5')
     
     if not os.path.exists(directory_path):
         print(f"❌ 디렉토리가 존재하지 않습니다: {directory_path}")

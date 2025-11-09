@@ -125,7 +125,18 @@ def find_multiple_choice_invalid_options(file_path):
 def main(file_path: str=None):
     """Main function to find all multiple-choice questions with invalid options and save to files."""
     if file_path is None:
-        pattern = "data/FIN_workbook/*/Lv5/*_extracted_qna.json"
+        # pipeline/config에서 ONEDRIVE_PATH import 시도
+        try:
+            import sys
+            import os
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+            sys.path.insert(0, project_root)
+            from pipeline.config import ONEDRIVE_PATH
+            pattern = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data/*/Lv5/*_extracted_qna.json')
+        except ImportError:
+            # fallback: pipeline이 없는 경우 기본값 사용
+            pattern = "evaluation/workbook_data/*/Lv5/*_extracted_qna.json"
         json_files = glob.glob(pattern, recursive=True)
         print(f"Finding multiple-choice questions with null or empty options in {len(json_files)} files...")
     else:
@@ -205,5 +216,16 @@ def main(file_path: str=None):
     print(f"  - invalid_format: {invalid_type_stats['invalid_format']} (옵션이 ①②③④⑤로 시작하지 않음)")
 
 if __name__ == "__main__":
-    file_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple_subdomain_classified_ALL.json"
+    # pipeline/config에서 ONEDRIVE_PATH import 시도
+    try:
+        import sys
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+        sys.path.insert(0, project_root)
+        from pipeline.config import ONEDRIVE_PATH
+        file_path = os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/2_subdomain/multiple_subdomain_classified_ALL.json')
+    except ImportError:
+        # fallback: pipeline이 없는 경우 기본값 사용
+        file_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple_subdomain_classified_ALL.json"
+    
     main(file_path=file_path)
