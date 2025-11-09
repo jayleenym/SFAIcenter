@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Dict, List, Any, Tuple
 from collections import defaultdict
 
+ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+
 def extract_file_id_from_filename(filename: str) -> str:
     """Extract file ID from filename like SS0419_extracted_qna.json -> SS0419"""
     match = re.match(r'(SS\d+)_extracted_qna\.json', filename)
@@ -144,9 +146,8 @@ def analyze_json_file(file_path: Path) -> List[Dict[str, Any]]:
 def main():
     """Main function to analyze all extracted QnA files"""
     # Directory containing the extracted QnA files
-    user_name = sys.argv[1]
-    cycle = sys.argv[2]
-    extracted_dir = Path(f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted")
+    cycle = sys.argv[1]
+    extracted_dir = Path(os.path.join(ONEDRIVE_PATH, 'data/FIN_workbook/{cycle}C/extracted'))
     
     if not extracted_dir.exists():
         print(f"Error: Directory {extracted_dir} does not exist")
@@ -196,7 +197,7 @@ def main():
             break
     # Save report to file
     if len(all_missing_entries) > 0:
-        report_file = Path(f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/additional_tags_report.json")
+        report_file = Path(os.path.join(ONEDRIVE_PATH, f'data/FIN_workbook/{cycle}C/additional_tags_report.json'))
         with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(all_missing_entries, f, ensure_ascii=False, indent=2)
         
