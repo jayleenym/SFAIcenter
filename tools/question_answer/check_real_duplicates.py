@@ -284,15 +284,16 @@ def check_real_duplicates(directory_path, remove_duplicates=False):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or len(sys.argv) > 4:
-        print("사용법: python check_real_duplicates.py <username> <cycle> [--remove]")
-        print("예시: python check_real_duplicates.py yejin 1")
-        print("예시: python check_real_duplicates.py yejin 1 --remove")
+        print("사용법: python check_real_duplicates.py <cycle> [--remove]")
+        print("예시: python check_real_duplicates.py 1")
+        print("예시: python check_real_duplicates.py 1 --remove")
         sys.exit(1)
     
-    user_name = sys.argv[1]
-    cycle = sys.argv[2]
+    cycle = sys.argv[1]
     remove_duplicates = len(sys.argv) == 4 and sys.argv[3] == "--remove"
-    directory_path = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted"
+
+    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    directory_path = os.path.join(ONEDRIVE_PATH, f'data/FIN_workbook/{cycle}C/extracted')
     
     if not os.path.exists(directory_path):
         print(f"❌ 디렉토리가 존재하지 않습니다: {directory_path}")

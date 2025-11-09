@@ -13,6 +13,8 @@ import os
 import shutil
 from typing import Dict, List, Any
 
+ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+
 def load_json_file(file_path: str) -> Dict[str, Any]:
     """JSON 파일을 로드합니다."""
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -59,7 +61,11 @@ def extract_tags_from_qna_content(qna_item: Dict) -> List[str]:
                     # options는 리스트이므로 각 항목을 합침
                     for option in desc[field]:
                         qna_content += str(option) + " "
+                elif field == 'explanation':
+                    # explanation은 긴 문자열이므로 명시적으로 처리
+                    qna_content += str(desc[field]) + " "
                 else:
+                    # question, answer 등 문자열 필드
                     qna_content += str(desc[field]) + " "
     
     # Q&A 내용에서 tb, img, f, etc, note 태그 추출
@@ -189,14 +195,14 @@ def fill_additional_tag_data(qna_data: List[Dict], source_data: Dict) -> tuple:
     
     return filled_count, total_empty
 
-def process_additional_tags(user_name: str, cycle: str, file_id: str) -> bool:
+def process_additional_tags(cycle: str, file_id: str) -> bool:
     """additional_tag_data를 처리하는 메인 함수. 성공시 True, 실패시 False 반환"""
     
     # 파일 경로 설정
-    extracted_qna_path = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted/{file_id}_extracted_qna.json"
-    source_path = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FINAL/{cycle}C/Lv5/{file_id}/{file_id}.json"
-    backup_dir = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted/_backup"
-    backup_path = f"{backup_dir}/{file_id}_extracted_qna.json.bak"
+    extracted_qna_path = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5/{file_id}_extracted_qna.json')
+    source_path = os.path.join(ONEDRIVE_PATH, f'data/FINAL/{cycle}C/Lv5/{file_id}/{file_id}.json')
+    backup_dir = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5/_backup')
+    backup_path = os.path.join(backup_dir, f'{file_id}_extracted_qna.json.bak')
     
     # 백업 디렉토리 생성 (존재하지 않는 경우)
     os.makedirs(backup_dir, exist_ok=True)
@@ -250,9 +256,9 @@ def process_additional_tags(user_name: str, cycle: str, file_id: str) -> bool:
     print("처리 완료!")
     return True
 
-def find_all_extracted_qna_files(user_name: str, cycle: str) -> List[str]:
+def find_all_extracted_qna_files(cycle: str) -> List[str]:
     """지정된 경로의 모든 extracted_qna 파일을 찾습니다."""
-    extracted_dir = f"/Users/{user_name}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C/extracted"
+    extracted_dir = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5')
     
     if not os.path.exists(extracted_dir):
         print(f"디렉토리가 존재하지 않습니다: {extracted_dir}")
@@ -267,13 +273,13 @@ def find_all_extracted_qna_files(user_name: str, cycle: str) -> List[str]:
     
     return sorted(extracted_files)
 
-def process_all_files(user_name: str, cycle: str) -> None:
+def process_all_files(cycle: str) -> None:
     """모든 extracted_qna 파일을 처리합니다."""
     print(f"{cycle}C의 모든 extracted_qna 파일을 처리합니다...")
     print("=" * 60)
     
     # 모든 파일 찾기
-    file_ids = find_all_extracted_qna_files(user_name, cycle)
+    file_ids = find_all_extracted_qna_files(cycle)
     
     if not file_ids:
         print("처리할 파일이 없습니다.")
@@ -293,7 +299,7 @@ def process_all_files(user_name: str, cycle: str) -> None:
         print("-" * 40)
         
         try:
-            success = process_additional_tags(user_name, cycle, file_id)
+            success = process_additional_tags(cycle, file_id)
             if success:
                 success_count += 1
                 print(f"✅ {file_id} 처리 완료")
@@ -316,22 +322,37 @@ def process_all_files(user_name: str, cycle: str) -> None:
         print(f"실패한 파일: {', '.join(error_files)}")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3 or len(sys.argv) > 4:
+    if len(sys.argv) > 3:
         print("사용법:")
-        print("  python process_additional_tags.py <username> <cycle> [file_id]")
+        print("  python process_additional_tags.py [cycle] [file_id]")
         print("")
         print("예시:")
-        print("  python process_additional_tags.py yejin 1 SS0332  # 특정 파일 처리")
-        print("  python process_additional_tags.py yejin 1         # 모든 파일 처리")
+        print("  python process_additional_tags.py 1 SS0332  # 특정 파일 처리")
+        print("  python process_additional_tags.py 1         # 특정 cycle의 모든 파일 처리")
+        print("  python process_additional_tags.py           # cycle 1~3 모두 처리")
         sys.exit(1)
     
-    user_name = sys.argv[1]
-    cycle = sys.argv[2]
+    if len(sys.argv) == 1:
+        # cycle 입력이 없으면 1~3 모두 처리
+        print("cycle 입력이 없어 cycle 1, 2, 3을 모두 처리합니다...")
+        print("=" * 60)
+        
+        for cycle in ['1', '2', '3']:
+            print(f"\n{'='*60}")
+            print(f"Cycle {cycle} 처리 시작")
+            print(f"{'='*60}")
+            process_all_files(cycle)
+        
+        print("\n" + "=" * 60)
+        print("모든 cycle 처리 완료!")
+        sys.exit(0)
     
-    if len(sys.argv) == 4:
+    cycle = sys.argv[1]
+    
+    if len(sys.argv) == 3:
         # 특정 파일 처리
-        file_id = sys.argv[3]
-        success = process_additional_tags(user_name, cycle, file_id)
+        file_id = sys.argv[2]
+        success = process_additional_tags(cycle, file_id)
         if success:
             print(f"\n✅ {file_id} 처리 완료!")
         else:
@@ -339,4 +360,4 @@ if __name__ == "__main__":
             sys.exit(1)
     else:
         # 모든 파일 처리
-        process_all_files(user_name, cycle)
+        process_all_files(cycle)

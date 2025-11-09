@@ -16,10 +16,12 @@ except ImportError:
     from multiple_eval_by_model import replace_tags_in_qna_data
 
 
-EXTRACTED_DIR = '/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/workbook_data'
-EVAL_DATA_DIR = '/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data'
+ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+
+EXTRACTED_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data')
+EVAL_DATA_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data')
 # BRONZE_LAYER_0_DIR = os.path.join(EVAL_DATA_DIR, '0_grpby')
-BRONZE_LAYER_1_DIR = os.path.join(EVAL_DATA_DIR, '1_filter')
+BRONZE_LAYER_1_DIR = os.path.join(EVAL_DATA_DIR, '1_filter_with_tags')
 BRONZE_LAYER_2_DIR = os.path.join(EVAL_DATA_DIR, '2_subdomain')
 
 def get_json_files(final_data_path):
@@ -52,6 +54,7 @@ def get_qna_type(data: list):
     multiple = []
     short = []
     essay = []
+    etc = []
 
     for file in data:
         origin = json.load(open(file, 'r', encoding='utf-8'))
@@ -63,15 +66,17 @@ def get_qna_type(data: list):
                     short.append(qna)
                 elif qna.get('qna_type') == "essay":
                     essay.append(qna)
-    
+                elif qna.get('qna_type') == "etc":
+                    etc.append(qna)
     print("------------- 데이터 형식 변경 & 필터링 -------------------")
     print("기본 multiple-choice: ", len(multiple))
-    rearrange_data(multiple, "multiple")
+    rearrange_data(multiple, "multiple-choice")
     print("기본 short-answer: ", len(short))
-    rearrange_data(short, "short")
+    rearrange_data(short, "short-answer")
     print("기본 essay: ", len(essay))
     rearrange_data(essay, "essay")
-
+    print("기본 etc: ", len(etc))
+    rearrange_data(etc, "etc")
 
 
 def rearrange_data(data_path: list or str = None, qtype: str = None):
@@ -94,16 +99,31 @@ def rearrange_data(data_path: list or str = None, qtype: str = None):
     rearranged_data = []
     for m in data:
         qna_data = replace_tags_in_qna_data(m.get('qna_data'), m.get('additional_tag_data'))
-        # 객관식: OX 문제 제외, 선지가 3개 이상인 경우
-        if (qtype == "multiple") and (qna_data.get('description').get('options') is not None) and (len(qna_data.get('description').get('options')) > 2): 
-            pass
-        # 단답형: 답변이 있고, 답변이 삭제되지 않은 경우
-        elif (qtype == "short") and (qna_data.get('description').get('answer') is not None) and (qna_data.get('description').get('answer') != "삭제"):
-            pass
-        # 서술형: 답변이 있는 경우
-        elif (qtype == "essay") and (qna_data.get('description').get('answer') is not None):
-            pass
-        else:
+        
+        # qtype 유효성 검사
+        if qtype not in ["multiple-choice", "short-answer", "essay", "etc"]:
+            raise ValueError(f"올바르지 않은 문제 타입: {qtype}")
+        
+        # 각 타입별 필터링 조건 확인
+        should_include = False
+        if qtype == "multiple-choice":
+            # 객관식: OX 문제 제외, 선지가 3개 이상인 경우
+            if (qna_data.get('description', {}).get('options') is not None) and (len(qna_data.get('description', {}).get('options', [])) > 2):
+                should_include = True
+        elif qtype == "short-answer":
+            # 단답형: 답변이 있고, 답변이 삭제되지 않은 경우
+            if (qna_data.get('description', {}).get('answer') is not None) and (qna_data.get('description', {}).get('answer') != "삭제"):
+                should_include = True
+        elif qtype == "essay":
+            # 서술형: 답변이 있는 경우
+            if qna_data.get('description', {}).get('answer') is not None:
+                should_include = True
+        elif qtype == "etc":
+            # etc 타입은 모두 포함
+            should_include = True
+        
+        # 조건을 만족하지 않으면 건너뛰기
+        if not should_include:
             continue
 
         qna = {

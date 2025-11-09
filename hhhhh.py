@@ -6,8 +6,11 @@ from openai import OpenAI
 import time
 import os
 
+ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+BASE_DIR = os.path.join(os.path.expanduser("~"), "Desktop/Desktop_AICenter✨/SFAIcenter")
+
 config = configparser.ConfigParser()
-config.read('/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini', encoding='utf-8')
+config.read(os.path.join(BASE_DIR, 'llm_config.ini'), encoding='utf-8')
 
 client = OpenAI(
             api_key=config["OPENROUTER"]["key"], 
@@ -16,20 +19,20 @@ client = OpenAI(
 
 qtype = input("qtype을 입력하세요: ")
 
-with open('/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/domain_subdomain.json', 'r', encoding='utf-8') as f:
+with open(os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/domain_subdomain.json'), 'r', encoding='utf-8') as f:
     domain_subdomain = json.load(f)
 
 if qtype == 'short-fail':
-    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/short_subdomain_classified_ALL_fail_response.json', 'r', encoding='utf-8') as f:
+    with open(os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/2_subdomain/short_subdomain_classified_ALL_fail_response.json'), 'r', encoding='utf-8') as f:
         questions = json.load(f)
 elif qtype == 'multiple-fail':
-    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple-re_re_run.json', 'r', encoding='utf-8') as f:
+    with open(os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/2_subdomain/multiple_re_run.json'), 'r', encoding='utf-8') as f:
         questions = json.load(f)
 elif qtype == 'multiple-re':
-    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple.json', 'r', encoding='utf-8') as f:
+    with open(os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/2_subdomain/multiple.json'), 'r', encoding='utf-8') as f:
         questions = json.load(f)
 else:
-    with open(f'/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/1_filter/{qtype}.json', 'r', encoding='utf-8') as f:
+    with open(os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/1_filter/{qtype}.json'), 'r', encoding='utf-8') as f:
         questions = json.load(f)
 
 print("총 문제 수: ", len(questions))
@@ -262,7 +265,7 @@ for i in tqdm(range(0, len(questions), batch_size)):
             filename = f"{qtype}_response.json"
         else:
             filename = f"{qtype}_subdomain_classified_ALL.json"
-        filepath = '/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain'
+        filepath = os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/2_subdomain')
         
         with open(os.path.join(filepath, filename), 'w', encoding='utf-8') as f:
             json.dump(questions, f, ensure_ascii=False, indent=2)
