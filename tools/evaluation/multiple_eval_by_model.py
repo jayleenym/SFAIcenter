@@ -1224,22 +1224,24 @@ def print_domain_analysis_summary(df_all: pd.DataFrame, domain_acc: pd.DataFrame
 # 태그 대치 함수들
 # -----------------------------
 
-def replace_tags_in_text(text: str, additional_tag_data: list) -> str:
+def replace_tags_in_text(text: str, additional_tag_data: list, max_depth: int = 5) -> str:
     """
     텍스트에서 {f_0000_0000}이나 {tb_0000_0000} 같은 태그를 additional_tag_data에서 찾아서 대치합니다.
+    중첩된 태그도 재귀적으로 처리합니다.
     
     Args:
         text: 대치할 텍스트
         additional_tag_data: 태그 데이터 리스트
+        max_depth: 최대 재귀 깊이 (무한 루프 방지)
     
     Returns:
         태그가 대치된 텍스트
     """
-    if not text or not additional_tag_data:
+    if not text or not additional_tag_data or max_depth <= 0:
         return text
     
     # 태그 패턴 매칭: {f_0000_0000}, {tb_0000_0000}, {img_0000_0000}, {etc_0000_0000}, {note_0000_0000}
-    tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|note_\d{4}_\d{4})\}'
+    tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|img_\d{4}_\d{4}|etc_\d{4}_\d{4}|note_\d{4}_\d{4})\}'
     
     def replace_tag(match):
         tag_with_braces = match.group(0)  # {f_0000_0000}
@@ -1248,6 +1250,8 @@ def replace_tags_in_text(text: str, additional_tag_data: list) -> str:
         # additional_tag_data에서 해당 태그 찾기
         for tag_data in additional_tag_data:
             if tag_data.get('tag') == tag_with_braces:
+                replacement_text = None
+                
                 # data 필드가 있는 경우
                 if 'data' in tag_data:
                     data = tag_data.get('data', {})
@@ -1255,30 +1259,36 @@ def replace_tags_in_text(text: str, additional_tag_data: list) -> str:
                         # data에서 적절한 필드 찾기 (우선순위: content, text, description, caption)
                         for field in ['content', 'text', 'description', 'caption']:
                             if field in data and data[field]:
-                                return str(data[field])
+                                replacement_text = str(data[field])
+                                break
                         
                         # file_path가 있으면 파일명 표시
-                        if 'file_path' in data and data['file_path']:
-                            return f"[{os.path.basename(data['file_path'])}]"
+                        if replacement_text is None and 'file_path' in data and data['file_path']:
+                            replacement_text = f"[{os.path.basename(data['file_path'])}]"
                     
                     # data가 문자열이면 그대로 사용
                     elif isinstance(data, str) and data:
-                        return data
+                        replacement_text = data
                     
                     # data가 리스트면 첫 번째 요소 사용
                     elif isinstance(data, list) and data:
-                        return str(data[0])
+                        replacement_text = str(data[0])
                 
                 # data 필드가 없는 경우, 직접 필드에서 찾기
                 else:
                     # 직접 필드에서 적절한 내용 찾기 (우선순위: content, text, description, caption)
                     for field in ['content', 'text', 'description', 'caption']:
                         if field in tag_data and tag_data[field]:
-                            return str(tag_data[field])
+                            replacement_text = str(tag_data[field])
+                            break
                     
                     # file_path가 있으면 파일명 표시
-                    if 'file_path' in tag_data and tag_data['file_path']:
-                        return f"[{os.path.basename(tag_data['file_path'])}]"
+                    if replacement_text is None and 'file_path' in tag_data and tag_data['file_path']:
+                        replacement_text = f"[{os.path.basename(tag_data['file_path'])}]"
+                
+                # 대치 텍스트를 찾은 경우, 재귀적으로 중첩된 태그도 처리
+                if replacement_text is not None:
+                    return replace_tags_in_text(replacement_text, additional_tag_data, max_depth - 1)
         
         # 태그를 찾지 못한 경우 원본 태그 유지
         return tag_with_braces
@@ -1358,7 +1368,7 @@ def extract_subject_from_filename(filename: str) -> str:
 # 데이터 로딩 함수
 # -----------------------------
 
-def load_data_from_directory(data_path: str, apply_tag_replacement: bool = True) -> Tuple[List[dict], bool]:
+def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False) -> Tuple[List[dict], bool]:
     """디렉토리에서 JSON 파일들을 로드하여 데이터 리스트 반환
     
     Returns:
@@ -1441,8 +1451,8 @@ def main():
     parser.add_argument('--models', nargs='+', default=['anthropic/claude-sonnet-4.5', 'google/gemini-2.5-flash', 'openai/gpt-5', 'google/gemini-2.5-pro', 'google/gemma-3-27b-it:free'], help='평가할 모델 목록')
     parser.add_argument('--mock_mode', action='store_true', help='Mock 모드로 실행 (실제 API 호출 없음)')
     parser.add_argument('--use_ox_support', action='store_true', help='O, X 문제 지원 활성화')
-    parser.add_argument('--apply_tag_replacement', action='store_true', default=False, help='태그 대치 적용 (기본값: True)')
-    parser.add_argument('--no_tag_replacement', action='store_true', help='태그 대치 비활성화')
+    parser.add_argument('--apply_tag_replacement', action='store_true', default=False, help='태그 대치 적용 (기본값: False)')
+    parser.add_argument('--no_tag_replacement', action='store_true', help='태그 대치 비활성화 (deprecated: 기본값이 False이므로 더 이상 필요 없음)')
     parser.add_argument('--seed', type=int, default=42, help='랜덤 시드 (기본값: 42)')
     parser.add_argument('--output_filename', type=str, help='결과 Excel 파일명 (기본값: 자동 생성)')
     parser.add_argument('--debug', action='store_true', help='디버그 로그 활성화')
@@ -1480,7 +1490,10 @@ def main():
         logger.info("모드: OpenRouter API 모드 (기본값)")
     
     # 태그 대치 옵션 처리
-    apply_tag_replacement = not args.no_tag_replacement
+    apply_tag_replacement = args.apply_tag_replacement
+    if args.no_tag_replacement:
+        apply_tag_replacement = False
+        logger.warning("--no_tag_replacement 옵션은 deprecated입니다. --apply_tag_replacement를 사용하지 않으면 기본값이 False입니다.")
     logger.info(f"태그 대치 적용: {apply_tag_replacement}")
     
     try:
@@ -1489,16 +1502,17 @@ def main():
         all_data, is_mock_exam = load_data_from_directory(args.data_path, apply_tag_replacement)
         
         # mock_exam 파일이 아닌 경우에만 객관식 필터링 적용
-        if is_mock_exam:
-            multiple_choice_data = all_data
-            logger.info("Mock exam 파일이므로 모든 데이터를 사용합니다.")
-        else:
-            multiple_choice_data = filter_multiple_choice_questions(all_data)
-            logger.info(f"객관식 문제 필터링 완료: {len(multiple_choice_data)}개")
+        # if is_mock_exam:
+        #     multiple_choice_data = all_data
+        #     logger.info("Mock exam 파일이므로 모든 데이터를 사용합니다.")
+        # else:
+        #     multiple_choice_data = filter_multiple_choice_questions(all_data)
+        #     logger.info(f"객관식 문제 필터링 완료: {len(multiple_choice_data)}개")
         
-        if len(multiple_choice_data) == 0:
-            logger.error("처리할 데이터를 찾을 수 없습니다.")
-            return
+        # if len(multiple_choice_data) == 0:
+        #     logger.error("처리할 데이터를 찾을 수 없습니다.")
+        #     return
+        multiple_choice_data = all_data
         
         # 샘플링
         if len(multiple_choice_data) > args.sample_size:

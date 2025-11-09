@@ -21,7 +21,7 @@ ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneD
 EXTRACTED_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data')
 EVAL_DATA_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data')
 # BRONZE_LAYER_0_DIR = os.path.join(EVAL_DATA_DIR, '0_grpby')
-BRONZE_LAYER_1_DIR = os.path.join(EVAL_DATA_DIR, '1_filter')
+BRONZE_LAYER_1_DIR = os.path.join(EVAL_DATA_DIR, '1_filter_with_tags')
 BRONZE_LAYER_2_DIR = os.path.join(EVAL_DATA_DIR, '2_subdomain')
 
 def get_json_files(final_data_path):
