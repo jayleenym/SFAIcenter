@@ -4,8 +4,8 @@ import os
 import shutil
 from typing import List, Dict, Any
 
-import tools.QueryModels as QueryModels
-from tools.ProcessFiles import FINAL_DATA_PATH, CYCLE_PATH
+import QueryModels as QueryModels
+from ProcessFiles import FINAL_DATA_PATH, CYCLE_PATH
 
 
 def analyze_extracted_qna(qna_info: dict):
@@ -16,9 +16,12 @@ def analyze_extracted_qna(qna_info: dict):
             # 객관식 판별: O/X 선택 또는 ①②③④⑤ 번호 선택만
             # if (answer in ['O', 'X']) or \
             #     (answer in ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']) or \
-            if (len(options) > 2):
-                # 객관식
-                return 'multiple-choice'
+            if (len(options) >= 2):
+                if len(answer) == 1 and (answer in ['O', 'X'] or answer in ['①', '②', '③', '④', '⑤']):
+                    # 객관식 (O, X 문제 또는 ①~⑩ 번호 선택)
+                    return 'multiple-choice'
+                else:
+                    return 'etc'
             else:
                 # 주관식 - 답변의 문장 수로 단답형/서술형 구분
                 sentence_count = answer.count('.') + answer.count('!') + answer.count('?') + answer.count('\n')
@@ -28,8 +31,8 @@ def analyze_extracted_qna(qna_info: dict):
                 pattern_only_answer = re.match(r'^\{[ft]b?_\d{4}_\d{4}\}$', answer.strip())
                 
                 if len(answer) == 0:
-                    return ""
-                elif (sentence_count <= 1) and (("{" not in answer) or pattern_only_answer):
+                    return "etc"
+                elif (sentence_count <= 1) or pattern_only_answer:
                     # 한 문장 또는 한 단어 (단답형)
                     # 또는 {f_0000_0000}, {tb_0000_0000} 패턴만 있는 경우
                     return 'short-answer'
@@ -133,7 +136,7 @@ def add_qna_domain_onebyone(json_data: dict, page_data: dict, model: str = None)
 
 
 # 수정된 extract_qna_tags 함수 (정규식 패턴 수정)
-def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str = None, output_path: str = None) -> Dict[str, Any]:
+def extract_qna_tags(json_data: Dict[str, Any], file_name: str, output_path: str = None) -> Dict[str, Any]:
     """
     page_contents에서 {q_0000_0000} 형태의 태그를 추출하고,
     add_info에서 해당 태그를 찾아서 별도 리스트로 분리하는 함수
@@ -242,34 +245,34 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str =
                     # with_domain_dir = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/data/FIN_workbook/1C/with_domain"
                     # qna_domain = find_domain_for_qna(qna_item, file_name, with_domain_dir)
 
-                    # Domain 추가 (페이지의 모든 Q&A에 대해 한 번만 호출)
-                    if not hasattr(add_qna_domain_onebyone, '_page_processed'):
-                        try:
-                            page_domains = add_qna_domain_onebyone(json_data, page_data, llm_model)
-                            # JSON 파싱하여 도메인 리스트 저장
-                            try:
-                                if isinstance(page_domains, str):
-                                    page_domains = json.loads(page_domains)
-                            except json.JSONDecodeError:
-                                print(f"  - JSON 파싱 실패, 빈 도메인으로 설정")
-                                page_domains = []
-                        except Exception as e:
-                            print(f"  - API 호출 실패: {e}")
-                            page_domains = []
-                        # 페이지별 domain 정보를 저장
-                        add_qna_domain_onebyone._page_processed = True
-                        add_qna_domain_onebyone._page_domains = page_domains
-                        add_qna_domain_onebyone._domain_index = 0
+                    # # Domain 추가 (페이지의 모든 Q&A에 대해 한 번만 호출)
+                    # if not hasattr(add_qna_domain_onebyone, '_page_processed'):
+                    #     try:
+                    #         page_domains = add_qna_domain_onebyone(json_data, page_data, llm_model)
+                    #         # JSON 파싱하여 도메인 리스트 저장
+                    #         try:
+                    #             if isinstance(page_domains, str):
+                    #                 page_domains = json.loads(page_domains)
+                    #         except json.JSONDecodeError:
+                    #             print(f"  - JSON 파싱 실패, 빈 도메인으로 설정")
+                    #             page_domains = []
+                    #     except Exception as e:
+                    #         print(f"  - API 호출 실패: {e}")
+                    #         page_domains = []
+                    #     # 페이지별 domain 정보를 저장
+                    #     add_qna_domain_onebyone._page_processed = True
+                    #     add_qna_domain_onebyone._page_domains = page_domains
+                    #     add_qna_domain_onebyone._domain_index = 0
                     
-                    # 각 Q&A에 해당하는 domain 순차적으로 할당
-                    if hasattr(add_qna_domain_onebyone, '_page_domains') and add_qna_domain_onebyone._domain_index < len(add_qna_domain_onebyone._page_domains):
-                        domain_obj = add_qna_domain_onebyone._page_domains[add_qna_domain_onebyone._domain_index]
-                        qna_domain = domain_obj.get('카테고리', '') if isinstance(domain_obj, dict) else str(domain_obj)
-                        qna_reason = domain_obj.get('근거', '') if isinstance(domain_obj, dict) else ''
-                        add_qna_domain_onebyone._domain_index += 1
-                    else:
-                        qna_domain = ""
-                        qna_reason = ""
+                    # # 각 Q&A에 해당하는 domain 순차적으로 할당
+                    # if hasattr(add_qna_domain_onebyone, '_page_domains') and add_qna_domain_onebyone._domain_index < len(add_qna_domain_onebyone._page_domains):
+                    #     domain_obj = add_qna_domain_onebyone._page_domains[add_qna_domain_onebyone._domain_index]
+                    #     qna_domain = domain_obj.get('카테고리', '') if isinstance(domain_obj, dict) else str(domain_obj)
+                    #     qna_reason = domain_obj.get('근거', '') if isinstance(domain_obj, dict) else ''
+                    #     add_qna_domain_onebyone._domain_index += 1
+                    # else:
+                    #     qna_domain = ""
+                    #     qna_reason = ""
 
                     # 추출할 Q&A 정보 저장
                     qna_items_to_extract.append({
@@ -282,8 +285,8 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, llm_model: str =
                         'chapter': page_data.get('chapter'),
                         'page': page_data.get('page'),
                         "qna_type": qna_type,
-                        "qna_domain": qna_domain,
-                        "qna_reason": qna_reason,
+                        # "qna_domain": qna_domain,
+                        # "qna_reason": qna_reason,
                         'qna_data': qna_item,
                         'additional_tags_found': additional_tags,
                         'additional_tag_data': additional_tag_data
@@ -327,7 +330,7 @@ def get_qna_datas(file_path: str, output_path: str = None, llm_model: str = None
         json_data = json.load(f)
     
     # Q&A 태그 추출 및 분리
-    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0], llm_model, output_path)    
+    result = extract_qna_tags(json_data, os.path.splitext(os.path.basename(file_path))[0], output_path)    
 
     # 추출된 Q&A를 별도 파일로 저장
     if len(result['extracted_qna']) != 0:

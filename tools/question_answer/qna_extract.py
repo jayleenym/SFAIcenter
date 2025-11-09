@@ -10,7 +10,7 @@ import glob
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import ProcessFiles as pf
-import tools.question_answer.ProcessQnA as pq
+from question_answer import ProcessQnA as pq
 
 
 def find_last_processed_page(extracted_dir, file_name):
@@ -65,28 +65,27 @@ def get_remaining_pages(json_data, start_page):
     return remaining_pages
 
 
+ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
 
-
-def main(username: str, cycle: int):
+def main(cycle: int):
     """
     Q&A 추출 메인 함수
-    
+
     Args:
-        username: 사용자명 (경로 설정용)
         cycle: 사이클 번호 (1, 2, 3)
     """
     # 경로 처리 개선: replace() 대신 os.path.join() 사용
-    origin_data_dir = f'/Users/{username}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FINAL/{cycle}C'
-    data_dir = f'/Users/{username}/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/data/FIN_workbook/{cycle}C'
+    origin_data_dir = os.path.join(ONEDRIVE_PATH, 'data/FINAL')
+    data_dir = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C')
     
     print(f"원본 데이터 경로: {origin_data_dir}")
     print(f"작업 데이터 경로: {data_dir}")
 
-    json_files = pf.get_filelist(cycle, origin_data_dir)
+    json_files = pf.get_filelist(cycle, data_path=origin_data_dir)
     json_files = [file for file in json_files if 'Lv5' in file]
 
     # extracted 디렉토리 경로
-    extracted_dir = os.path.join(data_dir, 'extracted')
+    extracted_dir = os.path.join(data_dir, 'Lv5')
 
     # 모든 JSON 파일 일괄 처리
     print(f"총 {len(json_files)}개의 JSON 파일을 찾았습니다.")
@@ -158,7 +157,7 @@ def main(username: str, cycle: int):
                     continue
                 
                 # file_id를 올바르게 설정
-                result = pq.extract_qna_tags(temp_json_data, name, 'x-ai/grok-4-fast', os.path.join(extracted_dir, f"{name}.json"))
+                result = pq.extract_qna_tags(temp_json_data, name, os.path.join(extracted_dir, f"{name}.json"))
                 
                 # 최종 파일 저장
                 if len(result['extracted_qna']) != 0:
@@ -216,7 +215,7 @@ def main(username: str, cycle: int):
             else:
                 print(f"- 처음부터 처리합니다.")
                 # 처음부터 처리
-                result = pq.get_qna_datas(json_file, os.path.join(extracted_dir, f"{name}.json"), 'x-ai/grok-4-fast')
+                result = pq.get_qna_datas(json_file, os.path.join(extracted_dir, f"{name}.json"))
             
             total_extracted += len(result['extracted_qna'])
             processed_files += 1
@@ -234,11 +233,11 @@ def main(username: str, cycle: int):
 if __name__ == "__main__":
     # 명령행 인수 처리
     if len(sys.argv) != 3:
-        print("사용법: python qna_extract.py <username> <cycle>")
-        print("예시: python qna_extract.py jinym 1")
+        print("사용법: python qna_extract.py <cycle>")
+        print("예시: python qna_extract.py 1")
         sys.exit(1)
     
-    username = sys.argv[1]
+
     try:
         cycle = int(sys.argv[2])
         if cycle not in [1, 2, 3]:
@@ -249,4 +248,4 @@ if __name__ == "__main__":
         sys.exit(1)
     
     # 메인 함수 실행
-    main(username, cycle)
+    main(cycle)
