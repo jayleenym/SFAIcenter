@@ -595,27 +595,24 @@ def run_eval_pipeline(
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
                     raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
-                    if reasoning:
-                        # ONEDRIVE_PATH 기반 경로 사용
-                        try:
-                            from pipeline.config import ONEDRIVE_PATH
-                            base_path = ONEDRIVE_PATH
-                        except ImportError:
-                            base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
-                        
-                        reasoning_output_dir = os.path.join(base_path, 'evaluation/result/log')
-                        os.makedirs(reasoning_output_dir, exist_ok=True)
-                        reasoning_file = os.path.join(reasoning_output_dir, f"reasoning_model_output_{model.replace('/', '_')}.txt")
-                        logger.info(f"추론 모델 원시 출력 저장 완료")
-                        with open(reasoning_file, "a", encoding="utf-8") as f:
-                            f.write(f"\n{'='*80}\n")
-                            f.write(f"배치: {bidx}/{len(batches)}, 모델: {model}, 시간: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                            f.write(f"ID 목록: {ids}\n")
-                            f.write(f"{'='*80}\n")
-                            f.write(raw)
-                            f.write(f"\n{'='*80}\n\n")
-                    else:
-                        pass
+                    # 모든 모델 응답을 backlog로 저장
+                    try:
+                        from pipeline.config import ONEDRIVE_PATH
+                        base_path = ONEDRIVE_PATH
+                    except ImportError:
+                        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+                    
+                    output_dir = os.path.join(base_path, 'evaluation/result/log')
+                    os.makedirs(output_dir, exist_ok=True)
+                    output_file = os.path.join(output_dir, f"model_output_{model.replace('/', '_')}.txt")
+                    with open(output_file, "a", encoding="utf-8") as f:
+                        f.write(f"\n{'='*80}\n")
+                        f.write(f"배치: {bidx}/{len(batches)}, 모델: {model}, 시간: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                        f.write(f"ID 목록: {ids}\n")
+                        f.write(f"Reasoning 모드: {reasoning}\n")
+                        f.write(f"{'='*80}\n")
+                        f.write(raw)
+                        f.write(f"\n{'='*80}\n\n")
                     parsed = parse_model_output(raw, ids, reasoning=reasoning)
                     
                     # 파싱 결과 검증
@@ -780,6 +777,24 @@ def run_eval_pipeline_improved(
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
                     raw = call_llm(model, local_system_prompt, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
+                    # 모든 모델 응답을 backlog로 저장
+                    try:
+                        from pipeline.config import ONEDRIVE_PATH
+                        base_path = ONEDRIVE_PATH
+                    except ImportError:
+                        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+                    
+                    output_dir = os.path.join(base_path, 'evaluation/result/log')
+                    os.makedirs(output_dir, exist_ok=True)
+                    output_file = os.path.join(output_dir, f"model_output_{model.replace('/', '_')}.txt")
+                    with open(output_file, "a", encoding="utf-8") as f:
+                        f.write(f"\n{'='*80}\n")
+                        f.write(f"배치: {bidx}/{len(batches)}, 모델: {model}, 시간: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                        f.write(f"ID 목록: {ids}\n")
+                        f.write(f"Reasoning 모드: {reasoning}\n")
+                        f.write(f"{'='*80}\n")
+                        f.write(raw)
+                        f.write(f"\n{'='*80}\n\n")
                     parsed = parse_model_output(raw, ids, reasoning=reasoning)
                     
                     # 파싱 결과 검증
