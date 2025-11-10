@@ -39,6 +39,14 @@ def query_openrouter(system_prompt: str, user_prompt: str, config = None, model_
     # print(config)
     client = OpenAI(api_key=config.get("OPENROUTER", "key"), base_url=config.get("OPENROUTER", "url"))
 
+    if model_name == 'openai/gpt-5-pro':
+        print("gpt-5-pro")
+        response = client.responses.create(
+            model = model_name,
+            instructions = system_prompt,
+            input = user_prompt,
+        )
+        return response.output_text
 
     response = client.chat.completions.create(
                 model=model_name,

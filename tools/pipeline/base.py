@@ -21,10 +21,10 @@ from core.utils import FileManager, TextProcessor, JSONHandler
 from core.llm_query import LLMQuery
 from data_processing.json_cleaner import JSONCleaner
 
-# evaluation 모듈 import (tools_arrange 폴더에서 우선 시도)
+# evaluation 모듈 import (tools 폴더에서 우선 시도)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_arrange_dir = os.path.dirname(current_dir)  # pipeline -> tools_arrange
-sys.path.insert(0, tools_arrange_dir)
+tools_dir = os.path.dirname(current_dir)  # pipeline -> tools
+sys.path.insert(0, tools_dir)
 
 # 전역 변수로 export (steps에서 사용)
 try:
@@ -40,7 +40,7 @@ try:
     )
 except ImportError:
     # fallback: tools 폴더에서 시도
-    tools_dir = os.path.join(PROJECT_ROOT_PATH, 'tools')
+    tools_dir = os.path.dirname(current_dir)  # pipeline -> tools
     sys.path.insert(0, tools_dir)
     try:
         from evaluation.qna_subdomain_classifier import QnASubdomainClassifier

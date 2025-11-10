@@ -2,10 +2,28 @@ import re
 import json
 import os
 import shutil
+import sys
 from typing import List, Dict, Any
 
-import QueryModels as QueryModels
-from ProcessFiles import FINAL_DATA_PATH, CYCLE_PATH
+# tools/core/llm_query.py에서 LLMQuery import
+# tools/core/utils.py에서 FileManager import
+# tools/qna/qna_processor.py에서 TagProcessor import
+current_dir = os.path.dirname(os.path.abspath(__file__))
+tools_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))  # qna/extraction -> qna -> tools
+sys.path.insert(0, tools_dir)
+from core.llm_query import LLMQuery
+from core.utils import FileManager
+from qna.qna_processor import TagProcessor
+
+# LLMQuery 인스턴스 생성 (전역 변수로 캐시)
+_llm_query_instance = None
+
+def _get_llm_query():
+    """LLMQuery 인스턴스를 반환 (싱글톤 패턴)"""
+    global _llm_query_instance
+    if _llm_query_instance is None:
+        _llm_query_instance = LLMQuery()
+    return _llm_query_instance
 
 
 def analyze_extracted_qna(qna_info: dict):
@@ -130,7 +148,8 @@ def add_qna_domain_onebyone(json_data: dict, page_data: dict, model: str = None)
     
     # API 호출 및 도메인 분류
     print(f"  - API 호출 중... (모델: {model})")
-    domain_response = QueryModels.query_model_openrouter(system_prompt, user_prompt, model)
+    llm_query = _get_llm_query()
+    domain_response = llm_query.query_openrouter(system_prompt, user_prompt, model)
     return domain_response
 
 
@@ -548,113 +567,23 @@ def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any
     
 
 
+# replace_tags_in_text와 replace_tags_in_qna_data는 qna.qna_processor.TagProcessor로 통합됨
+# 중복 제거를 위해 TagProcessor를 사용하도록 변경
 def replace_tags_in_text(text: str, additional_tag_data: list) -> str:
     """
     텍스트에서 {f_0000_0000}이나 {tb_0000_0000} 같은 태그를 additional_tag_data에서 찾아서 대치합니다.
     
-    Args:
-        text: 대치할 텍스트
-        additional_tag_data: 태그 데이터 리스트
-    
-    Returns:
-        태그가 대치된 텍스트
+    (deprecated: TagProcessor.replace_tags_in_text 사용 권장)
     """
-    if not text or not additional_tag_data:
-        return text
-    
-    # 태그 패턴 매칭: {f_0000_0000}, {tb_0000_0000}, {img_0000_0000}, {etc_0000_0000}, {note_0000_0000}
-    tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|note_\d{4}_\d{4})\}'
-    
-    def replace_tag(match):
-        tag_with_braces = match.group(0)  # {f_0000_0000}
-        tag_without_braces = match.group(1)  # f_0000_0000
-        
-        # additional_tag_data에서 해당 태그 찾기
-        for tag_data in additional_tag_data:
-            if tag_data.get('tag') == tag_with_braces:
-                # data 필드가 있는 경우
-                if 'data' in tag_data:
-                    data = tag_data.get('data', {})
-                    if isinstance(data, dict):
-                        # data에서 적절한 필드 찾기 (우선순위: content, text, description, caption)
-                        for field in ['content', 'text', 'description', 'caption']:
-                            if field in data and data[field]:
-                                return str(data[field])
-                        
-                        # file_path가 있으면 파일명 표시
-                        if 'file_path' in data and data['file_path']:
-                            return f"[{os.path.basename(data['file_path'])}]"
-                    
-                    # data가 문자열이면 그대로 사용
-                    elif isinstance(data, str) and data:
-                        return data
-                    
-                    # data가 리스트면 첫 번째 요소 사용
-                    elif isinstance(data, list) and data:
-                        return str(data[0])
-                
-                # data 필드가 없는 경우, 직접 필드에서 찾기
-                else:
-                    # 직접 필드에서 적절한 내용 찾기 (우선순위: content, text, description, caption)
-                    for field in ['content', 'text', 'description', 'caption']:
-                        if field in tag_data and tag_data[field]:
-                            return str(tag_data[field])
-                    
-                    # file_path가 있으면 파일명 표시
-                    if 'file_path' in tag_data and tag_data['file_path']:
-                        return f"[{os.path.basename(tag_data['file_path'])}]"
-        
-        # 태그를 찾지 못한 경우 원본 태그 유지
-        return tag_with_braces
-    
-    return re.sub(tag_pattern, replace_tag, text)
+    return TagProcessor.replace_tags_in_text(text, additional_tag_data)
 
 def replace_tags_in_qna_data(qna_data: dict, additional_tag_data: list) -> dict:
     """
     Q&A 데이터의 question과 options에서 태그를 대치합니다.
     
-    Args:
-        qna_data: Q&A 데이터 딕셔너리 (전체 qna 객체 또는 qna_data 부분)
-        additional_tag_data: 추가 태그 데이터 리스트
-    
-    Returns:
-        태그가 대치된 Q&A 데이터
+    (deprecated: TagProcessor.replace_tags_in_qna_data 사용 권장)
     """
-    if not qna_data:
-        return qna_data
-    
-    if not additional_tag_data:
-        return qna_data
-    
-    # qna_data가 전체 qna 객체인 경우 qna_data 부분을 추출
-    if 'qna_data' in qna_data:
-        qna_info = qna_data['qna_data']
-    else:
-        # 이미 qna_data 부분만 전달된 경우
-        qna_info = qna_data
-    if 'description' in qna_info:
-        desc = qna_info['description']
-        
-        # question 필드 처리
-        if 'question' in desc and desc['question']:
-            desc['question'] = replace_tags_in_text(desc['question'], additional_tag_data)
-        
-        # options 필드 처리 (리스트)
-        if 'options' in desc and desc['options']:
-            if isinstance(desc['options'], list):
-                desc['options'] = [replace_tags_in_text(option, additional_tag_data) for option in desc['options']]
-            else:
-                desc['options'] = replace_tags_in_text(desc['options'], additional_tag_data)
-        
-        # answer 필드 처리
-        if 'answer' in desc and desc['answer']:
-            desc['answer'] = replace_tags_in_text(desc['answer'], additional_tag_data)
-        
-        # explanation 필드 처리
-        if 'explanation' in desc and desc['explanation']:
-            desc['explanation'] = replace_tags_in_text(desc['explanation'], additional_tag_data)
-    
-    return qna_data
+    return TagProcessor.replace_tags_in_qna_data(qna_data, additional_tag_data)
 
 def process_json_file_with_tag_replacement(file_path: str) -> bool:
     """
@@ -705,12 +634,13 @@ def process_all_json_files_with_tag_replacement(cycle: int, data_path: str = Non
     
     Args:
         cycle: 사이클 번호 (1, 2, 3)
-        data_path: 데이터 경로 (기본값: FINAL_DATA_PATH)
+        data_path: 데이터 경로 (None이면 FileManager의 기본 경로 사용)
     """
+    file_manager = FileManager()
     if data_path is None:
-        data_path = FINAL_DATA_PATH
+        data_path = file_manager.final_data_path
     
-    final_path = os.path.join(data_path, CYCLE_PATH[cycle])
+    final_path = os.path.join(data_path, file_manager.cycle_path[cycle])
     
     if not os.path.exists(final_path):
         print(f"경로가 존재하지 않습니다: {final_path}")

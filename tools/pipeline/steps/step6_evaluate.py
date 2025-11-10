@@ -10,10 +10,10 @@ from typing import List, Dict, Any
 from ..base import PipelineBase
 from ..config import PROJECT_ROOT_PATH
 
-# evaluation 모듈 import (tools_arrange 폴더에서)
+# evaluation 모듈 import (tools 폴더에서)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_arrange_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools_arrange
-sys.path.insert(0, tools_arrange_dir)
+tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools
+sys.path.insert(0, tools_dir)
 try:
     from evaluation.multiple_eval_by_model import (
         run_eval_pipeline_improved,
@@ -22,21 +22,11 @@ try:
         print_evaluation_summary
     )
 except ImportError:
-    # fallback: tools 폴더에서 시도
-    tools_dir = os.path.join(PROJECT_ROOT_PATH, 'tools')
-    sys.path.insert(0, tools_dir)
-    try:
-        from evaluation.multiple_eval_by_model import (
-            run_eval_pipeline_improved,
-            load_data_from_directory,
-            save_results_to_excel,
-            print_evaluation_summary
-        )
-    except ImportError:
-        run_eval_pipeline_improved = None
-        load_data_from_directory = None
-        save_results_to_excel = None
-        print_evaluation_summary = None
+    # fallback: 이미 tools_dir에 추가되어 있으므로 None으로 설정
+    run_eval_pipeline_improved = None
+    load_data_from_directory = None
+    save_results_to_excel = None
+    print_evaluation_summary = None
 
 
 class Step6Evaluate(PipelineBase):
@@ -95,8 +85,8 @@ class Step6Evaluate(PipelineBase):
                 exam_dir = os.path.join(self.onedrive_path, exam_dir)
         
         if not os.path.exists(exam_dir):
-            self.logger.error(f"시험지 디렉토리를 찾을 수 없습니다: {exam_dir}")
-            return {'success': False, 'error': f'시험지 디렉토리 없음: {exam_dir}'}
+            self.logger.error(f"시험지 디렉토리/파일을 찾을 수 없습니다: {exam_dir}")
+            return {'success': False, 'error': f'시험지 디렉토리/파일 없음: {exam_dir}'}
         
         # 출력 디렉토리
         output_dir = os.path.join(
@@ -105,6 +95,90 @@ class Step6Evaluate(PipelineBase):
         )
         os.makedirs(output_dir, exist_ok=True)
         
+        # exam_dir가 단일 JSON 파일인지 확인
+        if os.path.isfile(exam_dir) and exam_dir.endswith('.json'):
+            # 단일 파일 평가 모드
+            self.logger.info(f"단일 JSON 파일 평가 모드: {exam_dir}")
+            
+            try:
+                if load_data_from_directory is None:
+                    self.logger.error("load_data_from_directory 함수를 import할 수 없습니다.")
+                    return {'success': False, 'error': 'load_data_from_directory import 실패'}
+                
+                # 파일 데이터 로드
+                exam_name = os.path.splitext(os.path.basename(exam_dir))[0]
+                self.logger.info(f"데이터 로딩 중: {exam_dir}")
+                
+                file_data, is_mock_exam = load_data_from_directory(
+                    exam_dir,
+                    apply_tag_replacement=False
+                )
+                
+                if not file_data:
+                    self.logger.error(f"데이터를 로드할 수 없습니다: {exam_dir}")
+                    return {'success': False, 'error': f'데이터 로드 실패: {exam_dir}'}
+                
+                self.logger.info(f"{'='*50}")
+                self.logger.info(f"파일: {exam_name} - 총 {len(file_data)}개 문제")
+                self.logger.info(f"{'='*50}")
+                
+                # 평가 실행
+                self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size})")
+                df_all, pred_long, pred_wide, acc = run_eval_pipeline_improved(
+                    file_data,
+                    models,
+                    sample_size=len(file_data),
+                    batch_size=batch_size,
+                    seed=42,
+                    mock_mode=False,
+                    use_server_mode=use_server_mode,
+                    reasoning=reasoning
+                )
+                
+                # 결과 출력
+                self.logger.info(f"\n{'='*50}")
+                self.logger.info(f"평가 결과 요약 ({exam_name} - 총 {len(file_data)}개 문제)")
+                self.logger.info(f"{'='*50}")
+                if print_evaluation_summary:
+                    print_evaluation_summary(acc, pred_long)
+                
+                # 결과 저장
+                model_names = [model.split("/")[-1].replace(':', '_') for model in models]
+                models_str = '_'.join(model_names)
+                if len(models_str) > 200:
+                    models_str = models_str[:200] + '_etc'
+                output_filename = f"{exam_name}_evaluation_{models_str}.xlsx"
+                output_path = os.path.join(output_dir, output_filename)
+                
+                if save_results_to_excel:
+                    save_results_to_excel(
+                        df_all, pred_wide, acc, pred_long,
+                        output_path, mock_mode=False
+                    )
+                    self.logger.info(f"결과 저장 완료: {output_path}")
+                
+                self.logger.info(f"평가 완료 (총 {len(file_data)}개 문제)")
+                return {
+                    'success': True,
+                    'results': {
+                        'single_file': {
+                            'file_name': exam_name,
+                            'file_path': exam_dir,
+                            'total_questions': len(file_data),
+                            'models': models,
+                            'accuracy': acc.to_dict() if hasattr(acc, 'to_dict') else acc,
+                            'output_file': output_path
+                        }
+                    }
+                }
+                
+            except Exception as e:
+                self.logger.error(f"시험 평가 오류: {e}")
+                import traceback
+                self.logger.error(traceback.format_exc())
+                return {'success': False, 'error': f'평가 오류: {str(e)}'}
+        
+        # 디렉토리 모드 (기존 로직)
         # 평가할 세트 번호 결정
         if sets is None:
             # 세트가 지정되지 않으면 모든 세트 평가

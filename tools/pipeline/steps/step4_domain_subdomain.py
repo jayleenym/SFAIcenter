@@ -11,7 +11,8 @@ from ..base import PipelineBase
 from ..config import PROJECT_ROOT_PATH
 
 # evaluation 모듈 import (tools 폴더에서)
-tools_dir = os.path.join(PROJECT_ROOT_PATH, 'tools')
+current_dir = os.path.dirname(os.path.abspath(__file__))
+tools_dir = os.path.dirname(os.path.dirname(current_dir))  # steps -> pipeline -> tools
 sys.path.insert(0, tools_dir)
 try:
     from evaluation.qna_subdomain_classifier import QnASubdomainClassifier

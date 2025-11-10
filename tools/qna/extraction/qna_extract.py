@@ -16,7 +16,12 @@ except ImportError:
     # fallback: pipeline이 없는 경우 기본값 사용
     ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
 
-import ProcessFiles as pf
+# tools/core/utils.py에서 FileManager import
+current_dir = os.path.dirname(os.path.abspath(__file__))
+tools_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))  # qna/extraction -> qna -> tools
+sys.path.insert(0, tools_dir)
+from core.utils import FileManager
+
 from .process_qna import extract_qna_tags, get_qna_datas
 
 
@@ -87,7 +92,8 @@ def main(cycle: int):
     print(f"원본 데이터 경로: {origin_data_dir}")
     print(f"작업 데이터 경로: {data_dir}")
 
-    json_files = pf.get_filelist(cycle, data_path=origin_data_dir)
+    file_manager = FileManager()
+    json_files = file_manager.get_json_file_list(cycle, data_path=origin_data_dir)
     json_files = [file for file in json_files if 'Lv5' in file]
 
     # extracted 디렉토리 경로

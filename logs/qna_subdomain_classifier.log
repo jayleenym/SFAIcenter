@@ -6206,3 +6206,1430 @@
 2025-11-10 02:33:10,800 - INFO - 1st 세트 평가 완료 (총 1000개 문제)
 2025-11-10 02:33:10,800 - INFO - 모든 시험지 평가 완료
 2025-11-10 02:33:10,800 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 14:08:58,119 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 14:08:58,120 - INFO - 실행 단계: evaluate_exams
+2025-11-10 14:08:58,120 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 14:08:58,120 - INFO - 평가할 세트: ['1st']
+2025-11-10 14:08:58,120 - INFO - ==================================================
+2025-11-10 14:08:58,120 - INFO - 세트: 1st
+2025-11-10 14:08:58,120 - INFO - ==================================================
+2025-11-10 14:08:58,120 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-10 14:08:58,120 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:08:58,120 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:08:58,121 - INFO -   - 경로 존재: True
+2025-11-10 14:08:58,121 - INFO -   - 파일인지: True
+2025-11-10 14:08:58,121 - INFO -   - 디렉토리인지: False
+2025-11-10 14:08:58,121 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:08:58,121 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:08:58,121 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:08:58,124 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:08:58,124 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-10 14:08:58,124 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:08:58,124 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:08:58,124 - INFO -   - 경로 존재: True
+2025-11-10 14:08:58,124 - INFO -   - 파일인지: True
+2025-11-10 14:08:58,124 - INFO -   - 디렉토리인지: False
+2025-11-10 14:08:58,124 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:08:58,124 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:08:58,124 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:08:58,126 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:08:58,126 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-10 14:08:58,126 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:08:58,126 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:08:58,126 - INFO -   - 경로 존재: True
+2025-11-10 14:08:58,126 - INFO -   - 파일인지: True
+2025-11-10 14:08:58,127 - INFO -   - 디렉토리인지: False
+2025-11-10 14:08:58,127 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:08:58,127 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:08:58,127 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:08:58,129 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:08:58,129 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-10 14:08:58,130 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:08:58,130 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:08:58,130 - INFO -   - 경로 존재: True
+2025-11-10 14:08:58,130 - INFO -   - 파일인지: True
+2025-11-10 14:08:58,130 - INFO -   - 디렉토리인지: False
+2025-11-10 14:08:58,130 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:08:58,130 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:08:58,130 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:08:58,132 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:08:58,132 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-10 14:08:58,132 - INFO - ==================================================
+2025-11-10 14:08:58,132 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-10 14:08:58,132 - INFO - ==================================================
+2025-11-10 14:08:58,132 - INFO - 평가 실행 중... (모델: ['openai/gpt-4.1'], 배치 크기: 10)
+2025-11-10 14:08:58,132 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-10 14:08:58,132 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 14:08:58,142 - INFO - 전체 데이터: 1000개 문제
+2025-11-10 14:08:58,142 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-10 14:08:58,143 - INFO - 샘플 데이터: 1000개 문제
+2025-11-10 14:08:58,144 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-10 14:08:58,144 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-10 14:08:58,144 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 14:08:58,158 - INFO - [CACHE] Config 파일 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 14:08:58,159 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 14:08:58,914 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:02,595 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:21,494 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 14:09:21,495 - INFO - 실행 단계: evaluate_exams
+2025-11-10 14:09:21,495 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 14:09:21,495 - INFO - 평가할 세트: ['1st']
+2025-11-10 14:09:21,495 - INFO - ==================================================
+2025-11-10 14:09:21,495 - INFO - 세트: 1st
+2025-11-10 14:09:21,495 - INFO - ==================================================
+2025-11-10 14:09:21,495 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-10 14:09:21,495 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:09:21,495 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:09:21,495 - INFO -   - 경로 존재: True
+2025-11-10 14:09:21,495 - INFO -   - 파일인지: True
+2025-11-10 14:09:21,495 - INFO -   - 디렉토리인지: False
+2025-11-10 14:09:21,495 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:09:21,495 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:09:21,495 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:09:21,498 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:09:21,498 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-10 14:09:21,498 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:09:21,498 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:09:21,498 - INFO -   - 경로 존재: True
+2025-11-10 14:09:21,498 - INFO -   - 파일인지: True
+2025-11-10 14:09:21,498 - INFO -   - 디렉토리인지: False
+2025-11-10 14:09:21,498 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:09:21,498 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:09:21,498 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:09:21,500 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:09:21,500 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-10 14:09:21,500 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:09:21,500 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:09:21,500 - INFO -   - 경로 존재: True
+2025-11-10 14:09:21,500 - INFO -   - 파일인지: True
+2025-11-10 14:09:21,500 - INFO -   - 디렉토리인지: False
+2025-11-10 14:09:21,500 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:09:21,500 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:09:21,500 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:09:21,503 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:09:21,503 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-10 14:09:21,503 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:09:21,503 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:09:21,503 - INFO -   - 경로 존재: True
+2025-11-10 14:09:21,503 - INFO -   - 파일인지: True
+2025-11-10 14:09:21,503 - INFO -   - 디렉토리인지: False
+2025-11-10 14:09:21,503 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:09:21,503 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:09:21,503 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:09:21,505 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:09:21,505 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-10 14:09:21,505 - INFO - ==================================================
+2025-11-10 14:09:21,505 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-10 14:09:21,505 - INFO - ==================================================
+2025-11-10 14:09:21,505 - INFO - 평가 실행 중... (모델: ['openai/gpt-4.1'], 배치 크기: 10)
+2025-11-10 14:09:21,505 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-10 14:09:21,505 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 14:09:21,513 - INFO - 전체 데이터: 1000개 문제
+2025-11-10 14:09:21,513 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-10 14:09:21,514 - INFO - 샘플 데이터: 1000개 문제
+2025-11-10 14:09:21,514 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-10 14:09:21,515 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-10 14:09:21,515 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 14:09:21,527 - INFO - [CACHE] Config 파일 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 14:09:21,528 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 14:09:22,548 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:29,702 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:33,553 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:37,649 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:42,024 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:46,583 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:52,663 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:09:57,318 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:01,063 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:04,960 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:08,704 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:12,612 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:14,040 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 14:10:14,040 - INFO - 실행 단계: evaluate_exams
+2025-11-10 14:10:14,040 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 14:10:14,040 - INFO - 평가할 세트: ['1st']
+2025-11-10 14:10:14,040 - INFO - ==================================================
+2025-11-10 14:10:14,040 - INFO - 세트: 1st
+2025-11-10 14:10:14,040 - INFO - ==================================================
+2025-11-10 14:10:14,040 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-10 14:10:14,040 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:10:14,040 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:10:14,040 - INFO -   - 경로 존재: True
+2025-11-10 14:10:14,040 - INFO -   - 파일인지: True
+2025-11-10 14:10:14,040 - INFO -   - 디렉토리인지: False
+2025-11-10 14:10:14,040 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:10:14,040 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:10:14,040 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:10:14,043 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:10:14,043 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-10 14:10:14,043 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:10:14,043 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:10:14,043 - INFO -   - 경로 존재: True
+2025-11-10 14:10:14,043 - INFO -   - 파일인지: True
+2025-11-10 14:10:14,043 - INFO -   - 디렉토리인지: False
+2025-11-10 14:10:14,043 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:10:14,043 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:10:14,043 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:10:14,044 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:10:14,045 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-10 14:10:14,045 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:10:14,045 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:10:14,045 - INFO -   - 경로 존재: True
+2025-11-10 14:10:14,045 - INFO -   - 파일인지: True
+2025-11-10 14:10:14,045 - INFO -   - 디렉토리인지: False
+2025-11-10 14:10:14,045 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:10:14,045 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:10:14,045 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:10:14,047 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:10:14,047 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-10 14:10:14,047 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:10:14,047 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:10:14,047 - INFO -   - 경로 존재: True
+2025-11-10 14:10:14,047 - INFO -   - 파일인지: True
+2025-11-10 14:10:14,047 - INFO -   - 디렉토리인지: False
+2025-11-10 14:10:14,048 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:10:14,048 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:10:14,048 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:10:14,049 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:10:14,049 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-10 14:10:14,049 - INFO - ==================================================
+2025-11-10 14:10:14,049 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-10 14:10:14,050 - INFO - ==================================================
+2025-11-10 14:10:14,050 - INFO - 평가 실행 중... (모델: ['openai/gpt-5'], 배치 크기: 10)
+2025-11-10 14:10:14,050 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-10 14:10:14,050 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 14:10:14,057 - INFO - 전체 데이터: 1000개 문제
+2025-11-10 14:10:14,058 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-10 14:10:14,058 - INFO - 샘플 데이터: 1000개 문제
+2025-11-10 14:10:14,058 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-10 14:10:14,059 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-10 14:10:14,059 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 14:10:14,071 - INFO - [CACHE] Config 파일 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 14:10:14,072 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 14:10:14,873 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:16,491 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:20,806 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:26,432 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:30,447 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:34,581 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:38,153 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:42,894 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:47,633 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:50,619 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 14:10:50,619 - INFO - 실행 단계: evaluate_exams
+2025-11-10 14:10:50,619 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 14:10:50,619 - INFO - 평가할 세트: ['1st']
+2025-11-10 14:10:50,619 - INFO - ==================================================
+2025-11-10 14:10:50,619 - INFO - 세트: 1st
+2025-11-10 14:10:50,619 - INFO - ==================================================
+2025-11-10 14:10:50,619 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-10 14:10:50,619 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:10:50,619 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:10:50,619 - INFO -   - 경로 존재: True
+2025-11-10 14:10:50,619 - INFO -   - 파일인지: True
+2025-11-10 14:10:50,619 - INFO -   - 디렉토리인지: False
+2025-11-10 14:10:50,619 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:10:50,619 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:10:50,619 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:10:50,622 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:10:50,622 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-10 14:10:50,622 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:10:50,622 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:10:50,622 - INFO -   - 경로 존재: True
+2025-11-10 14:10:50,622 - INFO -   - 파일인지: True
+2025-11-10 14:10:50,622 - INFO -   - 디렉토리인지: False
+2025-11-10 14:10:50,622 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:10:50,622 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:10:50,622 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:10:50,624 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:10:50,624 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-10 14:10:50,624 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:10:50,624 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:10:50,624 - INFO -   - 경로 존재: True
+2025-11-10 14:10:50,624 - INFO -   - 파일인지: True
+2025-11-10 14:10:50,624 - INFO -   - 디렉토리인지: False
+2025-11-10 14:10:50,624 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:10:50,624 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:10:50,624 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:10:50,627 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:10:50,627 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-10 14:10:50,627 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:10:50,627 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:10:50,627 - INFO -   - 경로 존재: True
+2025-11-10 14:10:50,627 - INFO -   - 파일인지: True
+2025-11-10 14:10:50,627 - INFO -   - 디렉토리인지: False
+2025-11-10 14:10:50,627 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:10:50,627 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:10:50,627 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:10:50,629 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:10:50,629 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-10 14:10:50,629 - INFO - ==================================================
+2025-11-10 14:10:50,629 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-10 14:10:50,629 - INFO - ==================================================
+2025-11-10 14:10:50,629 - INFO - 평가 실행 중... (모델: ['anthropic/claude-sonnet-4.5'], 배치 크기: 10)
+2025-11-10 14:10:50,629 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-10 14:10:50,629 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 14:10:50,637 - INFO - 전체 데이터: 1000개 문제
+2025-11-10 14:10:50,637 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-10 14:10:50,638 - INFO - 샘플 데이터: 1000개 문제
+2025-11-10 14:10:50,638 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-10 14:10:50,639 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-10 14:10:50,639 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 14:10:50,649 - INFO - [CACHE] Config 파일 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 14:10:50,650 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 14:10:51,127 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:52,628 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:56,550 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:10:57,655 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:00,259 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:01,738 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:06,126 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:06,136 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:10,727 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:11,360 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:15,571 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:15,889 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:20,333 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:21,642 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:24,340 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:25,844 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:29,343 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:29,672 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:33,431 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:34,176 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:37,750 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:39,067 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:41,314 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:43,563 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:44,790 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:48,486 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:48,915 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:53,245 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:55,537 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:11:58,015 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:01,391 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:02,393 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:05,842 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:06,571 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:10,296 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:10,446 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:15,121 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:15,273 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:18,963 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:20,056 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:23,186 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:24,324 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:26,657 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:29,019 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:30,148 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:33,754 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:34,846 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:38,788 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:38,947 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:43,381 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:43,765 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:47,955 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:49,036 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:52,890 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:54,097 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:57,054 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:12:58,831 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:01,587 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:03,540 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:07,688 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:07,998 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:11,953 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:12,746 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:15,310 - INFO - Retrying request to /chat/completions in 0.425919 seconds
+2025-11-10 14:13:16,714 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:17,522 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:17,656 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:21,762 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:22,397 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:25,316 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:26,372 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:29,520 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:31,173 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:33,554 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:35,608 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:39,342 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:41,144 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:43,873 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:45,612 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:47,757 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:50,346 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:51,445 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:54,253 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:54,955 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:13:58,894 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:00,464 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:03,817 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:04,795 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:08,525 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:08,842 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:13,141 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:13,579 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:17,776 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:17,808 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:22,245 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:22,783 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:26,760 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:26,790 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:30,686 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:30,695 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:34,688 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:36,234 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:39,296 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:40,395 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:44,577 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:45,343 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:49,118 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:49,437 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:53,029 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:54,579 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:14:57,951 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:01,855 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:03,849 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:05,882 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:08,173 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:10,708 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:12,472 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:15,625 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:17,486 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:19,580 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:21,171 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:23,851 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:28,223 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:28,958 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:32,129 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:32,743 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:36,530 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:36,965 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:40,003 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:40,585 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:43,923 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:45,379 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:48,298 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:49,300 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:51,869 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:53,866 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:56,110 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:58,771 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:15:59,522 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:03,299 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:03,529 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:07,855 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:08,147 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:13,142 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:14,759 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:17,153 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:18,782 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:22,081 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:22,408 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:26,253 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:26,762 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:31,083 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:32,444 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:35,525 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:38,640 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:40,351 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:44,651 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:45,334 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:49,245 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:49,880 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:53,921 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:54,760 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:16:58,412 - INFO - 5단계: 결과 데이터 정리 중...
+2025-11-10 14:16:58,420 - INFO - 6단계: 정확도 계산 중...
+2025-11-10 14:16:58,430 - INFO - 평가 완료!
+2025-11-10 14:16:58,430 - INFO - 모델별 전체 정확도:
+2025-11-10 14:16:58,430 - INFO -   openai/gpt-4.1: 0.617
+2025-11-10 14:16:58,430 - INFO - [CACHE] 평가 완료 후 캐시 상태: 0개 모델 캐시됨
+2025-11-10 14:16:58,431 - INFO - 
+==================================================
+2025-11-10 14:16:58,431 - INFO - 평가 결과 요약 (1st 세트 - 총 1000개 문제)
+2025-11-10 14:16:58,431 - INFO - ==================================================
+2025-11-10 14:16:58,431 - INFO - 결과를 /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gpt-4.1.xlsx에 저장 중...
+2025-11-10 14:16:58,526 - INFO - Subject별 정확도 계산 중...
+2025-11-10 14:16:58,532 - INFO - Domain별 정확도 계산 중...
+2025-11-10 14:16:58,538 - INFO - Subdomain별 정확도 계산 중...
+2025-11-10 14:16:58,633 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gpt-4.1.xlsx
+2025-11-10 14:16:58,634 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gpt-4.1.xlsx
+2025-11-10 14:16:58,635 - INFO - 1st 세트 평가 완료 (총 1000개 문제)
+2025-11-10 14:16:58,635 - INFO - 모든 시험지 평가 완료
+2025-11-10 14:16:58,635 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 14:16:58,713 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:03,091 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:09,296 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:14,116 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:18,032 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:23,297 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:28,210 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:32,811 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:37,156 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:40,408 - WARNING - 모델 출력이 비어있습니다.
+2025-11-10 14:17:40,408 - WARNING - 배치 1 - openai/gpt-5: 0/10개 유효 예측 (무효 예측 감지)
+2025-11-10 14:17:40,409 - WARNING - 예상 ID: ['SS0250_q_0364_0002', 'SS0205_q_0543_0003', 'SS0205_q_0504_0001', 'SS0211_q_0064_0002', 'SS0317_q_0072_0001', 'SS0209_q_0225_0002', 'SS0217_q_0425_0002', 'SS0251_q_0245_0002', 'SS0188_q_0423_0001', 'SS0408_q_0083_0001']
+2025-11-10 14:17:40,409 - WARNING - 모델 원시 출력:
+
+2025-11-10 14:17:40,409 - WARNING - 파싱된 결과: {'SS0250_q_0364_0002': nan, 'SS0205_q_0543_0003': nan, 'SS0205_q_0504_0001': nan, 'SS0211_q_0064_0002': nan, 'SS0317_q_0072_0001': nan, 'SS0209_q_0225_0002': nan, 'SS0217_q_0425_0002': nan, 'SS0251_q_0245_0002': nan, 'SS0188_q_0423_0001': nan, 'SS0408_q_0083_0001': nan}
+2025-11-10 14:17:40,831 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:41,110 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:45,855 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:50,821 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:55,742 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:17:59,850 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:18:05,030 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:18:09,818 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:18:14,483 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:18:19,380 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:18:23,519 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:18:27,767 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:18:30,787 - INFO - 5단계: 결과 데이터 정리 중...
+2025-11-10 14:18:30,796 - INFO - 6단계: 정확도 계산 중...
+2025-11-10 14:18:30,810 - INFO - 평가 완료!
+2025-11-10 14:18:30,810 - INFO - 모델별 전체 정확도:
+2025-11-10 14:18:30,810 - INFO -   anthropic/claude-sonnet-4.5: 0.734
+2025-11-10 14:18:30,810 - INFO - [CACHE] 평가 완료 후 캐시 상태: 0개 모델 캐시됨
+2025-11-10 14:18:30,811 - INFO - 
+==================================================
+2025-11-10 14:18:30,811 - INFO - 평가 결과 요약 (1st 세트 - 총 1000개 문제)
+2025-11-10 14:18:30,811 - INFO - ==================================================
+2025-11-10 14:18:30,812 - INFO - 결과를 /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_claude-sonnet-4.5.xlsx에 저장 중...
+2025-11-10 14:18:30,900 - INFO - Subject별 정확도 계산 중...
+2025-11-10 14:18:30,907 - INFO - Domain별 정확도 계산 중...
+2025-11-10 14:18:30,913 - INFO - Subdomain별 정확도 계산 중...
+2025-11-10 14:18:31,009 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_claude-sonnet-4.5.xlsx
+2025-11-10 14:18:31,011 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_claude-sonnet-4.5.xlsx
+2025-11-10 14:18:31,011 - INFO - 1st 세트 평가 완료 (총 1000개 문제)
+2025-11-10 14:18:31,011 - INFO - 모든 시험지 평가 완료
+2025-11-10 14:18:31,012 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 14:20:46,945 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:23:12,054 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 14:23:12,055 - INFO - 실행 단계: evaluate_exams
+2025-11-10 14:23:12,055 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 14:23:12,055 - INFO - 평가할 세트: ['1st']
+2025-11-10 14:23:12,055 - INFO - ==================================================
+2025-11-10 14:23:12,055 - INFO - 세트: 1st
+2025-11-10 14:23:12,055 - INFO - ==================================================
+2025-11-10 14:23:12,055 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-10 14:23:12,055 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:23:12,055 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:23:12,055 - INFO -   - 경로 존재: True
+2025-11-10 14:23:12,055 - INFO -   - 파일인지: True
+2025-11-10 14:23:12,055 - INFO -   - 디렉토리인지: False
+2025-11-10 14:23:12,055 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:23:12,055 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 14:23:12,055 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:23:12,058 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:23:12,058 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-10 14:23:12,058 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:23:12,058 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:23:12,058 - INFO -   - 경로 존재: True
+2025-11-10 14:23:12,058 - INFO -   - 파일인지: True
+2025-11-10 14:23:12,058 - INFO -   - 디렉토리인지: False
+2025-11-10 14:23:12,058 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:23:12,058 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 14:23:12,058 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:23:12,060 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:23:12,060 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-10 14:23:12,060 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:23:12,060 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:23:12,060 - INFO -   - 경로 존재: True
+2025-11-10 14:23:12,060 - INFO -   - 파일인지: True
+2025-11-10 14:23:12,060 - INFO -   - 디렉토리인지: False
+2025-11-10 14:23:12,060 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:23:12,060 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 14:23:12,060 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:23:12,062 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:23:12,063 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-10 14:23:12,063 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:23:12,063 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:23:12,063 - INFO -   - 경로 존재: True
+2025-11-10 14:23:12,063 - INFO -   - 파일인지: True
+2025-11-10 14:23:12,063 - INFO -   - 디렉토리인지: False
+2025-11-10 14:23:12,063 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:23:12,063 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 14:23:12,063 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 14:23:12,064 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 14:23:12,064 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-10 14:23:12,065 - INFO - ==================================================
+2025-11-10 14:23:12,065 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-10 14:23:12,065 - INFO - ==================================================
+2025-11-10 14:23:12,065 - INFO - 평가 실행 중... (모델: ['openai/gpt-5'], 배치 크기: 10)
+2025-11-10 14:23:12,065 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-10 14:23:12,065 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 14:23:12,072 - INFO - 전체 데이터: 1000개 문제
+2025-11-10 14:23:12,073 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-10 14:23:12,073 - INFO - 샘플 데이터: 1000개 문제
+2025-11-10 14:23:12,073 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-10 14:23:12,074 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-10 14:23:12,074 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 14:23:12,085 - INFO - [CACHE] Config 파일 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 14:23:12,086 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 14:23:12,847 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:28:01,764 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:31:22,076 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:32:30,602 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:35:26,371 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:38:40,043 - WARNING - 모델 출력이 비어있습니다.
+2025-11-10 14:38:40,044 - WARNING - 배치 5 - openai/gpt-5: 0/10개 유효 예측 (무효 예측 감지)
+2025-11-10 14:38:40,044 - WARNING - 예상 ID: ['SS0394_q_0055_0002', 'SS0412_q_0300_0003', 'SS0394_q_0332_0002', 'SS0087_q_0495_0001', 'SS0396_q_0048_0002', 'SS0397_q_0032_0001', 'SS0098_q_0830_0002', 'SS0227_q_0487_0001', 'SS03015_q_0113_0001', 'SS0189_q_0209_0001']
+2025-11-10 14:38:40,044 - WARNING - 모델 원시 출력:
+
+2025-11-10 14:38:40,044 - WARNING - 파싱된 결과: {'SS0394_q_0055_0002': nan, 'SS0412_q_0300_0003': nan, 'SS0394_q_0332_0002': nan, 'SS0087_q_0495_0001': nan, 'SS0396_q_0048_0002': nan, 'SS0397_q_0032_0001': nan, 'SS0098_q_0830_0002': nan, 'SS0227_q_0487_0001': nan, 'SS03015_q_0113_0001': nan, 'SS0189_q_0209_0001': nan}
+2025-11-10 14:38:40,632 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:40:41,477 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:44:45,844 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:49:04,233 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:51:51,256 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:56:52,436 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:58:23,399 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 14:59:53,541 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:01:45,706 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:05:14,155 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:07:27,211 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:10,906 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 15:08:10,906 - INFO - 실행 단계: evaluate_exams
+2025-11-10 15:08:10,906 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 15:08:10,906 - INFO - 평가할 세트: ['1st']
+2025-11-10 15:08:10,906 - INFO - ==================================================
+2025-11-10 15:08:10,906 - INFO - 세트: 1st
+2025-11-10 15:08:10,906 - INFO - ==================================================
+2025-11-10 15:08:10,906 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-10 15:08:10,906 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 15:08:10,906 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 15:08:10,906 - INFO -   - 경로 존재: True
+2025-11-10 15:08:10,906 - INFO -   - 파일인지: True
+2025-11-10 15:08:10,906 - INFO -   - 디렉토리인지: False
+2025-11-10 15:08:10,906 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 15:08:10,906 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 15:08:10,906 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 15:08:10,909 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 15:08:10,909 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-10 15:08:10,909 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 15:08:10,909 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 15:08:10,909 - INFO -   - 경로 존재: True
+2025-11-10 15:08:10,909 - INFO -   - 파일인지: True
+2025-11-10 15:08:10,909 - INFO -   - 디렉토리인지: False
+2025-11-10 15:08:10,909 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 15:08:10,909 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 15:08:10,909 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 15:08:10,911 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 15:08:10,911 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-10 15:08:10,911 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 15:08:10,911 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 15:08:10,911 - INFO -   - 경로 존재: True
+2025-11-10 15:08:10,911 - INFO -   - 파일인지: True
+2025-11-10 15:08:10,911 - INFO -   - 디렉토리인지: False
+2025-11-10 15:08:10,911 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 15:08:10,911 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 15:08:10,911 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 15:08:10,913 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 15:08:10,914 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-10 15:08:10,914 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 15:08:10,914 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 15:08:10,914 - INFO -   - 경로 존재: True
+2025-11-10 15:08:10,914 - INFO -   - 파일인지: True
+2025-11-10 15:08:10,914 - INFO -   - 디렉토리인지: False
+2025-11-10 15:08:10,914 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 15:08:10,914 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 15:08:10,914 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 15:08:10,916 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 15:08:10,916 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-10 15:08:10,916 - INFO - ==================================================
+2025-11-10 15:08:10,916 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-10 15:08:10,916 - INFO - ==================================================
+2025-11-10 15:08:10,916 - INFO - 평가 실행 중... (모델: ['google/gemini-2.5-flash'], 배치 크기: 10)
+2025-11-10 15:08:10,916 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-10 15:08:10,916 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 15:08:10,923 - INFO - 전체 데이터: 1000개 문제
+2025-11-10 15:08:10,924 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-10 15:08:10,924 - INFO - 샘플 데이터: 1000개 문제
+2025-11-10 15:08:10,924 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-10 15:08:10,925 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-10 15:08:10,925 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 15:08:10,936 - INFO - [CACHE] Config 파일 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 15:08:10,937 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 15:08:13,021 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:16,893 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:20,412 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:24,079 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:27,509 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:31,029 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:34,839 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:38,438 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:42,069 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:43,078 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:45,777 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:50,238 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:52,996 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 15:08:52,996 - INFO - 실행 단계: evaluate_exams
+2025-11-10 15:08:52,996 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 15:08:52,997 - INFO - 평가할 세트: ['1st']
+2025-11-10 15:08:52,997 - INFO - ==================================================
+2025-11-10 15:08:52,997 - INFO - 세트: 1st
+2025-11-10 15:08:52,997 - INFO - ==================================================
+2025-11-10 15:08:52,997 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-10 15:08:52,997 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 15:08:52,997 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 15:08:52,997 - INFO -   - 경로 존재: True
+2025-11-10 15:08:52,997 - INFO -   - 파일인지: True
+2025-11-10 15:08:52,997 - INFO -   - 디렉토리인지: False
+2025-11-10 15:08:52,997 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 15:08:52,997 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-10 15:08:52,997 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 15:08:52,999 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 15:08:52,999 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-10 15:08:52,999 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 15:08:52,999 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 15:08:52,999 - INFO -   - 경로 존재: True
+2025-11-10 15:08:52,999 - INFO -   - 파일인지: True
+2025-11-10 15:08:53,000 - INFO -   - 디렉토리인지: False
+2025-11-10 15:08:53,000 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 15:08:53,000 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-10 15:08:53,000 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 15:08:53,001 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 15:08:53,001 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-10 15:08:53,001 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 15:08:53,001 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 15:08:53,001 - INFO -   - 경로 존재: True
+2025-11-10 15:08:53,001 - INFO -   - 파일인지: True
+2025-11-10 15:08:53,001 - INFO -   - 디렉토리인지: False
+2025-11-10 15:08:53,001 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 15:08:53,001 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-10 15:08:53,001 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 15:08:53,004 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 15:08:53,004 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-10 15:08:53,004 - INFO - 데이터 로딩 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 15:08:53,004 - INFO - 경로 확인 중: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 15:08:53,004 - INFO -   - 경로 존재: True
+2025-11-10 15:08:53,004 - INFO -   - 파일인지: True
+2025-11-10 15:08:53,004 - INFO -   - 디렉토리인지: False
+2025-11-10 15:08:53,004 - INFO - 파일 경로로 인식: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 15:08:53,004 - INFO - JSON 파일 추가: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-10 15:08:53,004 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 15:08:53,006 - INFO - 로드된 총 데이터 수: 250
+2025-11-10 15:08:53,006 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-10 15:08:53,006 - INFO - ==================================================
+2025-11-10 15:08:53,006 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-10 15:08:53,006 - INFO - ==================================================
+2025-11-10 15:08:53,006 - INFO - 평가 실행 중... (모델: ['google/gemini-2.0-flash-001'], 배치 크기: 10)
+2025-11-10 15:08:53,006 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-10 15:08:53,006 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 15:08:53,014 - INFO - 전체 데이터: 1000개 문제
+2025-11-10 15:08:53,014 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-10 15:08:53,014 - INFO - 샘플 데이터: 1000개 문제
+2025-11-10 15:08:53,015 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-10 15:08:53,015 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-10 15:08:53,015 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 15:08:53,026 - INFO - [CACHE] Config 파일 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 15:08:53,026 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 15:08:53,693 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:54,058 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:57,151 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:08:57,495 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:00,443 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:00,806 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:03,978 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:04,852 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:08,009 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:08,393 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:11,475 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:11,801 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:14,334 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:15,448 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:17,826 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:18,976 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:21,389 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:22,517 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:24,369 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:26,084 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:27,473 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:29,651 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:30,785 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:33,242 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:34,439 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:36,861 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:37,873 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:40,430 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:41,114 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:43,885 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:44,693 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:47,755 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:47,877 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:51,224 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:51,452 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:54,724 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:54,767 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:58,320 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:09:58,853 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:01,902 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:02,371 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:05,095 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:05,945 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:08,718 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:09,965 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:12,572 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:13,680 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:16,315 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:17,418 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:19,676 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:20,733 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:22,905 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:24,294 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:25,621 - WARNING - 배치 27 - google/gemini-2.0-flash-001: 9/10개 유효 예측 (무효 예측 감지)
+2025-11-10 15:10:25,621 - WARNING - 예상 ID: ['SS0206_q_0211_0003', 'SS0257_q_0184_0002', 'SS0412_q_0299_0001', 'SS0397_q_0070_0001', 'SS0381_q_0743_0005', 'SS0186_q_0335_0002', 'SS0196_q_0073_0005', 'SS0364_q_0221_0002', 'SS0217_q_0215_0001', 'SS0364_q_0201_0002']
+2025-11-10 15:10:25,621 - WARNING - 모델 원시 출력:
+SS0206_q_0211_0003	1
+SS0257_q_0184_0002	2
+SS0412_q_0299_0001	5
+SS0397_q_0070_0001	3
+SS0381_q_0743_0005	2
+SS0186_q_0335_0002	1
+SS0196_q_0073_0005	5
+SS0364_q_0221_0002	2
+SS0217_q_0215_0001	0
+SS0364_q_0201_0002	2
+
+2025-11-10 15:10:25,621 - WARNING - 파싱된 결과: {'SS0206_q_0211_0003': 1.0, 'SS0257_q_0184_0002': 2.0, 'SS0412_q_0299_0001': 5.0, 'SS0397_q_0070_0001': 3.0, 'SS0381_q_0743_0005': 2.0, 'SS0186_q_0335_0002': 1.0, 'SS0196_q_0073_0005': 5.0, 'SS0364_q_0221_0002': 2.0, 'SS0217_q_0215_0001': nan, 'SS0364_q_0201_0002': 2.0}
+2025-11-10 15:10:26,472 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:27,856 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:30,014 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:31,752 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:33,030 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:35,544 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:36,252 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:39,081 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:39,658 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:43,002 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:43,176 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:46,547 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:46,669 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:49,627 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:49,977 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:53,435 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:53,734 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:56,882 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:10:57,400 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:00,789 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:00,832 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:04,116 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:04,580 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:07,567 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:08,258 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:10,846 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:11,746 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:13,926 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:15,390 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:17,289 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:18,935 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:20,512 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:22,546 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:24,541 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:26,384 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:28,016 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:30,027 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:30,928 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:33,535 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:34,015 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:37,055 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:37,399 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:40,563 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:40,593 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:44,159 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:44,368 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:47,437 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:47,731 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:50,495 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:51,154 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:54,423 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:54,635 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:57,958 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:11:58,473 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:01,441 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:02,392 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:04,988 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:05,990 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:08,360 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:09,451 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:11,946 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:12,824 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:15,085 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:16,238 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:18,316 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:19,712 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:21,736 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:23,631 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:25,004 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:25,060 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:27,182 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:28,396 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:30,798 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:31,555 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:34,206 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:34,867 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:37,590 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:38,983 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:41,153 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:42,325 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:44,721 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:45,493 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:48,191 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:48,921 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:51,624 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:52,579 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:55,132 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:55,658 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:56,233 - INFO - Retrying request to /chat/completions in 0.498364 seconds
+2025-11-10 15:12:57,101 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:58,707 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:12:59,000 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:02,305 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:02,458 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:05,392 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:05,861 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:09,158 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:09,342 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:12,562 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:13,174 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:15,659 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:16,770 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:19,146 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:20,162 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:22,339 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:23,524 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:25,489 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:27,170 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:29,252 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:30,939 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:32,408 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:34,707 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:35,629 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:38,139 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:38,918 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:41,809 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:42,231 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:45,316 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:47,129 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:49,048 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:50,950 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:52,604 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:54,114 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:56,097 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:57,624 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:13:59,533 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:00,607 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:03,294 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:04,074 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:06,563 - WARNING - 배치 92 - google/gemini-2.0-flash-001: 0/10개 유효 예측 (무효 예측 감지)
+2025-11-10 15:14:06,563 - WARNING - 예상 ID: ['SS0192_q_0161_0003', 'SS0197_q_0141_0002', 'SS0412_q_0048_0001', 'SS0245_q_0340_0001', 'SS0332_q_0150_0003', 'SS0423_q_0712_0001', 'SS0098_q_0550_0001', 'SS0087_q_0442_0002', 'SS0245_q_0546_0001', 'SS0417_q_1050_0003']
+2025-11-10 15:14:06,563 - WARNING - 모델 원시 출력:
+SS0192_q_0161_0003<TAB>1
+SS0197_q_0141_0002<TAB>2
+SS0412_q_0048_0001<TAB>3
+SS0245_q_0340_0001<TAB>1
+SS0332_q_0150_0003<TAB>2
+SS0423_q_0712_0001<TAB>4
+SS0098_q_0550_0001<TAB>2
+SS0087_q_0442_0002<TAB>4
+SS0245_q_0546_0001<TAB>4
+SS0417_q_1050_0003<TAB>3
+
+2025-11-10 15:14:06,563 - WARNING - 파싱된 결과: {'SS0192_q_0161_0003': nan, 'SS0197_q_0141_0002': nan, 'SS0412_q_0048_0001': nan, 'SS0245_q_0340_0001': nan, 'SS0332_q_0150_0003': nan, 'SS0423_q_0712_0001': nan, 'SS0098_q_0550_0001': nan, 'SS0087_q_0442_0002': nan, 'SS0245_q_0546_0001': nan, 'SS0417_q_1050_0003': nan}
+2025-11-10 15:14:06,730 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:07,601 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:10,494 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:10,725 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:12,783 - INFO - 5단계: 결과 데이터 정리 중...
+2025-11-10 15:14:12,799 - INFO - 6단계: 정확도 계산 중...
+2025-11-10 15:14:12,805 - INFO - 평가 완료!
+2025-11-10 15:14:12,805 - INFO - 모델별 전체 정확도:
+2025-11-10 15:14:12,805 - INFO -   google/gemini-2.5-flash: 0.687
+2025-11-10 15:14:12,805 - INFO - [CACHE] 평가 완료 후 캐시 상태: 0개 모델 캐시됨
+2025-11-10 15:14:12,806 - INFO - 
+==================================================
+2025-11-10 15:14:12,806 - INFO - 평가 결과 요약 (1st 세트 - 총 1000개 문제)
+2025-11-10 15:14:12,806 - INFO - ==================================================
+2025-11-10 15:14:12,806 - INFO - 결과를 /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gemini-2.5-flash.xlsx에 저장 중...
+2025-11-10 15:14:12,905 - INFO - Subject별 정확도 계산 중...
+2025-11-10 15:14:12,913 - INFO - Domain별 정확도 계산 중...
+2025-11-10 15:14:12,921 - INFO - Subdomain별 정확도 계산 중...
+2025-11-10 15:14:13,037 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gemini-2.5-flash.xlsx
+2025-11-10 15:14:13,039 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gemini-2.5-flash.xlsx
+2025-11-10 15:14:13,040 - INFO - 1st 세트 평가 완료 (총 1000개 문제)
+2025-11-10 15:14:13,041 - INFO - 모든 시험지 평가 완료
+2025-11-10 15:14:13,041 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 15:14:14,067 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:17,386 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:21,072 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:24,156 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:27,467 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:30,593 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:14:33,316 - INFO - 5단계: 결과 데이터 정리 중...
+2025-11-10 15:14:33,319 - INFO - 6단계: 정확도 계산 중...
+2025-11-10 15:14:33,325 - INFO - 평가 완료!
+2025-11-10 15:14:33,325 - INFO - 모델별 전체 정확도:
+2025-11-10 15:14:33,325 - INFO -   google/gemini-2.0-flash-001: 0.629
+2025-11-10 15:14:33,325 - INFO - [CACHE] 평가 완료 후 캐시 상태: 0개 모델 캐시됨
+2025-11-10 15:14:33,326 - INFO - 무효 예측 응답 저장: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/result/evaluation_invalid_responses_2025-11-10_151433.json
+2025-11-10 15:14:33,326 - INFO - 총 11개의 무효 예측 응답이 저장되었습니다.
+2025-11-10 15:14:33,326 - INFO - 모델별 무효 예측 수:
+2025-11-10 15:14:33,326 - INFO -   google/gemini-2.0-flash-001: 11개
+2025-11-10 15:14:33,326 - INFO - 
+==================================================
+2025-11-10 15:14:33,326 - INFO - 평가 결과 요약 (1st 세트 - 총 1000개 문제)
+2025-11-10 15:14:33,326 - INFO - ==================================================
+2025-11-10 15:14:33,327 - INFO - 결과를 /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gemini-2.0-flash-001.xlsx에 저장 중...
+2025-11-10 15:14:33,402 - INFO - Subject별 정확도 계산 중...
+2025-11-10 15:14:33,409 - INFO - Domain별 정확도 계산 중...
+2025-11-10 15:14:33,417 - INFO - Subdomain별 정확도 계산 중...
+2025-11-10 15:14:33,524 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gemini-2.0-flash-001.xlsx
+2025-11-10 15:14:33,525 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gemini-2.0-flash-001.xlsx
+2025-11-10 15:14:33,526 - INFO - 1st 세트 평가 완료 (총 1000개 문제)
+2025-11-10 15:14:33,526 - INFO - 모든 시험지 평가 완료
+2025-11-10 15:14:33,526 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 15:15:34,001 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:17:25,488 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:20:34,595 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:21:15,516 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:27:43,187 - WARNING - 모델 출력이 비어있습니다.
+2025-11-10 15:27:43,188 - WARNING - 배치 22 - openai/gpt-5: 0/10개 유효 예측 (무효 예측 감지)
+2025-11-10 15:27:43,188 - WARNING - 예상 ID: ['SS0419_q_0008_0001', 'SS0406_q_0143_0001', 'SS0098_q_0828_0001', 'SS0191_q_0592_0001', 'SS0215_q_0056_0001', 'SS0394_q_0051_0001', 'SS0210_q_0109_0002', 'SS0397_q_0125_0003', 'SS0118_q_0190_0002', 'SS0207_q_0182_0002']
+2025-11-10 15:27:43,188 - WARNING - 모델 원시 출력:
+
+2025-11-10 15:27:43,188 - WARNING - 파싱된 결과: {'SS0419_q_0008_0001': nan, 'SS0406_q_0143_0001': nan, 'SS0098_q_0828_0001': nan, 'SS0191_q_0592_0001': nan, 'SS0215_q_0056_0001': nan, 'SS0394_q_0051_0001': nan, 'SS0210_q_0109_0002': nan, 'SS0397_q_0125_0003': nan, 'SS0118_q_0190_0002': nan, 'SS0207_q_0182_0002': nan}
+2025-11-10 15:27:43,725 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:32:28,581 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:35:42,435 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:39:02,457 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:40:23,528 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:43:43,984 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:46:58,873 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:48:48,706 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:51:09,049 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:54:28,744 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:56:26,115 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 15:57:49,991 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:00:02,009 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:02:19,714 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:09:03,560 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:12:50,017 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:16:16,401 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:19:59,541 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:21:17,389 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:24:26,987 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:25:34,086 - WARNING - 모델 출력이 비어있습니다.
+2025-11-10 16:25:34,087 - WARNING - 배치 42 - openai/gpt-5: 0/10개 유효 예측 (무효 예측 감지)
+2025-11-10 16:25:34,087 - WARNING - 예상 ID: ['SS0251_q_0199_0003', 'SS0108_q_0222_0001', 'SS0197_q_0078_0001', 'SS0397_q_0077_0002', 'SS0193_q_0094_0001', 'SS0207_q_0132_0002', 'SS0208_q_0624_0002', 'SS0190_q_0452_0001', 'SS0250_q_0370_0004', 'SS0260_q_0645_0003']
+2025-11-10 16:25:34,087 - WARNING - 모델 원시 출력:
+
+2025-11-10 16:25:34,087 - WARNING - 파싱된 결과: {'SS0251_q_0199_0003': nan, 'SS0108_q_0222_0001': nan, 'SS0197_q_0078_0001': nan, 'SS0397_q_0077_0002': nan, 'SS0193_q_0094_0001': nan, 'SS0207_q_0132_0002': nan, 'SS0208_q_0624_0002': nan, 'SS0190_q_0452_0001': nan, 'SS0250_q_0370_0004': nan, 'SS0260_q_0645_0003': nan}
+2025-11-10 16:25:34,630 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:28:28,682 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:31:55,384 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:33:55,149 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:34:59,937 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:37:48,172 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:39:07,983 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:40:28,630 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:43:36,374 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:47:13,223 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:49:54,260 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:52:17,803 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:58:42,741 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 16:59:50,871 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:01:53,585 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:04:54,552 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:07:26,998 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:10:22,981 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:14:07,476 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:17:31,609 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:20:18,249 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:22:28,927 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:24:51,456 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:26:50,661 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:30:17,720 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:32:10,868 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:34:27,885 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:36:49,488 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:38:23,196 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:39:33,565 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:41:16,716 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:44:58,301 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:47:02,064 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:48:02,365 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:51:32,433 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:54:40,924 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 17:57:10,791 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:00:40,419 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:04:34,770 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:06:26,539 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:09:02,666 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:11:44,005 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:14:04,232 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:16:06,171 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:19:31,695 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:22:38,688 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:26:31,393 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:28:00,605 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:29:32,713 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:31:15,341 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:32:31,413 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:34:33,058 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:37:25,094 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:40:45,620 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:42:32,839 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:44:24,806 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:47:57,375 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:49:41,170 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 18:51:00,214 - INFO - 5단계: 결과 데이터 정리 중...
+2025-11-10 18:51:00,222 - INFO - 6단계: 정확도 계산 중...
+2025-11-10 18:51:00,231 - INFO - 평가 완료!
+2025-11-10 18:51:00,231 - INFO - 모델별 전체 정확도:
+2025-11-10 18:51:00,231 - INFO -   openai/gpt-5: 0.821
+2025-11-10 18:51:00,231 - INFO - [CACHE] 평가 완료 후 캐시 상태: 0개 모델 캐시됨
+2025-11-10 18:51:00,232 - INFO - 무효 예측 응답 저장: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/result/evaluation_invalid_responses_2025-11-10_185100.json
+2025-11-10 18:51:00,232 - INFO - 총 30개의 무효 예측 응답이 저장되었습니다.
+2025-11-10 18:51:00,232 - INFO - 모델별 무효 예측 수:
+2025-11-10 18:51:00,232 - INFO -   openai/gpt-5: 30개
+2025-11-10 18:51:00,233 - INFO - 
+==================================================
+2025-11-10 18:51:00,233 - INFO - 평가 결과 요약 (1st 세트 - 총 1000개 문제)
+2025-11-10 18:51:00,233 - INFO - ==================================================
+2025-11-10 18:51:00,233 - INFO - 결과를 /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gpt-5.xlsx에 저장 중...
+2025-11-10 18:51:00,332 - INFO - Subject별 정확도 계산 중...
+2025-11-10 18:51:00,339 - INFO - Domain별 정확도 계산 중...
+2025-11-10 18:51:00,345 - INFO - Subdomain별 정확도 계산 중...
+2025-11-10 18:51:00,444 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gpt-5.xlsx
+2025-11-10 18:51:00,445 - INFO - 결과 저장 완료: /Users/jinym/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/1st_evaluation_gpt-5.xlsx
+2025-11-10 18:51:00,446 - INFO - 1st 세트 평가 완료 (총 1000개 문제)
+2025-11-10 18:51:00,446 - INFO - 모든 시험지 평가 완료
+2025-11-10 18:51:00,447 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 20:56:57,476 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 20:56:57,476 - INFO - 실행 단계: evaluate_exams
+2025-11-10 20:56:57,477 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 20:56:57,477 - INFO - 평가할 세트: ['1st']
+2025-11-10 20:56:57,477 - WARNING - 세트 디렉토리를 찾을 수 없습니다: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json/1st
+2025-11-10 20:56:57,477 - INFO - 모든 시험지 평가 완료
+2025-11-10 20:56:57,477 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 20:57:28,234 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 20:57:28,234 - INFO - 실행 단계: evaluate_exams
+2025-11-10 20:57:28,234 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 20:57:28,234 - INFO - 평가할 세트: ['1st', '2nd', '3rd', '4th', '5th']
+2025-11-10 20:57:28,234 - WARNING - 세트 디렉토리를 찾을 수 없습니다: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json/1st
+2025-11-10 20:57:28,234 - WARNING - 세트 디렉토리를 찾을 수 없습니다: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json/2nd
+2025-11-10 20:57:28,234 - WARNING - 세트 디렉토리를 찾을 수 없습니다: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json/3rd
+2025-11-10 20:57:28,234 - WARNING - 세트 디렉토리를 찾을 수 없습니다: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json/4th
+2025-11-10 20:57:28,234 - WARNING - 세트 디렉토리를 찾을 수 없습니다: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json/5th
+2025-11-10 20:57:28,234 - INFO - 모든 시험지 평가 완료
+2025-11-10 20:57:28,234 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 20:59:44,229 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 20:59:44,230 - INFO - 실행 단계: evaluate_exams
+2025-11-10 20:59:44,230 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 20:59:44,230 - INFO - 단일 JSON 파일 평가 모드: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 20:59:44,230 - INFO - 데이터 로딩 중: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 20:59:44,230 - INFO - 경로 확인 중: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 20:59:44,230 - INFO -   - 경로 존재: True
+2025-11-10 20:59:44,230 - INFO -   - 파일인지: True
+2025-11-10 20:59:44,230 - INFO -   - 디렉토리인지: False
+2025-11-10 20:59:44,230 - INFO - 파일 경로로 인식: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 20:59:44,230 - INFO - JSON 파일 추가: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 20:59:44,230 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 20:59:44,231 - INFO - 로드된 총 데이터 수: 30
+2025-11-10 20:59:44,231 - INFO - ==================================================
+2025-11-10 20:59:44,231 - INFO - 파일: multiple_gpt5 - 총 30개 문제
+2025-11-10 20:59:44,231 - INFO - ==================================================
+2025-11-10 20:59:44,231 - INFO - 평가 실행 중... (모델: ['openai/gpt-5'], 배치 크기: 10)
+2025-11-10 20:59:44,231 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 30, 배치크기: 10, 모델수: 1
+2025-11-10 20:59:44,231 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 20:59:44,241 - INFO - 전체 데이터: 30개 문제
+2025-11-10 20:59:44,241 - INFO - 2단계: 30개 샘플 추출 중...
+2025-11-10 20:59:44,242 - INFO - 샘플 데이터: 30개 문제
+2025-11-10 20:59:44,242 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 30개
+2025-11-10 20:59:44,242 - INFO - 3단계: 3개 배치로 분할 완료
+2025-11-10 20:59:44,242 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 20:59:44,253 - INFO - [CACHE] Config 파일 로드 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 20:59:44,254 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 20:59:45,242 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 21:04:19,563 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 21:07:14,517 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 21:08:57,827 - WARNING - 모델 출력이 비어있습니다.
+2025-11-10 21:08:57,829 - WARNING - 배치 3 - openai/gpt-5: 0/10개 유효 예측 (무효 예측 감지)
+2025-11-10 21:08:57,829 - WARNING - 예상 ID: ['SS0193_q_0094_0001', 'SS0108_q_0222_0001', 'SS0207_q_0182_0002', 'SS0087_q_0495_0001', 'SS0197_q_0078_0001', 'SS0394_q_0332_0002', 'SS03015_q_0113_0001', 'SS0227_q_0487_0001', 'SS0207_q_0132_0002', 'SS0396_q_0048_0002']
+2025-11-10 21:08:57,829 - WARNING - 모델 원시 출력:
+
+2025-11-10 21:08:57,829 - WARNING - 파싱된 결과: {'SS0193_q_0094_0001': nan, 'SS0108_q_0222_0001': nan, 'SS0207_q_0182_0002': nan, 'SS0087_q_0495_0001': nan, 'SS0197_q_0078_0001': nan, 'SS0394_q_0332_0002': nan, 'SS03015_q_0113_0001': nan, 'SS0227_q_0487_0001': nan, 'SS0207_q_0132_0002': nan, 'SS0396_q_0048_0002': nan}
+2025-11-10 21:08:57,853 - INFO - 5단계: 결과 데이터 정리 중...
+2025-11-10 21:08:57,881 - INFO - 6단계: 정확도 계산 중...
+2025-11-10 21:08:57,892 - INFO - 평가 완료!
+2025-11-10 21:08:57,893 - INFO - 모델별 전체 정확도:
+2025-11-10 21:08:57,893 - INFO -   openai/gpt-5: 0.900
+2025-11-10 21:08:57,893 - INFO - [CACHE] 평가 완료 후 캐시 상태: 0개 모델 캐시됨
+2025-11-10 21:08:57,894 - INFO - 무효 예측 응답 저장: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/result/evaluation_invalid_responses_2025-11-10_210857.json
+2025-11-10 21:08:57,894 - INFO - 총 10개의 무효 예측 응답이 저장되었습니다.
+2025-11-10 21:08:57,894 - INFO - 모델별 무효 예측 수:
+2025-11-10 21:08:57,894 - INFO -   openai/gpt-5: 10개
+2025-11-10 21:08:57,894 - INFO - 
+==================================================
+2025-11-10 21:08:57,894 - INFO - 평가 결과 요약 (multiple_gpt5 - 총 30개 문제)
+2025-11-10 21:08:57,894 - INFO - ==================================================
+2025-11-10 21:08:57,895 - INFO - 결과를 /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/multiple_gpt5_evaluation_gpt-5.xlsx에 저장 중...
+2025-11-10 21:08:57,982 - INFO - Subject별 정확도 계산 중...
+2025-11-10 21:08:57,987 - INFO - Domain별 정확도 계산 중...
+2025-11-10 21:08:57,992 - INFO - Subdomain별 정확도 계산 중...
+2025-11-10 21:08:58,017 - INFO - 결과 저장 완료: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/multiple_gpt5_evaluation_gpt-5.xlsx
+2025-11-10 21:08:58,020 - INFO - 결과 저장 완료: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/multiple_gpt5_evaluation_gpt-5.xlsx
+2025-11-10 21:08:58,020 - INFO - 평가 완료 (총 30개 문제)
+2025-11-10 21:08:58,021 - INFO - === 전체 파이프라인 완료 ===
+2025-11-10 21:12:04,709 - INFO - === 전체 파이프라인 시작 ===
+2025-11-10 21:12:04,710 - INFO - 실행 단계: evaluate_exams
+2025-11-10 21:12:04,710 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-10 21:12:04,710 - INFO - 단일 JSON 파일 평가 모드: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 21:12:04,710 - INFO - 데이터 로딩 중: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 21:12:04,710 - INFO - 경로 확인 중: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 21:12:04,710 - INFO -   - 경로 존재: True
+2025-11-10 21:12:04,710 - INFO -   - 파일인지: True
+2025-11-10 21:12:04,710 - INFO -   - 디렉토리인지: False
+2025-11-10 21:12:04,710 - INFO - 파일 경로로 인식: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 21:12:04,711 - INFO - JSON 파일 추가: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/multiple_gpt5.json
+2025-11-10 21:12:04,711 - INFO - 발견된 JSON 파일 수: 1
+2025-11-10 21:12:04,711 - INFO - 로드된 총 데이터 수: 10
+2025-11-10 21:12:04,711 - INFO - ==================================================
+2025-11-10 21:12:04,711 - INFO - 파일: multiple_gpt5 - 총 10개 문제
+2025-11-10 21:12:04,711 - INFO - ==================================================
+2025-11-10 21:12:04,711 - INFO - 평가 실행 중... (모델: ['openai/gpt-5'], 배치 크기: 10)
+2025-11-10 21:12:04,711 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 10, 배치크기: 10, 모델수: 1
+2025-11-10 21:12:04,711 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-10 21:12:04,715 - INFO - 전체 데이터: 10개 문제
+2025-11-10 21:12:04,715 - INFO - 2단계: 10개 샘플 추출 중...
+2025-11-10 21:12:04,716 - INFO - 샘플 데이터: 10개 문제
+2025-11-10 21:12:04,716 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 10개
+2025-11-10 21:12:04,716 - INFO - 3단계: 1개 배치로 분할 완료
+2025-11-10 21:12:04,716 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-10 21:12:04,726 - INFO - [CACHE] Config 파일 로드 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-10 21:12:04,728 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-10 21:12:05,781 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-10 21:17:00,750 - INFO - 5단계: 결과 데이터 정리 중...
+2025-11-10 21:17:00,773 - INFO - 6단계: 정확도 계산 중...
+2025-11-10 21:17:00,783 - INFO - 평가 완료!
+2025-11-10 21:17:00,783 - INFO - 모델별 전체 정확도:
+2025-11-10 21:17:00,784 - INFO -   openai/gpt-5: 0.700
+2025-11-10 21:17:00,784 - INFO - [CACHE] 평가 완료 후 캐시 상태: 0개 모델 캐시됨
+2025-11-10 21:17:00,785 - INFO - 
+==================================================
+2025-11-10 21:17:00,785 - INFO - 평가 결과 요약 (multiple_gpt5 - 총 10개 문제)
+2025-11-10 21:17:00,785 - INFO - ==================================================
+2025-11-10 21:17:00,789 - INFO - 결과를 /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/multiple_gpt5_evaluation_gpt-5.xlsx에 저장 중...
+2025-11-10 21:17:00,872 - INFO - Subject별 정확도 계산 중...
+2025-11-10 21:17:00,876 - INFO - Domain별 정확도 계산 중...
+2025-11-10 21:17:00,880 - INFO - Subdomain별 정확도 계산 중...
+2025-11-10 21:17:00,895 - INFO - 결과 저장 완료: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/multiple_gpt5_evaluation_gpt-5.xlsx
+2025-11-10 21:17:00,897 - INFO - 결과 저장 완료: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/6_exam_evaluation/multiple_gpt5_evaluation_gpt-5.xlsx
+2025-11-10 21:17:00,897 - INFO - 평가 완료 (총 10개 문제)
+2025-11-10 21:17:00,898 - INFO - === 전체 파이프라인 완료 ===
+2025-11-11 03:26:32,359 - INFO - === 전체 파이프라인 시작 ===
+2025-11-11 03:26:32,359 - INFO - 실행 단계: evaluate_exams
+2025-11-11 03:26:32,359 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-11 03:26:32,359 - INFO - 평가할 세트: ['1st']
+2025-11-11 03:26:32,359 - INFO - ==================================================
+2025-11-11 03:26:32,359 - INFO - 세트: 1st
+2025-11-11 03:26:32,359 - INFO - ==================================================
+2025-11-11 03:26:32,360 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-11 03:26:32,360 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:26:32,360 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:26:32,360 - INFO -   - 경로 존재: True
+2025-11-11 03:26:32,360 - INFO -   - 파일인지: True
+2025-11-11 03:26:32,360 - INFO -   - 디렉토리인지: False
+2025-11-11 03:26:32,360 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:26:32,360 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:26:32,360 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:26:32,363 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:26:32,363 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-11 03:26:32,363 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:26:32,363 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:26:32,363 - INFO -   - 경로 존재: True
+2025-11-11 03:26:32,363 - INFO -   - 파일인지: True
+2025-11-11 03:26:32,363 - INFO -   - 디렉토리인지: False
+2025-11-11 03:26:32,363 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:26:32,363 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:26:32,363 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:26:32,365 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:26:32,365 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-11 03:26:32,365 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:26:32,366 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:26:32,366 - INFO -   - 경로 존재: True
+2025-11-11 03:26:32,366 - INFO -   - 파일인지: True
+2025-11-11 03:26:32,366 - INFO -   - 디렉토리인지: False
+2025-11-11 03:26:32,366 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:26:32,366 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:26:32,366 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:26:32,369 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:26:32,370 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-11 03:26:32,370 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:26:32,370 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:26:32,370 - INFO -   - 경로 존재: True
+2025-11-11 03:26:32,370 - INFO -   - 파일인지: True
+2025-11-11 03:26:32,370 - INFO -   - 디렉토리인지: False
+2025-11-11 03:26:32,370 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:26:32,370 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:26:32,370 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:26:32,372 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:26:32,372 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-11 03:26:32,372 - INFO - ==================================================
+2025-11-11 03:26:32,372 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-11 03:26:32,373 - INFO - ==================================================
+2025-11-11 03:26:32,373 - INFO - 평가 실행 중... (모델: ['openai/gpt-5-pro'], 배치 크기: 10)
+2025-11-11 03:26:32,373 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-11 03:26:32,373 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-11 03:26:32,397 - INFO - 전체 데이터: 1000개 문제
+2025-11-11 03:26:32,398 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-11 03:26:32,399 - INFO - 샘플 데이터: 1000개 문제
+2025-11-11 03:26:32,400 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-11 03:26:32,402 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-11 03:26:32,402 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-11 03:26:32,415 - INFO - [CACHE] Config 파일 로드 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-11 03:26:32,418 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-11 03:26:33,200 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-11 03:36:16,242 - INFO - === 전체 파이프라인 시작 ===
+2025-11-11 03:36:16,243 - INFO - 실행 단계: evaluate_exams
+2025-11-11 03:36:16,243 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-11 03:36:16,243 - INFO - 평가할 세트: ['1st']
+2025-11-11 03:36:16,243 - INFO - ==================================================
+2025-11-11 03:36:16,243 - INFO - 세트: 1st
+2025-11-11 03:36:16,243 - INFO - ==================================================
+2025-11-11 03:36:16,244 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-11 03:36:16,244 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:36:16,244 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:36:16,244 - INFO -   - 경로 존재: True
+2025-11-11 03:36:16,244 - INFO -   - 파일인지: True
+2025-11-11 03:36:16,244 - INFO -   - 디렉토리인지: False
+2025-11-11 03:36:16,244 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:36:16,244 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:36:16,244 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:36:16,247 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:36:16,247 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-11 03:36:16,247 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:36:16,247 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:36:16,247 - INFO -   - 경로 존재: True
+2025-11-11 03:36:16,247 - INFO -   - 파일인지: True
+2025-11-11 03:36:16,247 - INFO -   - 디렉토리인지: False
+2025-11-11 03:36:16,247 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:36:16,247 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:36:16,247 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:36:16,251 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:36:16,251 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-11 03:36:16,251 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:36:16,252 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:36:16,252 - INFO -   - 경로 존재: True
+2025-11-11 03:36:16,252 - INFO -   - 파일인지: True
+2025-11-11 03:36:16,252 - INFO -   - 디렉토리인지: False
+2025-11-11 03:36:16,252 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:36:16,252 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:36:16,252 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:36:16,257 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:36:16,257 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-11 03:36:16,257 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:36:16,257 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:36:16,257 - INFO -   - 경로 존재: True
+2025-11-11 03:36:16,257 - INFO -   - 파일인지: True
+2025-11-11 03:36:16,257 - INFO -   - 디렉토리인지: False
+2025-11-11 03:36:16,257 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:36:16,257 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:36:16,258 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:36:16,260 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:36:16,260 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-11 03:36:16,260 - INFO - ==================================================
+2025-11-11 03:36:16,260 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-11 03:36:16,260 - INFO - ==================================================
+2025-11-11 03:36:16,260 - INFO - 평가 실행 중... (모델: ['openai/gpt-5-pro'], 배치 크기: 10)
+2025-11-11 03:36:16,260 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-11 03:36:16,260 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-11 03:36:16,278 - INFO - 전체 데이터: 1000개 문제
+2025-11-11 03:36:16,278 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-11 03:36:16,279 - INFO - 샘플 데이터: 1000개 문제
+2025-11-11 03:36:16,279 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-11 03:36:16,281 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-11 03:36:16,281 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-11 03:36:16,299 - INFO - [CACHE] Config 파일 로드 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/llm_config.ini
+2025-11-11 03:36:16,301 - INFO - [CACHE] QueryModels 모듈 로드 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/tools
+2025-11-11 03:36:17,089 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-11 03:39:54,064 - INFO - === 전체 파이프라인 시작 ===
+2025-11-11 03:39:54,066 - INFO - 실행 단계: evaluate_exams
+2025-11-11 03:39:54,066 - INFO - === 6단계: 시험지 평가 (배치 크기: 10) ===
+2025-11-11 03:39:54,066 - INFO - 평가할 세트: ['1st']
+2025-11-11 03:39:54,066 - INFO - ==================================================
+2025-11-11 03:39:54,066 - INFO - 세트: 1st
+2025-11-11 03:39:54,066 - INFO - ==================================================
+2025-11-11 03:39:54,066 - INFO - 1st 세트에서 4개의 시험 파일을 찾았습니다.
+2025-11-11 03:39:54,066 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:39:54,066 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:39:54,066 - INFO -   - 경로 존재: True
+2025-11-11 03:39:54,066 - INFO -   - 파일인지: True
+2025-11-11 03:39:54,066 - INFO -   - 디렉토리인지: False
+2025-11-11 03:39:54,066 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:39:54,066 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융일반_exam.json
+2025-11-11 03:39:54,066 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:39:54,069 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:39:54,069 - INFO -   - 금융일반: 250개 문제 로드
+2025-11-11 03:39:54,069 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:39:54,069 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:39:54,069 - INFO -   - 경로 존재: True
+2025-11-11 03:39:54,069 - INFO -   - 파일인지: True
+2025-11-11 03:39:54,069 - INFO -   - 디렉토리인지: False
+2025-11-11 03:39:54,069 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:39:54,069 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무2_exam.json
+2025-11-11 03:39:54,069 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:39:54,071 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:39:54,071 - INFO -   - 금융실무2: 250개 문제 로드
+2025-11-11 03:39:54,071 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:39:54,071 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:39:54,071 - INFO -   - 경로 존재: True
+2025-11-11 03:39:54,071 - INFO -   - 파일인지: True
+2025-11-11 03:39:54,071 - INFO -   - 디렉토리인지: False
+2025-11-11 03:39:54,071 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:39:54,071 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융심화_exam.json
+2025-11-11 03:39:54,072 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:39:54,075 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:39:54,075 - INFO -   - 금융심화: 250개 문제 로드
+2025-11-11 03:39:54,075 - INFO - 데이터 로딩 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:39:54,075 - INFO - 경로 확인 중: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:39:54,075 - INFO -   - 경로 존재: True
+2025-11-11 03:39:54,075 - INFO -   - 파일인지: True
+2025-11-11 03:39:54,075 - INFO -   - 디렉토리인지: False
+2025-11-11 03:39:54,075 - INFO - 파일 경로로 인식: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:39:54,075 - INFO - JSON 파일 추가: /Users/yejin/Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/eval_data/4_multiple_exam/1st/금융실무1_exam.json
+2025-11-11 03:39:54,075 - INFO - 발견된 JSON 파일 수: 1
+2025-11-11 03:39:54,078 - INFO - 로드된 총 데이터 수: 250
+2025-11-11 03:39:54,078 - INFO -   - 금융실무1: 250개 문제 로드
+2025-11-11 03:39:54,078 - INFO - ==================================================
+2025-11-11 03:39:54,078 - INFO - 세트: 1st - 총 1000개 문제 (파일: 금융일반, 금융실무2, 금융심화, 금융실무1)
+2025-11-11 03:39:54,078 - INFO - ==================================================
+2025-11-11 03:39:54,078 - INFO - 평가 실행 중... (모델: ['openai/gpt-5-pro'], 배치 크기: 10)
+2025-11-11 03:39:54,078 - INFO - 개선된 평가 파이프라인 시작 - 샘플수: 1000, 배치크기: 10, 모델수: 1
+2025-11-11 03:39:54,078 - INFO - 1단계: JSON 데이터를 DataFrame으로 변환 중...
+2025-11-11 03:39:54,091 - INFO - 전체 데이터: 1000개 문제
+2025-11-11 03:39:54,091 - INFO - 2단계: 1000개 샘플 추출 중...
+2025-11-11 03:39:54,092 - INFO - 샘플 데이터: 1000개 문제
+2025-11-11 03:39:54,092 - INFO - 샘플 내 O, X 문제: 0개, 일반 객관식: 1000개
+2025-11-11 03:39:54,094 - INFO - 3단계: 100개 배치로 분할 완료
+2025-11-11 03:39:54,094 - INFO - 4단계: 모델 호출 및 예측 시작...
+2025-11-11 03:39:54,114 - INFO - [CACHE] LLMQuery 인스턴스 생성 완료: /Users/yejin/Desktop/Desktop_AICenter✨/SFAIcenter/tools_arrange
+2025-11-11 03:39:55,005 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 04:03:52,751 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 04:22:51,137 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 04:37:39,994 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 04:52:47,116 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 05:12:55,562 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 05:29:02,045 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 05:45:17,501 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 06:06:28,087 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 06:10:09,854 - WARNING - 모델 출력이 비어있습니다.
+2025-11-11 06:10:09,855 - WARNING - 배치 9 - openai/gpt-5-pro: 0/10개 유효 예측 (무효 예측 감지)
+2025-11-11 06:10:09,855 - WARNING - 예상 ID: ['SS0209_q_0115_0001', 'SS0418_q_0194_0001', 'SS0397_q_0045_0001', 'SS0418_q_0174_0002', 'SS0394_q_0194_0002', 'SS0249_q_0207_0002', 'SS0087_q_0293_0001', 'SS0206_q_0561_0003', 'SS0200_q_0486_0003', 'SS0394_q_0056_0001']
+2025-11-11 06:10:09,855 - WARNING - 모델 원시 출력:
+
+2025-11-11 06:10:09,855 - WARNING - 파싱된 결과: {'SS0209_q_0115_0001': nan, 'SS0418_q_0194_0001': nan, 'SS0397_q_0045_0001': nan, 'SS0418_q_0174_0002': nan, 'SS0394_q_0194_0002': nan, 'SS0249_q_0207_0002': nan, 'SS0087_q_0293_0001': nan, 'SS0206_q_0561_0003': nan, 'SS0200_q_0486_0003': nan, 'SS0394_q_0056_0001': nan}
+2025-11-11 06:10:10,587 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"
+2025-11-11 06:12:37,370 - INFO - Retrying request to /responses in 0.485075 seconds
+2025-11-11 06:12:38,549 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/responses "HTTP/1.1 200 OK"

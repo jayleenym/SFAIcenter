@@ -29,22 +29,20 @@ import argparse
 # -----------------------------
 # 로깅 설정
 # -----------------------------
-# 홈 디렉토리에서 프로젝트 루트 찾기
-global home_dir
-home_dir = os.path.expanduser("~")
-global project_root
-project_root = None
-
-# 홈 디렉토리에서 SFAIcenter 프로젝트 찾기
-for root, dirs, files in os.walk(home_dir):
-    if 'SFAIcenter' in dirs:
-        project_root = os.path.join(root, 'SFAIcenter')
-        break
-
-# 프로젝트 루트를 찾지 못한 경우 현재 스크립트 기준으로 설정
-if project_root is None:
+# pipeline/config에서 PROJECT_ROOT_PATH, ONEDRIVE_PATH import 시도
+try:
+    import sys
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root_dir = os.path.dirname(current_dir)  # tools
+    sys.path.insert(0, project_root_dir)
+    from pipeline.config import PROJECT_ROOT_PATH, ONEDRIVE_PATH
+    project_root = PROJECT_ROOT_PATH
+    onedrive_path = ONEDRIVE_PATH
+except ImportError:
+    # fallback: pipeline이 없는 경우 현재 스크립트 기준으로 설정
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
+    onedrive_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
 
 log_dir = os.path.join(project_root, 'logs')
 log_file = os.path.join(log_dir, 'multiple_eval_by_model.log')
@@ -67,28 +65,16 @@ logger = logging.getLogger(__name__)
 # -----------------------------
 CIRCLED_MAP = {"①":"1","②":"2","③":"3","④":"4","⑤":"5"}
 
-def normalize_option_text(s: str) -> str:
-    """선지 앞에 붙은 ①~⑤, 1), (1), 1. 등 번호 표기를 제거하고 본문만 남김."""
-    if s is None:
-        return ""
-    s = str(s).strip()
-    # ①~⑤ 제거
-    s = re.sub(r"^\s*[①-⑤]\s*", "", s)
-    # 1), (1), 1. 등 제거
-    s = re.sub(r"^\s*(?:\(?([1-5])\)?[.)])\s*", "", s)
-    return s.strip()
+# normalize_option_text는 core.utils.TextProcessor.normalize_option_text를 사용
+# 중복 제거를 위해 여기서는 제거하고 core.utils에서 import
+from core.utils import TextProcessor
+normalize_option_text = TextProcessor.normalize_option_text
 
+# parse_answer_set는 parse_answer_set_improved로 대체됨 (O, X 문제 지원)
+# 하위 호환성을 위해 parse_answer_set_improved를 사용하도록 변경
 def parse_answer_set(ans: str) -> Set[int]:
-    """'①, ⑤' 같은 복수정답도 {1,5}로 파싱. 빈/이상값은 빈 set."""
-    if not ans:
-        return set()
-    s = str(ans)
-    # ①~⑤ 를 1~5로 치환
-    for k, v in CIRCLED_MAP.items():
-        s = s.replace(k, v)
-    # 쉼표/슬래시/공백 구분 모두 허용하여 1~5 추출
-    nums = re.findall(r"[1-5]", s)
-    return set(int(n) for n in nums)
+    """'①, ⑤' 같은 복수정답도 {1,5}로 파싱. 빈/이상값은 빈 set. (deprecated: parse_answer_set_improved 사용 권장)"""
+    return parse_answer_set_improved(ans)
 
 # -----------------------------
 # O, X 문제 처리 개선
@@ -292,14 +278,18 @@ _config_cache = None
 _query_models_module = None
 
 def _find_config_file():
-    """Config 파일 경로를 찾습니다 (QueryModels.find_config_file과 동일한 로직)"""
+    """Config 파일 경로를 찾습니다 (LLMQuery._find_config_file과 동일한 로직)"""
     # 프로젝트 루트에서 llm_config.ini 찾기
-    config_path = os.popen(f"find {project_root} -type f -name 'llm_config.ini'").read().strip()
-    if os.path.exists(config_path):
+    default_path = os.path.join(project_root, 'llm_config.ini')
+    if os.path.exists(default_path):
+        return default_path
+    
+    # 찾지 못한 경우 find 명령어로 검색 (fallback)
+    config_path = os.popen(f"find {project_root} -type f -name 'llm_config.ini' 2>/dev/null").read().strip()
+    if config_path and os.path.exists(config_path):
         return config_path
     
     # 찾지 못한 경우 기본값 반환
-    default_path = os.path.join(project_root, 'llm_config.ini')
     return default_path
 
 def _load_config():
@@ -307,7 +297,7 @@ def _load_config():
     global _config_cache
     if _config_cache is None:
         import configparser
-        # QueryModels와 동일한 방식으로 config 파일 찾기
+        # LLMQuery와 동일한 방식으로 config 파일 찾기
         config_path = _find_config_file()
         if not os.path.exists(config_path):
             raise FileNotFoundError(f"Config 파일을 찾을 수 없습니다: {config_path}")
@@ -319,19 +309,22 @@ def _load_config():
     return _config_cache
 
 def _load_query_models():
-    """QueryModels 모듈을 한 번만 로드하고 캐시"""
+    """LLMQuery 인스턴스를 한 번만 생성하고 캐시"""
     global _query_models_module
     if _query_models_module is None:
         import sys
         import os
-        tools_dir = os.popen(f"find {project_root}/ -type d -name 'tools'").read().strip()
-        sys.path.append(tools_dir)
+        # tools/core/llm_query.py에서 LLMQuery 클래스 import
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        tools_dir = os.path.dirname(current_dir)  # evaluation -> tools
+        sys.path.insert(0, tools_dir)
+        
         try:
-            import QueryModels
-            _query_models_module = QueryModels
-            logger.info(f"[CACHE] QueryModels 모듈 로드 완료: {tools_dir}")
+            from core.llm_query import LLMQuery
+            _query_models_module = LLMQuery()
+            logger.info(f"[CACHE] LLMQuery 인스턴스 생성 완료: {tools_dir}")
         except Exception as e:
-            logger.error(f"[CACHE] QueryModels 모듈 로드 실패: {e}")
+            logger.error(f"[CACHE] LLMQuery 인스턴스 생성 실패: {e}")
             raise
     return _query_models_module
 
@@ -341,10 +334,17 @@ def _load_model_cached(model_name: str):
     
     if model_name not in _model_cache:
         logger.info(f"[CACHE] 모델 로드 중: {model_name}")
-        config = _load_config()
-        QueryModels = _load_query_models()
+        llm_query = _load_query_models()
         
-        llm, tokenizer, sampling_params = QueryModels.load_model(model_name, config)
+        # LLMQuery.load_vllm_model은 model_path를 받으므로, model_name을 model_path로 사용
+        # vLLM 모델 경로는 model_name과 동일하다고 가정
+        llm_query.load_vllm_model(model_name)
+        
+        # LLMQuery 인스턴스에서 llm, tokenizer, sampling_params 가져오기
+        llm = llm_query.llm
+        tokenizer = llm_query.tokenizer
+        sampling_params = llm_query.sampling_params
+        
         _model_cache[model_name] = (llm, tokenizer, sampling_params)
         logger.info(f"[CACHE] 모델 로드 완료: {model_name}")
     else:
@@ -396,33 +396,34 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
             try:
                 if use_server_mode:
                     # vLLM 서버 모드 - 캐시된 모델 사용
-                    logger.info(f"[VLLM] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
+                    logger.debug(f"[VLLM] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
                     start_time = time.time()
                     
                     # 캐시된 모델 로드
                     llm, tokenizer, sampling_params = _load_model_cached(model_name)
-                    QueryModels = _load_query_models()
+                    llm_query = _load_query_models()
                     
-                    ans = QueryModels.query_vllm(llm, tokenizer, sampling_params, system_prompt, user_prompt, model_name)
+                    # LLMQuery.query_vllm은 인스턴스 메서드이므로 직접 호출
+                    # 하지만 모델이 이미 로드되어 있어야 함
+                    ans = llm_query.query_vllm(system_prompt, user_prompt)
                     
                     elapsed_time = time.time() - start_time
-                    logger.info(f"[VLLM] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
+                    logger.debug(f"[VLLM] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
                     
                     return ans
                 else:
                     # OpenRouter API 모드
-                    logger.info(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
+                    logger.debug(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
                     start_time = time.time()
                     
-                    # 캐시된 config와 모듈 사용
-                    config = _load_config()
-                    QueryModels = _load_query_models()
+                    # LLMQuery 인스턴스 사용
+                    llm_query = _load_query_models()
                     
-                    # query_openrouter 함수 시그니처: (system_prompt, user_prompt, config, model_name)
-                    ans = QueryModels.query_openrouter(system_prompt, user_prompt, config, model_name)
+                    # LLMQuery.query_openrouter 시그니처: (system_prompt, user_prompt, model_name)
+                    ans = llm_query.query_openrouter(system_prompt, user_prompt, model_name)
                     
                     elapsed_time = time.time() - start_time
-                    logger.info(f"[API] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
+                    logger.debug(f"[API] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
                     time.sleep(1.5)
                     
                     return ans
@@ -528,6 +529,8 @@ def parse_model_output(raw: str, expected_ids: List[str], reasoning: bool = Fals
 # 평가 파이프라인
 # -----------------------------
 
+# run_eval_pipeline는 run_eval_pipeline_improved로 대체됨 (O, X 문제 지원)
+# 하위 호환성을 위해 run_eval_pipeline_improved를 사용하도록 변경
 def run_eval_pipeline(
     json_list: List[dict],
     models: List[str],
@@ -544,150 +547,13 @@ def run_eval_pipeline(
       pred_long   : (id, model_name, answer) 롱 포맷
       pred_wide   : id 기준 모델별 예측 와이드
       acc_by_model: 모델별 정확도 (복수정답 지원: 예측 ∈ answer_set 이면 정답)
+    
+    (deprecated: run_eval_pipeline_improved 사용 권장)
     """
-    logger.info(f"평가 파이프라인 시작 - 샘플수: {sample_size}, 배치크기: {batch_size}, 모델수: {len(models)}")
-    
-    # (1) JSON → df_all
-    logger.info("1단계: JSON 데이터를 DataFrame으로 변환 중...")
-    df_all = json_to_df_all(json_list)
-    df_all = df_all.sort_values(by=['book_id', 'tag'], ascending=False).reset_index(drop=True)
-    logger.info(f"전체 데이터: {len(df_all)}개 문제")
-
-    # (2) 샘플링
-    logger.info(f"2단계: {sample_size}개 샘플 추출 중...")
-    # 샘플 크기가 전체 데이터보다 큰 경우, 전체 데이터 크기로 조정
-    actual_sample_size = min(sample_size, len(df_all))
-    if actual_sample_size < sample_size:
-        logger.warning(f"요청한 샘플 크기({sample_size})가 전체 데이터({len(df_all)})보다 큼. {actual_sample_size}개로 조정합니다.")
-    df_sample = df_all.sample(n=actual_sample_size, random_state=seed).reset_index(drop=True)
-    logger.info(f"샘플 데이터: {len(df_sample)}개 문제")
-
-    # (3) 배치 분할
-    batches = [df_sample.iloc[i:i+batch_size] for i in range(0, len(df_sample), batch_size)]
-    logger.info(f"3단계: {len(batches)}개 배치로 분할 완료")
-
-    # (4) 모델 호출/파싱 누적
-    logger.info("4단계: 모델 호출 및 예측 시작...")
-    rows = []
-    invalid_responses = []  # 무효 예측 응답 저장용
-    total_calls = len(batches) * len(models)
-    
-    # 전체 진행상황 표시
-    with tqdm(total=total_calls, desc="모델 호출 진행", unit="call") as pbar:
-        for bidx, bdf in enumerate(batches, 1):
-            user_prompt = build_user_prompt(bdf)
-            ids = bdf["id"].tolist()
-            
-            for model in models:
-                try:
-                    # 배치별 진행상황 표시
-                    pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
-                    
-                    raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
-                    if reasoning:
-                        logger.info(f"추론 모델 원시 출력 저장 완료")
-                        with open(f"reasoning_model_output_{model.replace('/', '_')}.txt", "a", encoding="utf-8") as f:
-                            f.write(f"\n{'='*80}\n")
-                            f.write(f"배치: {bidx}/{len(batches)}, 모델: {model}, 시간: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                            f.write(f"ID 목록: {ids}\n")
-                            f.write(f"{'='*80}\n")
-                            f.write(raw)
-                            f.write(f"\n{'='*80}\n\n")
-                    else:
-                        pass
-                    parsed = parse_model_output(raw, ids, reasoning=reasoning)
-                    
-                    # 파싱 결과 검증
-                    valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
-                    logger.info(f"배치 {bidx} - {model}: {valid_predictions}/{len(ids)}개 유효 예측")
-                    
-                    # 무효 예측이 있는 경우 디버깅 정보 출력 및 저장
-                    if valid_predictions < len(ids):
-                        logger.warning(f"배치 {bidx} - {model}: 무효 예측 감지!")
-                        logger.warning(f"예상 ID: {ids}")
-                        logger.warning(f"모델 원시 출력:\n{raw}")
-                        logger.warning(f"파싱된 결과: {parsed}")
-                        
-                        # 무효 예측 응답 저장 (모델명, 문제, 답변 포함)
-                        for _id in ids:
-                            if np.isnan(parsed[_id]):
-                                # 문제 정보 가져오기
-                                question_info = bdf[bdf['id'] == _id].iloc[0] if len(bdf[bdf['id'] == _id]) > 0 else None
-                                
-                                invalid_response = {
-                                    "model_name": model,
-                                    "batch_id": bidx,
-                                    "question_id": _id,
-                                    "question": question_info['question'] if question_info is not None else "정보 없음",
-                                    "options": {
-                                        "opt1": question_info['opt1'] if question_info is not None else "",
-                                        "opt2": question_info['opt2'] if question_info is not None else "",
-                                        "opt3": question_info['opt3'] if question_info is not None else "",
-                                        "opt4": question_info['opt4'] if question_info is not None else "",
-                                        "opt5": question_info['opt5'] if question_info is not None else ""
-                                    },
-                                    "correct_answer": list(question_info['answer_set']) if question_info is not None else [],
-                                    "model_raw_output": raw,
-                                    "parsed_result": parsed[_id],
-                                    "timestamp": dt.datetime.now().isoformat()
-                                }
-                                invalid_responses.append(invalid_response)
-                    
-                    for _id in ids:
-                        rows.append({"id": _id, "model_name": model, "answer": parsed[_id]})
-                    
-                    pbar.update(1)
-                    
-                except Exception as e:
-                    logger.error(f"배치 {bidx} - {model} 처리 중 오류: {str(e)}")
-                    # 오류 발생 시 NaN으로 채움
-                    for _id in ids:
-                        rows.append({"id": _id, "model_name": model, "answer": np.nan})
-                    pbar.update(1)
-
-    logger.info("5단계: 결과 데이터 정리 중...")
-    pred_long = pd.DataFrame(rows)
-    pred_long = pred_long.sort_values(by=['id'], ascending=True).reset_index(drop=True)
-    
-    # (5) 와이드 포맷
-    pred_wide = pred_long.pivot(index="id", columns="model_name", values="answer").reset_index()
-    pred_wide = pred_wide.sort_values(by=['id'], ascending=True).reset_index(drop=True)
-
-    # (6) 정확도 계산
-    logger.info("6단계: 정확도 계산 중...")
-    key = df_sample[["id", "answer_set"]].copy()
-    
-    def _is_correct(pred: float, s: Set[int]) -> float:
-        if np.isnan(pred) or not s:
-            return np.nan
-        return float(int(pred) in s)
-
-    merged = pred_long.merge(key, on="id", how="left")
-    merged["correct"] = merged.apply(lambda r: _is_correct(r["answer"], r["answer_set"]), axis=1)
-
-    acc_by_model = (
-        merged.groupby("model_name", dropna=False)["correct"]
-        .mean()
-        .reset_index()
-        .rename(columns={"correct": "accuracy"})
-        .sort_values("accuracy", ascending=False)
+    return run_eval_pipeline_improved(
+        json_list, models, sample_size, batch_size, seed, 
+        mock_mode, use_server_mode, reasoning, use_ox_support=False
     )
-    
-    # 결과 요약 로깅
-    logger.info("평가 완료!")
-    logger.info("모델별 정확도:")
-    for _, row in acc_by_model.iterrows():
-        logger.info(f"  {row['model_name']}: {row['accuracy']:.3f}")
-    
-    # 캐시 정보 로깅
-    cache_info = get_cache_info()
-    logger.info(f"[CACHE] 평가 완료 후 캐시 상태: {len(cache_info['cached_models'])}개 모델 캐시됨")
-    
-    # 무효 예측 응답 저장
-    if 'invalid_responses' in locals() and invalid_responses:
-        save_invalid_responses(invalid_responses, "evaluation")
-    
-    return df_all, pred_long, pred_wide, acc_by_model
 
 def run_eval_pipeline_improved(
     json_list: List[dict],
@@ -742,10 +608,10 @@ def run_eval_pipeline_improved(
     invalid_responses = []  # 무효 예측 응답 저장용
     total_calls = len(batches) * len(models)
 
+    # SYSTEM_PROMPT를 로컬 변수로 복사 (전역 변수 수정 방지)
+    local_system_prompt = SYSTEM_PROMPT
     if reasoning:
-        SYSTEM_PROMPT += "- 반드시 추론 과정 등 추가 설명 없이 1~5 중 하나의 정답만 출력하세요."
-    else:
-        pass
+        local_system_prompt += "- 반드시 추론 과정 등 추가 설명 없이 1~5 중 하나의 정답만 출력하세요."
     
     # 전체 진행상황 표시
     with tqdm(total=total_calls, desc="모델 호출 진행", unit="call") as pbar:
@@ -755,19 +621,36 @@ def run_eval_pipeline_improved(
             
             for model in models:
                 try:
-                    # 배치별 진행상황 표시
+                    # 배치별 진행상황 표시 (tqdm 진행바에만 표시, 로그는 최소화)
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
-                    raw = call_llm(model, SYSTEM_PROMPT, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
+                    raw = call_llm(model, local_system_prompt, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
+                    # 모든 모델 응답을 backlog로 저장
+                    try:
+                        from pipeline.config import ONEDRIVE_PATH
+                        base_path = ONEDRIVE_PATH
+                    except ImportError:
+                        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+                    
+                    output_dir = os.path.join(base_path, 'evaluation/result/log')
+                    os.makedirs(output_dir, exist_ok=True)
+                    output_file = os.path.join(output_dir, f"model_output_{model.replace('/', '_')}.txt")
+                    with open(output_file, "a", encoding="utf-8") as f:
+                        f.write(f"\n{'='*80}\n")
+                        f.write(f"배치: {bidx}/{len(batches)}, 모델: {model}, 시간: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                        f.write(f"ID 목록: {ids}\n")
+                        f.write(f"Reasoning 모드: {reasoning}\n")
+                        f.write(f"{'='*80}\n")
+                        f.write(raw)
+                        f.write(f"\n{'='*80}\n\n")
                     parsed = parse_model_output(raw, ids, reasoning=reasoning)
                     
                     # 파싱 결과 검증
                     valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
-                    logger.info(f"배치 {bidx} - {model}: {valid_predictions}/{len(ids)}개 유효 예측")
                     
-                    # 무효 예측이 있는 경우 디버깅 정보 출력 및 저장
+                    # 무효 예측이 있는 경우에만 로그 출력
                     if valid_predictions < len(ids):
-                        logger.warning(f"배치 {bidx} - {model}: 무효 예측 감지!")
+                        logger.warning(f"배치 {bidx} - {model}: {valid_predictions}/{len(ids)}개 유효 예측 (무효 예측 감지)")
                         logger.warning(f"예상 ID: {ids}")
                         logger.warning(f"모델 원시 출력:\n{raw}")
                         logger.warning(f"파싱된 결과: {parsed}")
@@ -925,8 +808,15 @@ def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str =
         logger.info("무효 예측이 없어 저장할 파일이 없습니다.")
         return
     
+    # ONEDRIVE_PATH 기반 경로 사용
+    try:
+        from pipeline.config import ONEDRIVE_PATH
+        base_path = ONEDRIVE_PATH
+    except ImportError:
+        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    invalid_filename = f"evaluation/result/{filename_prefix}_invalid_responses_{timestamp}.json"
+    invalid_filename = os.path.join(base_path, f"evaluation/result/{filename_prefix}_invalid_responses_{timestamp}.json")
     
     # 디렉토리가 없으면 생성
     os.makedirs(os.path.dirname(invalid_filename), exist_ok=True)
@@ -952,10 +842,17 @@ def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str =
 
 def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evaluation"):
     """상세한 로그를 CSV로 저장"""
+    # ONEDRIVE_PATH 기반 경로 사용
+    try:
+        from pipeline.config import ONEDRIVE_PATH
+        base_path = ONEDRIVE_PATH
+    except ImportError:
+        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
     
     # 예측 결과 상세 로그
-    pred_log_filename = f"evaluation/result/log/{filename_prefix}_predictions_{timestamp}.csv"
+    pred_log_filename = os.path.join(base_path, f"evaluation/result/log/{filename_prefix}_predictions_{timestamp}.csv")
     os.makedirs(os.path.dirname(pred_log_filename), exist_ok=True)
     pred_long_df.to_csv(pred_log_filename, index=False, encoding='utf-8-sig')
     logger.info(f"상세 예측 로그 저장: {pred_log_filename}")
@@ -967,7 +864,7 @@ def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evalu
     model_stats.columns = ['총_예측수', '유효_예측수', '무효_예측수']
     model_stats['유효율'] = (model_stats['유효_예측수'] / model_stats['총_예측수'] * 100).round(1)
     
-    stats_filename = f"evaluation/result/log/{filename_prefix}_model_stats_{timestamp}.csv"
+    stats_filename = os.path.join(base_path, f"evaluation/result/log/{filename_prefix}_model_stats_{timestamp}.csv")
     os.makedirs(os.path.dirname(stats_filename), exist_ok=True)
     model_stats.to_csv(stats_filename, encoding='utf-8-sig')
     logger.info(f"모델 통계 저장: {stats_filename}")
@@ -1092,10 +989,12 @@ def calculate_subject_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) ->
 def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd.DataFrame, pred_long: pd.DataFrame = None, filename: str = None, mock_mode: bool = False):
     """결과를 Excel 파일로 저장 (domain, subdomain 분석 포함)"""
     
-    # 기본 저장 경로 설정 (현재 사용자 기준)
-    # current_user = os.path.expanduser("~").split("/")[-1]  # 현재 사용자명 추출
-    current_user = os.path.dirname(__file__)
-    default_base_path = f"{home_dir}/result/"
+    # ONEDRIVE_PATH 기반 경로 사용
+    try:
+        from pipeline.config import ONEDRIVE_PATH
+        default_base_path = os.path.join(ONEDRIVE_PATH, 'evaluation/result/')
+    except ImportError:
+        default_base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/result/")
     
     if filename is None:
         timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
@@ -1224,124 +1123,26 @@ def print_domain_analysis_summary(df_all: pd.DataFrame, domain_acc: pd.DataFrame
 # 태그 대치 함수들
 # -----------------------------
 
+# replace_tags_in_text와 replace_tags_in_qna_data는 qna.qna_processor.TagProcessor로 통합됨
+# 중복 제거를 위해 TagProcessor를 사용하도록 변경
+from qna.qna_processor import TagProcessor
+
 def replace_tags_in_text(text: str, additional_tag_data: list, max_depth: int = 5) -> str:
     """
     텍스트에서 {f_0000_0000}이나 {tb_0000_0000} 같은 태그를 additional_tag_data에서 찾아서 대치합니다.
     중첩된 태그도 재귀적으로 처리합니다.
     
-    Args:
-        text: 대치할 텍스트
-        additional_tag_data: 태그 데이터 리스트
-        max_depth: 최대 재귀 깊이 (무한 루프 방지)
-    
-    Returns:
-        태그가 대치된 텍스트
+    (deprecated: TagProcessor.replace_tags_in_text 사용 권장)
     """
-    if not text or not additional_tag_data or max_depth <= 0:
-        return text
-    
-    # 태그 패턴 매칭: {f_0000_0000}, {tb_0000_0000}, {img_0000_0000}, {etc_0000_0000}, {note_0000_0000}
-    tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|img_\d{4}_\d{4}|etc_\d{4}_\d{4}|note_\d{4}_\d{4})\}'
-    
-    def replace_tag(match):
-        tag_with_braces = match.group(0)  # {f_0000_0000}
-        tag_without_braces = match.group(1)  # f_0000_0000
-        
-        # additional_tag_data에서 해당 태그 찾기
-        for tag_data in additional_tag_data:
-            if tag_data.get('tag') == tag_with_braces:
-                replacement_text = None
-                
-                # data 필드가 있는 경우
-                if 'data' in tag_data:
-                    data = tag_data.get('data', {})
-                    if isinstance(data, dict):
-                        # data에서 적절한 필드 찾기 (우선순위: content, text, description, caption)
-                        for field in ['content', 'text', 'description', 'caption']:
-                            if field in data and data[field]:
-                                replacement_text = str(data[field])
-                                break
-                        
-                        # file_path가 있으면 파일명 표시
-                        if replacement_text is None and 'file_path' in data and data['file_path']:
-                            replacement_text = f"[{os.path.basename(data['file_path'])}]"
-                    
-                    # data가 문자열이면 그대로 사용
-                    elif isinstance(data, str) and data:
-                        replacement_text = data
-                    
-                    # data가 리스트면 첫 번째 요소 사용
-                    elif isinstance(data, list) and data:
-                        replacement_text = str(data[0])
-                
-                # data 필드가 없는 경우, 직접 필드에서 찾기
-                else:
-                    # 직접 필드에서 적절한 내용 찾기 (우선순위: content, text, description, caption)
-                    for field in ['content', 'text', 'description', 'caption']:
-                        if field in tag_data and tag_data[field]:
-                            replacement_text = str(tag_data[field])
-                            break
-                    
-                    # file_path가 있으면 파일명 표시
-                    if replacement_text is None and 'file_path' in tag_data and tag_data['file_path']:
-                        replacement_text = f"[{os.path.basename(tag_data['file_path'])}]"
-                
-                # 대치 텍스트를 찾은 경우, 재귀적으로 중첩된 태그도 처리
-                if replacement_text is not None:
-                    return replace_tags_in_text(replacement_text, additional_tag_data, max_depth - 1)
-        
-        # 태그를 찾지 못한 경우 원본 태그 유지
-        return tag_with_braces
-    
-    return re.sub(tag_pattern, replace_tag, text)
+    return TagProcessor.replace_tags_in_text(text, additional_tag_data, max_depth)
 
 def replace_tags_in_qna_data(qna_data: dict, additional_tag_data: list) -> dict:
     """
     Q&A 데이터의 question과 options에서 태그를 대치합니다.
     
-    Args:
-        qna_data: Q&A 데이터 딕셔너리 (전체 qna 객체 또는 qna_data 부분)
-        additional_tag_data: 추가 태그 데이터 리스트
-    
-    Returns:
-        태그가 대치된 Q&A 데이터
+    (deprecated: TagProcessor.replace_tags_in_qna_data 사용 권장)
     """
-    if not qna_data:
-        return qna_data
-    
-    if not additional_tag_data:
-        return qna_data
-    
-    # qna_data가 전체 qna 객체인 경우 qna_data 부분을 추출
-    if 'qna_data' in qna_data:
-        qna_info = qna_data['qna_data']
-    else:
-        # 이미 qna_data 부분만 전달된 경우
-        qna_info = qna_data
-    
-    if 'description' in qna_info:
-        desc = qna_info['description']
-        
-        # question 필드 처리
-        if 'question' in desc and desc['question']:
-            desc['question'] = replace_tags_in_text(desc['question'], additional_tag_data)
-        
-        # options 필드 처리 (리스트)
-        if 'options' in desc and desc['options']:
-            if isinstance(desc['options'], list):
-                desc['options'] = [replace_tags_in_text(option, additional_tag_data) for option in desc['options']]
-            else:
-                desc['options'] = replace_tags_in_text(desc['options'], additional_tag_data)
-        
-        # answer 필드 처리
-        if 'answer' in desc and desc['answer']:
-            desc['answer'] = replace_tags_in_text(desc['answer'], additional_tag_data)
-        
-        # explanation 필드 처리
-        if 'explanation' in desc and desc['explanation']:
-            desc['explanation'] = replace_tags_in_text(desc['explanation'], additional_tag_data)
-    
-    return qna_data
+    return TagProcessor.replace_tags_in_qna_data(qna_data, additional_tag_data)
 
 # -----------------------------
 # 유틸리티 함수들
@@ -1351,7 +1152,7 @@ def extract_subject_from_filename(filename: str) -> str:
     """파일명에서 subject 정보를 추출합니다.
     
     Args:
-        filename: 파일명 (예: "금융실무1_mock_exam_set1.json")
+        filename: 파일명 (예: "금융실무1_mock_exam_set1.json" 또는 "금융실무1_exam.json")
     
     Returns:
         str: 추출된 subject (예: "금융실무1")
@@ -1359,6 +1160,11 @@ def extract_subject_from_filename(filename: str) -> str:
     if '_mock_exam' in filename:
         # mock_exam 파일인 경우 파일명에서 subject 추출
         subject = filename.split("_")[0]
+        return subject
+    elif '_exam.json' in filename:
+        # exam 파일인 경우 파일명에서 subject 추출
+        # 파일명 형식: "{exam_name}_exam.json" (예: "금융실무1_exam.json")
+        subject = filename.split("_exam.json")[0]
         return subject
     else:
         # 일반 파일인 경우 빈 문자열 반환
@@ -1369,7 +1175,11 @@ def extract_subject_from_filename(filename: str) -> str:
 # -----------------------------
 
 def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False) -> Tuple[List[dict], bool]:
-    """디렉토리에서 JSON 파일들을 로드하여 데이터 리스트 반환
+    """디렉토리 또는 파일 경로에서 JSON 파일들을 로드하여 데이터 리스트 반환
+    
+    Args:
+        data_path: 디렉토리 경로 또는 JSON 파일 경로
+        apply_tag_replacement: 태그 대치 적용 여부
     
     Returns:
         Tuple[List[dict], bool]: (데이터 리스트, mock_exam 파일 포함 여부)
@@ -1377,13 +1187,47 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
     json_files = []
     is_mock_exam = False
     
-    for root, _, files in os.walk(data_path):
-        for f in files:
-            if f.endswith(".json") and ('merged' not in f):
-                json_files.append(os.path.join(root, f))
-                # mock_exam 파일인지 확인
-                if '_mock_exam' in f:
-                    is_mock_exam = True
+    # 파일 경로인지 디렉토리 경로인지 확인
+    # 먼저 경로가 존재하는지 확인
+    logger.info(f"경로 확인 중: {data_path}")
+    logger.info(f"  - 경로 존재: {os.path.exists(data_path)}")
+    logger.info(f"  - 파일인지: {os.path.isfile(data_path)}")
+    logger.info(f"  - 디렉토리인지: {os.path.isdir(data_path)}")
+    
+    if not os.path.exists(data_path):
+        logger.warning(f"경로를 찾을 수 없습니다: {data_path}")
+        return [], False
+    
+    if os.path.isfile(data_path):
+        # 파일 경로인 경우
+        logger.info(f"파일 경로로 인식: {data_path}")
+        if data_path.endswith(".json") and ('merged' not in os.path.basename(data_path)):
+            json_files.append(data_path)
+            logger.info(f"JSON 파일 추가: {data_path}")
+            # mock_exam 파일인지 확인
+            if '_mock_exam' in os.path.basename(data_path):
+                is_mock_exam = True
+        else:
+            logger.warning(f"JSON 파일이 아니거나 merged 파일입니다: {data_path}")
+            logger.warning(f"  - 파일명: {os.path.basename(data_path)}")
+            logger.warning(f"  - .json으로 끝나는지: {data_path.endswith('.json')}")
+            logger.warning(f"  - merged 포함: {'merged' in os.path.basename(data_path)}")
+    elif os.path.isdir(data_path):
+        # 디렉토리 경로인 경우
+        logger.debug(f"디렉토리 경로로 인식: {data_path}")
+        for root, _, files in os.walk(data_path):
+            for f in files:
+                if f.endswith(".json") and ('merged' not in f):
+                    json_files.append(os.path.join(root, f))
+                    # mock_exam 파일인지 확인
+                    if '_mock_exam' in f:
+                        is_mock_exam = True
+    else:
+        logger.warning(f"경로를 찾을 수 없습니다: {data_path}")
+        logger.warning(f"  - 파일 존재: {os.path.exists(data_path)}")
+        logger.warning(f"  - 파일인지: {os.path.isfile(data_path)}")
+        logger.warning(f"  - 디렉토리인지: {os.path.isdir(data_path)}")
+        return [], False
     
     logger.info(f"발견된 JSON 파일 수: {len(json_files)}")
     if is_mock_exam:
@@ -1395,18 +1239,24 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 
-                # 파일명에서 subject 추출 (mock_exam 파일인 경우)
+                # 파일명에서 subject 추출 (fallback용)
                 filename = os.path.basename(file_path)
-                subject = extract_subject_from_filename(filename)
+                subject_from_filename = extract_subject_from_filename(filename)
                 
                 if isinstance(data, list):
                     # 리스트인 경우 각 항목에 subject 추가
                     for item in data:
-                        item['subject'] = subject
+                        # JSON 내부에 이미 subject가 있고 비어있지 않으면 우선 사용, 없거나 비어있으면 파일명에서 추출한 값 사용
+                        if 'subject' not in item or not item.get('subject'):
+                            if subject_from_filename:
+                                item['subject'] = subject_from_filename
                     all_data.extend(data)
                 else:
                     # 단일 객체인 경우 subject 추가
-                    data['subject'] = subject
+                    # JSON 내부에 이미 subject가 있고 비어있지 않으면 우선 사용, 없거나 비어있으면 파일명에서 추출한 값 사용
+                    if 'subject' not in data or not data.get('subject'):
+                        if subject_from_filename:
+                            data['subject'] = subject_from_filename
                     all_data.append(data)
         except Exception as e:
             logger.warning(f"파일 로딩 실패: {file_path} - {str(e)}")
