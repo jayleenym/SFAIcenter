@@ -1387,7 +1387,7 @@ def extract_subject_from_filename(filename: str) -> str:
     """파일명에서 subject 정보를 추출합니다.
     
     Args:
-        filename: 파일명 (예: "금융실무1_mock_exam_set1.json")
+        filename: 파일명 (예: "금융실무1_mock_exam_set1.json" 또는 "금융실무1_exam.json")
     
     Returns:
         str: 추출된 subject (예: "금융실무1")
@@ -1395,6 +1395,11 @@ def extract_subject_from_filename(filename: str) -> str:
     if '_mock_exam' in filename:
         # mock_exam 파일인 경우 파일명에서 subject 추출
         subject = filename.split("_")[0]
+        return subject
+    elif '_exam.json' in filename:
+        # exam 파일인 경우 파일명에서 subject 추출
+        # 파일명 형식: "{exam_name}_exam.json" (예: "금융실무1_exam.json")
+        subject = filename.split("_exam.json")[0]
         return subject
     else:
         # 일반 파일인 경우 빈 문자열 반환
@@ -1469,18 +1474,24 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 
-                # 파일명에서 subject 추출 (mock_exam 파일인 경우)
+                # 파일명에서 subject 추출 (fallback용)
                 filename = os.path.basename(file_path)
-                subject = extract_subject_from_filename(filename)
+                subject_from_filename = extract_subject_from_filename(filename)
                 
                 if isinstance(data, list):
                     # 리스트인 경우 각 항목에 subject 추가
                     for item in data:
-                        item['subject'] = subject
+                        # JSON 내부에 이미 subject가 있고 비어있지 않으면 우선 사용, 없거나 비어있으면 파일명에서 추출한 값 사용
+                        if 'subject' not in item or not item.get('subject'):
+                            if subject_from_filename:
+                                item['subject'] = subject_from_filename
                     all_data.extend(data)
                 else:
                     # 단일 객체인 경우 subject 추가
-                    data['subject'] = subject
+                    # JSON 내부에 이미 subject가 있고 비어있지 않으면 우선 사용, 없거나 비어있으면 파일명에서 추출한 값 사용
+                    if 'subject' not in data or not data.get('subject'):
+                        if subject_from_filename:
+                            data['subject'] = subject_from_filename
                     all_data.append(data)
         except Exception as e:
             logger.warning(f"파일 로딩 실패: {file_path} - {str(e)}")
