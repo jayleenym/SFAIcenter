@@ -56,11 +56,21 @@ class Step6Evaluate(PipelineBase):
         
         if models is None:
             models = [
-                'anthropic/claude-sonnet-4.5',
-                'google/gemini-2.5-flash',
+                # SOTA 상위버전 모델
                 'openai/gpt-5',
                 'google/gemini-2.5-pro',
-                'google/gemma-3-27b-it:free'
+                'anthropic/claude-sonnet-4.5',
+                
+                # SOTA 하위버전 모델
+                'openai/gpt-4.1',
+                'anthropic/claude-3.7-sonnet',
+                'google/gemini-2.5-flash',                
+                
+                # 센터 바닐라모델
+                'google/gemma-3-27b-it:free',
+
+                # 대형 모델
+                'meta-llama/llama-4-maverick:free'
             ]
         
         # 세트 이름 매핑
@@ -141,13 +151,27 @@ class Step6Evaluate(PipelineBase):
                 if print_evaluation_summary:
                     print_evaluation_summary(acc, pred_long)
                 
-                # 결과 저장
+                # 파일명에서 세트 정보 추출 (1st, 2nd, 3rd, 4th, 5th)
+                detected_set = None
+                exam_name_lower = exam_name.lower()
+                for set_num, set_name in set_names.items():
+                    if set_name.lower() in exam_name_lower:
+                        detected_set = set_name
+                        break
+                
+                # 결과 저장 - 세트별 디렉토리에 저장 (세트 정보가 있으면)
+                if detected_set:
+                    set_output_dir = os.path.join(output_dir, detected_set)
+                    os.makedirs(set_output_dir, exist_ok=True)
+                else:
+                    set_output_dir = output_dir
+                
                 model_names = [model.split("/")[-1].replace(':', '_') for model in models]
                 models_str = '_'.join(model_names)
                 if len(models_str) > 200:
                     models_str = models_str[:200] + '_etc'
                 output_filename = f"{exam_name}_evaluation_{models_str}.xlsx"
-                output_path = os.path.join(output_dir, output_filename)
+                output_path = os.path.join(set_output_dir, output_filename)
                 
                 if save_results_to_excel:
                     save_results_to_excel(
@@ -273,7 +297,11 @@ class Step6Evaluate(PipelineBase):
                 if print_evaluation_summary:
                     print_evaluation_summary(acc, pred_long)
                 
-                # 결과 저장
+                # 결과 저장 - 세트별 디렉토리에 저장
+                # 세트별 출력 디렉토리 생성 (예: 6_exam_evaluation/1st, 6_exam_evaluation/2nd)
+                set_output_dir = os.path.join(output_dir, set_name)
+                os.makedirs(set_output_dir, exist_ok=True)
+                
                 # 모델 이름들을 파일명에 사용할 수 있도록 변환 (특수문자 제거)
                 model_names = [model.split("/")[-1].replace(':', '_') for model in models]
                 models_str = '_'.join(model_names)
@@ -281,7 +309,7 @@ class Step6Evaluate(PipelineBase):
                 if len(models_str) > 200:
                     models_str = models_str[:200] + '_etc'
                 output_filename = f"{set_name}_evaluation_{models_str}.xlsx"
-                output_path = os.path.join(output_dir, output_filename)
+                output_path = os.path.join(set_output_dir, output_filename)
                 
                 if save_results_to_excel:
                     save_results_to_excel(

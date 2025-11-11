@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from .config import ONEDRIVE_PATH, PROJECT_ROOT_PATH
+from .config import ONEDRIVE_PATH, PROJECT_ROOT_PATH, SFAICENTER_PATH
 
 # 프로젝트 루트 경로 추가
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -114,7 +114,8 @@ class PipelineBase:
     
     def _setup_logging(self):
         """로깅 설정"""
-        log_dir = os.path.join(self.project_root_path, 'logs')
+        # SFAICENTER_PATH/logs에 로그 저장
+        log_dir = os.path.join(SFAICENTER_PATH, 'logs')
         os.makedirs(log_dir, exist_ok=True)
         
         log_file = os.path.join(log_dir, f'pipeline_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')

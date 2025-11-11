@@ -21,7 +21,7 @@ import logging
 import random
 import json
 import datetime as dt
-from typing import List, Dict, Tuple, Iterable, Set
+from typing import List, Dict, Tuple, Iterable, Set, Any
 from dataclasses import dataclass
 from tqdm import tqdm
 import argparse
@@ -29,22 +29,24 @@ import argparse
 # -----------------------------
 # 로깅 설정
 # -----------------------------
-# pipeline/config에서 PROJECT_ROOT_PATH, ONEDRIVE_PATH import 시도
+# pipeline/config에서 PROJECT_ROOT_PATH, ONEDRIVE_PATH, SFAICENTER_PATH import 시도
 try:
     import sys
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root_dir = os.path.dirname(current_dir)  # tools
     sys.path.insert(0, project_root_dir)
-    from pipeline.config import PROJECT_ROOT_PATH, ONEDRIVE_PATH
+    from pipeline.config import PROJECT_ROOT_PATH, ONEDRIVE_PATH, SFAICENTER_PATH
     project_root = PROJECT_ROOT_PATH
     onedrive_path = ONEDRIVE_PATH
+    sfaicenter_path = SFAICENTER_PATH
 except ImportError:
     # fallback: pipeline이 없는 경우 현재 스크립트 기준으로 설정
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
     onedrive_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    sfaicenter_path = project_root  # fallback
 
-log_dir = os.path.join(project_root, 'logs')
+log_dir = os.path.join(sfaicenter_path, 'logs')
 log_file = os.path.join(log_dir, 'multiple_eval_by_model.log')
 
 # logs 디렉토리가 없으면 생성
@@ -114,20 +116,23 @@ def json_to_df_all(json_list: List[dict], use_ox_support: bool = False) -> pd.Da
     Args:
         json_list: JSON 데이터 리스트
         use_ox_support: O, X 문제 지원 여부 (기본값: False)
+    
+    Note:
+        중복 제거는 하지 않습니다. ID만 고유하게 만듭니다.
     """
     rows = []
     for item in json_list:
         book_id = str(item.get("file_id", ""))
         
-        # 일반 파일 구조
-        qna = item.get("qna_data", {}) or {}
-        tag  = qna.get("tag", "")
-        desc = qna.get("description", {}) or {}
-        q    = (desc.get("question") or "").strip()
-        opts = desc.get("options") or []
-        ans_set = parse_answer_set(desc.get("answer", ""), q, opts)
-        domain = item.get("qna_domain", "")
-        subdomain = item.get("qna_subdomain", "")
+        # 최상위 구조 (exam 파일 구조)
+        tag = item.get("tag", "")
+        q = (item.get("question") or "").strip()
+        opts = item.get("options", [])
+        answer = item.get("answer", "")
+        domain = item.get("domain", "")
+        subdomain = item.get("subdomain", "")
+        
+        ans_set = parse_answer_set(answer, q, opts)
         
         # O, X 문제인지 판단 (ox 모드가 켜진 경우에만)
         is_ox = False
@@ -168,8 +173,42 @@ def json_to_df_all(json_list: List[dict], use_ox_support: bool = False) -> pd.Da
         
         rows.append(row_data)
     df = pd.DataFrame(rows)
-    # 혹시 id 중복이 있으면 마지막 것 유지(필요시 정책 변경)
-    df = df.drop_duplicates("id", keep="last").reset_index(drop=True)
+    
+    # 데이터 수 로깅
+    original_count = len(df)
+    logger.info(f"JSON 변환 완료: {original_count}개 문제")
+    
+    # 중복 ID 확인 (정보만 출력)
+    duplicate_ids = df[df.duplicated(subset=["id"], keep=False)]
+    unique_duplicate_ids = set()  # 초기화
+    
+    if len(duplicate_ids) > 0:
+        duplicate_count = len(duplicate_ids)
+        unique_duplicate_ids = set(duplicate_ids["id"].unique())
+        logger.info(f"중복된 ID 발견: {duplicate_count}개 행, {len(unique_duplicate_ids)}개 고유 ID")
+        
+        # 중복 상세 정보 (각 ID별 중복 횟수)
+        id_counts = df["id"].value_counts()
+        duplicated_id_counts = id_counts[id_counts > 1]
+        if len(duplicated_id_counts) > 0:
+            logger.info(f"ID별 중복 횟수 (최대 10개):")
+            for dup_id, count in duplicated_id_counts.head(10).items():
+                logger.info(f"  - {dup_id}: {count}회")
+    
+    # ID 중복이 있으면 인덱스를 추가하여 고유하게 만들기 (pivot 시 문제 방지)
+    # 중복 제거는 하지 않고, ID만 고유하게 만듦
+    if len(unique_duplicate_ids) > 0:
+        logger.info(f"ID 중복 발견 ({len(unique_duplicate_ids)}개 고유 ID) - 인덱스를 추가하여 고유 ID 생성 중...")
+        df = df.reset_index(drop=True)
+        # 중복된 ID에 대해서만 인덱스 추가
+        df['id'] = df.apply(
+            lambda row: f"{row['id']}_{row.name}" if row['id'] in unique_duplicate_ids else row['id'],
+            axis=1
+        )
+        logger.info("고유 ID 생성 완료")
+    else:
+        logger.info(f"ID 중복 없음: 모든 {original_count}개 문제의 ID가 고유합니다")
+    
     return df
 
 # -----------------------------
@@ -305,15 +344,19 @@ def get_cache_info():
         "query_models_loaded": _query_models_module is not None
     }
 
-def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: bool=False, use_server_mode: bool=False, max_retries: int=3) -> str:
+def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: bool=False, use_server_mode: bool=False, max_retries: int=3) -> Tuple[str, float]:
     """
     - mock_mode=True면 임의 번호(1~5)를 생성해 파이프라인 검증용 출력 반환.
     - use_server_mode=True면 vLLM 서버 모드로 호출
     - use_server_mode=False면 OpenRouter API로 호출
     - 에러 핸들링 및 재시도 로직 포함
+    
+    Returns:
+        Tuple[str, float]: (응답 문자열, 소요 시간(초))
     """
     if mock_mode:
         logger.info(f"[MOCK] 모델 {model_name} 호출 시작")
+        start_time = time.time()
         # 입력 user_prompt에서 ID 목록 회수
         ids = [ln.split("\t")[0] for ln in user_prompt.splitlines() if "\t{번호}" in ln]
         if not ids:
@@ -324,8 +367,9 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
         rng = np.random.default_rng(42)
         preds = rng.integers(1, 6, size=len(ids))
         result = "\n".join(f"{_id}\t{int(a)}" for _id, a in zip(ids, preds))
+        elapsed_time = time.time() - start_time
         logger.info(f"[MOCK] 모델 {model_name} 호출 완료 - {len(ids)}개 문제 처리")
-        return result
+        return result, elapsed_time
     
     else:
         for attempt in range(max_retries):
@@ -346,7 +390,7 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     elapsed_time = time.time() - start_time
                     logger.debug(f"[VLLM] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
                     
-                    return ans
+                    return ans, elapsed_time
                 else:
                     # OpenRouter API 모드
                     logger.debug(f"[API] 모델 {model_name} 호출 시작 (시도 {attempt + 1}/{max_retries})")
@@ -362,7 +406,7 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     logger.debug(f"[API] 모델 {model_name} 호출 완료 - 소요시간: {elapsed_time:.2f}초")
                     time.sleep(1.5)
                     
-                    return ans
+                    return ans, elapsed_time
                 
             except Exception as e:
                 mode_str = "[VLLM]" if use_server_mode else "[API]"
@@ -466,11 +510,19 @@ def run_eval_pipeline(
     """
     logger.info(f"평가 파이프라인 시작 - 샘플수: {sample_size}, 배치크기: {batch_size}, 모델수: {len(models)}, O/X 지원: {use_ox_support}")
     
+    # 전체 실행 시간 추적 시작
+    overall_start_time = time.time()
+    overall_start_datetime = dt.datetime.now()
+    
     # (1) JSON → df_all
     logger.info("1단계: JSON 데이터를 DataFrame으로 변환 중...")
+    # 중복 제거는 하지 않음 (모든 문제 유지)
     df_all = json_to_df_all(json_list, use_ox_support=use_ox_support)
     df_all = df_all.sort_values(by=['book_id', 'tag'], ascending=False).reset_index(drop=True)
     logger.info(f"전체 데이터: {len(df_all)}개 문제")
+    
+    # 데이터 품질 검사 (중복 문제 확인 포함)
+    quality_report = check_data_quality(json_list, df_all)
 
     # O, X 문제 분석 (use_ox_support가 True일 때만)
     if use_ox_support:
@@ -500,6 +552,9 @@ def run_eval_pipeline(
     rows = []
     invalid_responses = []  # 무효 예측 응답 저장용
     total_calls = len(batches) * len(models)
+    
+    # 모델별 응답 시간 추적
+    model_response_times = {model: [] for model in models}
 
     # SYSTEM_PROMPT를 로컬 변수로 복사 (전역 변수 수정 방지)
     local_system_prompt = SYSTEM_PROMPT
@@ -515,15 +570,17 @@ def run_eval_pipeline(
                     # 배치별 진행상황 표시 (tqdm 진행바에만 표시, 로그는 최소화)
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
-                    raw = call_llm(model, local_system_prompt, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
-                    # 모든 모델 응답을 backlog로 저장
+                    raw, response_time = call_llm(model, local_system_prompt, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
+                    # 모델별 응답 시간 기록
+                    model_response_times[model].append(response_time)
+                    # 모든 모델 응답을 backlog로 저장 - ONEDRIVE_PATH/evaluation/6_exam_evaluation/model_output/에 저장
                     try:
                         from pipeline.config import ONEDRIVE_PATH
                         base_path = ONEDRIVE_PATH
                     except ImportError:
                         base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
                     
-                    output_dir = os.path.join(base_path, 'evaluation/result/log')
+                    output_dir = os.path.join(base_path, 'evaluation', 'eval_data', '6_exam_evaluation', 'model_output')
                     os.makedirs(output_dir, exist_ok=True)
                     output_file = os.path.join(output_dir, f"model_output_{model.replace('/', '_')}.txt")
                     with open(output_file, "a", encoding="utf-8") as f:
@@ -636,6 +693,71 @@ def run_eval_pipeline(
     if 'invalid_responses' in locals() and invalid_responses:
         save_invalid_responses(invalid_responses, "evaluation")
     
+    # 전체 실행 시간 추적 종료
+    overall_end_time = time.time()
+    overall_end_datetime = dt.datetime.now()
+    overall_elapsed_time = overall_end_time - overall_start_time
+    
+    # 모델별 평균 응답 시간 계산 및 출력
+    logger.info("=" * 80)
+    logger.info("⏱️  실행 시간 통계")
+    logger.info("=" * 80)
+    logger.info(f"전체 실행 시작 시간: {overall_start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"전체 실행 종료 시간: {overall_end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"전체 실행 소요 시간: {overall_elapsed_time:.2f}초 ({overall_elapsed_time/60:.2f}분)")
+    logger.info("")
+    logger.info("모델별 평균 응답 시간:")
+    for model in models:
+        if model_response_times[model]:
+            avg_time = np.mean(model_response_times[model])
+            total_time = np.sum(model_response_times[model])
+            call_count = len(model_response_times[model])
+            logger.info(f"  {model}:")
+            logger.info(f"    - 평균 응답 시간: {avg_time:.2f}초")
+            logger.info(f"    - 총 응답 시간: {total_time:.2f}초 ({total_time/60:.2f}분)")
+            logger.info(f"    - 호출 횟수: {call_count}회")
+        else:
+            logger.info(f"  {model}: 호출 기록 없음")
+    logger.info("=" * 80)
+    
+    # 콘솔에도 출력
+    print("\n" + "=" * 80)
+    print("⏱️  실행 시간 통계")
+    print("=" * 80)
+    print(f"전체 실행 시작 시간: {overall_start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"전체 실행 종료 시간: {overall_end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"전체 실행 소요 시간: {overall_elapsed_time:.2f}초 ({overall_elapsed_time/60:.2f}분)")
+    print("")
+    print("모델별 평균 응답 시간:")
+    for model in models:
+        if model_response_times[model]:
+            avg_time = np.mean(model_response_times[model])
+            total_time = np.sum(model_response_times[model])
+            call_count = len(model_response_times[model])
+            print(f"  {model}:")
+            print(f"    - 평균 응답 시간: {avg_time:.2f}초")
+            print(f"    - 총 응답 시간: {total_time:.2f}초 ({total_time/60:.2f}분)")
+            print(f"    - 호출 횟수: {call_count}회")
+        else:
+            print(f"  {model}: 호출 기록 없음")
+    print("=" * 80 + "\n")
+    
+    # 실행 시간 통계를 별도 로그 파일로 저장 (모델별로 파일 생성)
+    try:
+        saved_files = save_timing_statistics(
+            overall_start_datetime,
+            overall_end_datetime,
+            overall_elapsed_time,
+            model_response_times,
+            models,
+            "evaluation"
+        )
+        logger.info(f"실행 시간 통계 파일 저장 완료: 총 {len(saved_files)}개 파일")
+        for file_path in saved_files:
+            logger.info(f"  - {file_path}")
+    except Exception as e:
+        logger.error(f"실행 시간 통계 파일 저장 실패: {str(e)}")
+    
     return df_all, pred_long, pred_wide, acc_by_model
 
 # -----------------------------
@@ -692,13 +814,115 @@ def print_evaluation_summary(acc_df: pd.DataFrame, pred_long_df: pd.DataFrame):
     
     print("="*80)
 
+def save_timing_statistics(
+    overall_start_datetime: dt.datetime,
+    overall_end_datetime: dt.datetime,
+    overall_elapsed_time: float,
+    model_response_times: Dict[str, List[float]],
+    models: List[str],
+    filename_prefix: str = "evaluation"
+):
+    """실행 시간 통계를 별도 로그 파일로 저장 (JSON 및 텍스트 형식) - 모델별로 파일 생성"""
+    # ONEDRIVE_PATH/evaluation/6_exam_evaluation/timing_stats/에 저장
+    try:
+        from pipeline.config import ONEDRIVE_PATH
+        base_path = ONEDRIVE_PATH
+    except ImportError:
+        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    
+    timestamp = overall_end_datetime.strftime("%Y-%m-%d_%H%M%S")
+    log_dir = os.path.join(base_path, 'evaluation',  'eval_data', '6_exam_evaluation', 'timing_stats')
+    os.makedirs(log_dir, exist_ok=True)
+    
+    saved_files = []
+    
+    # 각 모델별로 파일 생성
+    for model in models:
+        model_name_safe = model.replace('/', '_').replace(':', '_')
+        
+        if model_response_times[model]:
+            times = model_response_times[model]
+            model_stat = {
+                "average_response_time_seconds": float(np.mean(times)),
+                "total_response_time_seconds": float(np.sum(times)),
+                "total_response_time_minutes": float(np.sum(times) / 60),
+                "call_count": len(times),
+                "min_response_time_seconds": float(np.min(times)),
+                "max_response_time_seconds": float(np.max(times)),
+                "std_response_time_seconds": float(np.std(times))
+            }
+        else:
+            model_stat = {
+                "average_response_time_seconds": None,
+                "total_response_time_seconds": None,
+                "total_response_time_minutes": None,
+                "call_count": 0,
+                "min_response_time_seconds": None,
+                "max_response_time_seconds": None,
+                "std_response_time_seconds": None
+            }
+        
+        # 모델별 JSON 파일 저장
+        json_data = {
+            "evaluation_info": {
+                "start_time": overall_start_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+                "end_time": overall_end_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+                "start_time_iso": overall_start_datetime.isoformat(),
+                "end_time_iso": overall_end_datetime.isoformat(),
+                "elapsed_time_seconds": float(overall_elapsed_time),
+                "elapsed_time_minutes": float(overall_elapsed_time / 60),
+                "elapsed_time_hours": float(overall_elapsed_time / 3600),
+                "model_name": model
+            },
+            "model_statistics": model_stat
+        }
+        
+        json_filename = os.path.join(log_dir, f"{filename_prefix}_timing_stats_{model_name_safe}_{timestamp}.json")
+        with open(json_filename, 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, ensure_ascii=False, indent=2)
+        logger.info(f"실행 시간 통계 (JSON) 저장 [{model}]: {json_filename}")
+        saved_files.append(json_filename)
+        
+        # 모델별 텍스트 파일 저장
+        text_filename = os.path.join(log_dir, f"{filename_prefix}_timing_stats_{model_name_safe}_{timestamp}.txt")
+        with open(text_filename, 'w', encoding='utf-8') as f:
+            f.write("=" * 80 + "\n")
+            f.write(f"⏱️  실행 시간 통계 - {model}\n")
+            f.write("=" * 80 + "\n")
+            f.write(f"전체 실행 시작 시간: {overall_start_datetime.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"전체 실행 종료 시간: {overall_end_datetime.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"전체 실행 소요 시간: {overall_elapsed_time:.2f}초 ({overall_elapsed_time/60:.2f}분, {overall_elapsed_time/3600:.2f}시간)\n")
+            f.write(f"모델: {model}\n")
+            f.write("\n")
+            if model_response_times[model]:
+                avg_time = np.mean(model_response_times[model])
+                total_time = np.sum(model_response_times[model])
+                call_count = len(model_response_times[model])
+                min_time = np.min(model_response_times[model])
+                max_time = np.max(model_response_times[model])
+                std_time = np.std(model_response_times[model])
+                f.write("응답 시간 통계:\n")
+                f.write(f"  - 평균 응답 시간: {avg_time:.2f}초\n")
+                f.write(f"  - 총 응답 시간: {total_time:.2f}초 ({total_time/60:.2f}분)\n")
+                f.write(f"  - 호출 횟수: {call_count}회\n")
+                f.write(f"  - 최소 응답 시간: {min_time:.2f}초\n")
+                f.write(f"  - 최대 응답 시간: {max_time:.2f}초\n")
+                f.write(f"  - 표준 편차: {std_time:.2f}초\n")
+            else:
+                f.write("호출 기록 없음\n")
+            f.write("=" * 80 + "\n")
+        logger.info(f"실행 시간 통계 (텍스트) 저장 [{model}]: {text_filename}")
+        saved_files.append(text_filename)
+    
+    return saved_files
+
 def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str = "evaluation"):
-    """무효 예측 응답을 별도 파일로 저장 (모델명, 문제, 답변 포함)"""
+    """무효 예측 응답을 별도 파일로 저장 (모델명, 문제, 답변 포함) - 모델별로 파일 생성"""
     if not invalid_responses:
         logger.info("무효 예측이 없어 저장할 파일이 없습니다.")
         return
     
-    # ONEDRIVE_PATH 기반 경로 사용
+    # ONEDRIVE_PATH/evaluation/6_exam_evaluation/invalid_responses/에 저장
     try:
         from pipeline.config import ONEDRIVE_PATH
         base_path = ONEDRIVE_PATH
@@ -706,44 +930,57 @@ def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str =
         base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
     
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    invalid_filename = os.path.join(base_path, f"evaluation/result/{filename_prefix}_invalid_responses_{timestamp}.json")
+    invalid_dir = os.path.join(base_path, 'evaluation', 'eval_data', '6_exam_evaluation', 'invalid_responses')
+    os.makedirs(invalid_dir, exist_ok=True)
     
-    # 디렉토리가 없으면 생성
-    os.makedirs(os.path.dirname(invalid_filename), exist_ok=True)
+    # 모델별로 무효 예측 분류
+    model_invalid_responses = {}
+    for resp in invalid_responses:
+        model = resp.get('model_name', 'unknown')
+        if model not in model_invalid_responses:
+            model_invalid_responses[model] = []
+        model_invalid_responses[model].append(resp)
     
-    try:
-        with open(invalid_filename, 'w', encoding='utf-8') as f:
-            json.dump(invalid_responses, f, ensure_ascii=False, indent=2)
-        logger.info(f"무효 예측 응답 저장: {invalid_filename}")
-        logger.info(f"총 {len(invalid_responses)}개의 무효 예측 응답이 저장되었습니다.")
+    saved_files = []
+    
+    # 각 모델별로 파일 생성
+    for model, model_responses in model_invalid_responses.items():
+        model_name_safe = model.replace('/', '_').replace(':', '_')
+        invalid_filename = os.path.join(invalid_dir, f"{filename_prefix}_invalid_responses_{model_name_safe}_{timestamp}.json")
         
-        # 요약 정보도 출력
-        model_counts = {}
-        for resp in invalid_responses:
-            model = resp.get('model_name', 'unknown')
-            model_counts[model] = model_counts.get(model, 0) + 1
-        
-        logger.info("모델별 무효 예측 수:")
-        for model, count in model_counts.items():
-            logger.info(f"  {model}: {count}개")
-            
-    except Exception as e:
-        logger.error(f"무효 예측 응답 저장 실패: {str(e)}")
+        try:
+            with open(invalid_filename, 'w', encoding='utf-8') as f:
+                json.dump(model_responses, f, ensure_ascii=False, indent=2)
+            logger.info(f"무효 예측 응답 저장 [{model}]: {invalid_filename}")
+            logger.info(f"  - 총 {len(model_responses)}개의 무효 예측 응답")
+            saved_files.append(invalid_filename)
+        except Exception as e:
+            logger.error(f"무효 예측 응답 저장 실패 [{model}]: {str(e)}")
+    
+    # 전체 요약 정보 출력
+    logger.info("모델별 무효 예측 수:")
+    for model, model_responses in model_invalid_responses.items():
+        logger.info(f"  {model}: {len(model_responses)}개")
+    
+    return saved_files
 
 def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evaluation"):
     """상세한 로그를 CSV로 저장"""
-    # ONEDRIVE_PATH 기반 경로 사용
+    # SFAICENTER_PATH 기반 경로 사용
     try:
-        from pipeline.config import ONEDRIVE_PATH
-        base_path = ONEDRIVE_PATH
+        from pipeline.config import SFAICENTER_PATH
+        log_base_path = SFAICENTER_PATH
     except ImportError:
-        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+        # fallback: pipeline이 없는 경우 현재 스크립트 기준으로 설정
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        log_base_path = os.path.dirname(script_dir)
     
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
+    log_dir = os.path.join(log_base_path, 'logs')
+    os.makedirs(log_dir, exist_ok=True)
     
     # 예측 결과 상세 로그
-    pred_log_filename = os.path.join(base_path, f"evaluation/result/log/{filename_prefix}_predictions_{timestamp}.csv")
-    os.makedirs(os.path.dirname(pred_log_filename), exist_ok=True)
+    pred_log_filename = os.path.join(log_dir, f"{filename_prefix}_predictions_{timestamp}.csv")
     pred_long_df.to_csv(pred_log_filename, index=False, encoding='utf-8-sig')
     logger.info(f"상세 예측 로그 저장: {pred_log_filename}")
     
@@ -754,41 +991,149 @@ def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evalu
     model_stats.columns = ['총_예측수', '유효_예측수', '무효_예측수']
     model_stats['유효율'] = (model_stats['유효_예측수'] / model_stats['총_예측수'] * 100).round(1)
     
-    stats_filename = os.path.join(base_path, f"evaluation/result/log/{filename_prefix}_model_stats_{timestamp}.csv")
-    os.makedirs(os.path.dirname(stats_filename), exist_ok=True)
+    stats_filename = os.path.join(log_dir, f"{filename_prefix}_model_stats_{timestamp}.csv")
     model_stats.to_csv(stats_filename, encoding='utf-8-sig')
     logger.info(f"모델 통계 저장: {stats_filename}")
 
-def check_data_quality(df_all: pd.DataFrame, df_sample: pd.DataFrame):
-    """데이터 품질 검사"""
+def check_real_duplicates_in_data(json_list: List[dict]) -> Dict[str, Any]:
+    """
+    로드된 JSON 데이터에서 진짜 중복 문제를 확인하는 함수
+    (문제/정답/선택지가 모두 동일한 경우를 중복으로 판단)
+    
+    최상위 question/options/answer 구조를 지원합니다.
+    
+    Args:
+        json_list: 검사할 JSON 데이터 리스트
+    
+    Returns:
+        Dict: 중복 검사 결과 (중복 그룹 정보 포함)
+    """
+    from collections import defaultdict
+    
+    # 문제/정답/선택지를 조합한 키로 중복 확인
+    content_keys = defaultdict(list)
+    
+    for i, item in enumerate(json_list):
+        # 최상위 구조 (exam 파일 구조)
+        question = (item.get("question") or "").strip()
+        answer = (item.get("answer") or "").strip()
+        options = item.get("options", [])
+        tag = item.get("tag", "")
+        
+        # 빈 문제는 스킵 (데이터 품질 문제)
+        if not question:
+            continue
+        
+        # options를 문자열로 변환 (순서가 중요하므로 정렬하지 않음)
+        options_str = '|'.join([str(opt).strip() for opt in options]) if options else ''
+        
+        # 문제/정답/선택지를 조합한 키 생성
+        content_key = f"{question}|{answer}|{options_str}"
+        content_keys[content_key].append({
+            'index': i,
+            'id': f"{item.get('file_id', '')}_{tag}",
+            'question': question,
+            'answer': answer,
+            'options': options,
+            'file_id': item.get('file_id', ''),
+            'tag': tag
+        })
+    
+    # 진짜 중복 찾기 (문제/정답/선택지가 모두 동일한 경우)
+    real_duplicates = {key: items for key, items in content_keys.items() if len(items) > 1}
+    
+    return {
+        'total_count': len(json_list),
+        'unique_count': len(content_keys),
+        'duplicate_groups': len(real_duplicates),
+        'duplicates': real_duplicates
+    }
+
+def check_data_quality(json_list: List[dict], df_all: pd.DataFrame = None):
+    """
+    데이터 품질 검사 (중복 문제 확인 포함)
+    
+    Args:
+        json_list: 검사할 JSON 데이터 리스트
+        df_all: DataFrame 형태의 데이터 (선택적)
+    
+    Returns:
+        Dict: 품질 검사 결과
+    """
     logger.info("데이터 품질 검사 시작...")
     
     issues = []
+    quality_report = {
+        'total_questions': len(json_list),
+        'issues': [],
+        'duplicate_info': None
+    }
     
-    # 1. 빈 문제 검사
-    empty_questions = df_all[df_all['question'].str.strip() == '']
-    if len(empty_questions) > 0:
-        issues.append(f"빈 문제: {len(empty_questions)}개")
+    # DataFrame이 제공된 경우 DataFrame 기반 검사
+    if df_all is not None:
+        # 1. 빈 문제 검사
+        empty_questions = df_all[df_all['question'].str.strip() == '']
+        if len(empty_questions) > 0:
+            issue_msg = f"빈 문제: {len(empty_questions)}개"
+            issues.append(issue_msg)
+            quality_report['issues'].append({
+                'type': 'empty_question',
+                'count': len(empty_questions),
+                'message': issue_msg
+            })
+        
+        # 2. 빈 선지 검사
+        empty_options = df_all[(df_all['opt1'].str.strip() == '') & 
+                              (df_all['opt2'].str.strip() == '') & 
+                              (df_all['opt3'].str.strip() == '') & 
+                              (df_all['opt4'].str.strip() == '') & 
+                              (df_all['opt5'].str.strip() == '')]
+        if len(empty_options) > 0:
+            issue_msg = f"빈 선지 문제: {len(empty_options)}개"
+            issues.append(issue_msg)
+            quality_report['issues'].append({
+                'type': 'empty_options',
+                'count': len(empty_options),
+                'message': issue_msg
+            })
+        
+        # 3. 정답 없는 문제 검사
+        no_answer = df_all[df_all['answer_set'].apply(len) == 0]
+        if len(no_answer) > 0:
+            issue_msg = f"정답 없는 문제: {len(no_answer)}개"
+            issues.append(issue_msg)
+            quality_report['issues'].append({
+                'type': 'no_answer',
+                'count': len(no_answer),
+                'message': issue_msg
+            })
     
-    # 2. 빈 선지 검사
-    empty_options = df_all[(df_all['opt1'].str.strip() == '') & 
-                          (df_all['opt2'].str.strip() == '') & 
-                          (df_all['opt3'].str.strip() == '') & 
-                          (df_all['opt4'].str.strip() == '') & 
-                          (df_all['opt5'].str.strip() == '')]
-    if len(empty_options) > 0:
-        issues.append(f"빈 선지 문제: {len(empty_options)}개")
+    # 4. 진짜 중복 문제 검사 (문제/정답/선택지가 모두 동일한 경우)
+    logger.info("중복 문제 검사 중...")
+    duplicate_info = check_real_duplicates_in_data(json_list)
+    quality_report['duplicate_info'] = duplicate_info
     
-    # 3. 정답 없는 문제 검사
-    no_answer = df_all[df_all['answer_set'].apply(len) == 0]
-    if len(no_answer) > 0:
-        issues.append(f"정답 없는 문제: {len(no_answer)}개")
+    if duplicate_info['duplicate_groups'] > 0:
+        issue_msg = f"중복 문제 그룹: {duplicate_info['duplicate_groups']}개 (총 {duplicate_info['total_count']}개 중 고유: {duplicate_info['unique_count']}개)"
+        issues.append(issue_msg)
+        quality_report['issues'].append({
+            'type': 'duplicates',
+            'count': duplicate_info['duplicate_groups'],
+            'message': issue_msg
+        })
+        
+        # 중복 상세 정보 로깅 (최대 10개 그룹만)
+        logger.warning(f"중복 문제 발견: {duplicate_info['duplicate_groups']}개 그룹")
+        for i, (content_key, items) in enumerate(list(duplicate_info['duplicates'].items())[:10], 1):
+            logger.warning(f"  중복 그룹 {i}: {len(items)}개 항목")
+            for item in items[:3]:  # 각 그룹에서 최대 3개만 표시
+                logger.warning(f"    - ID: {item['id']}, 문제: {item['question'][:50]}...")
+            if len(items) > 3:
+                logger.warning(f"    ... 외 {len(items) - 3}개 항목")
+    else:
+        logger.info(f"중복 문제 없음: 모든 {duplicate_info['total_count']}개 문제가 고유합니다")
     
-    # 4. 중복 문제 검사
-    duplicates = df_all[df_all.duplicated(subset=['question'], keep=False)]
-    if len(duplicates) > 0:
-        issues.append(f"중복 문제: {len(duplicates)}개")
-    
+    # 결과 요약
     if issues:
         logger.warning("데이터 품질 이슈 발견:")
         for issue in issues:
@@ -796,7 +1141,7 @@ def check_data_quality(df_all: pd.DataFrame, df_sample: pd.DataFrame):
     else:
         logger.info("데이터 품질 검사 통과 ✅")
     
-    return issues
+    return quality_report
 
 def calculate_domain_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) -> pd.DataFrame:
     """Domain별 정확도 계산 - 모델별 컬럼 형태로 반환"""
@@ -1222,7 +1567,7 @@ def main():
         # 데이터 품질 검사
         df_temp = json_to_df_all(sample_data, use_ox_support=args.use_ox_support)
         
-        quality_issues = check_data_quality(df_temp, df_temp.sample(n=min(50, len(df_temp)), random_state=args.seed))
+        quality_report = check_data_quality(sample_data, df_temp)
         
         # O, X 문제 분석 (지원하는 경우)
         if args.use_ox_support:
