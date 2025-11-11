@@ -10,6 +10,7 @@ from openai import OpenAI
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 from typing import Optional
+import re
 
 
 class LLMQuery:
@@ -58,13 +59,13 @@ class LLMQuery:
     def query_openrouter(self, system_prompt: str, user_prompt: str, model_name: str = 'openai/gpt-5') -> str:
         """OpenRouter API를 통한 쿼리"""
         if model_name == 'openai/gpt-5-pro':
-            print("gpt-5-pro")
             response = self.client.responses.create(
                 model = model_name,
                 instructions = system_prompt,
                 input = user_prompt,
             )
             return response.output_text
+        
         response = self.client.chat.completions.create(
             model=model_name,
             temperature=float(self.config.get("PARAMS", "temperature")),
@@ -123,6 +124,12 @@ class LLMQuery:
         
         outputs = self.llm.generate([prompt], self.sampling_params)
         generated_text = outputs[0].outputs[0].text.strip()
+        generated_text = self.remove_think_block(generated_text)
         
         return generated_text
 
+
+    def remove_think_block(self, text):   ## for Qwen3
+        if isinstance(text, str):
+            return re.sub(r"<think>.*?</think>\s*", "", text, flags=re.DOTALL)
+        return text
