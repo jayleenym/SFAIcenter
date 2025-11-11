@@ -33,7 +33,7 @@ try:
         load_json_file, create_lookup_dict, fill_multiple_choice_data
     )
     from evaluation.multiple_eval_by_model import (
-        run_eval_pipeline_improved,
+        run_eval_pipeline,
         load_data_from_directory,
         save_results_to_excel,
         print_evaluation_summary
@@ -48,7 +48,7 @@ except ImportError:
             load_json_file, create_lookup_dict, fill_multiple_choice_data
         )
         from evaluation.multiple_eval_by_model import (
-            run_eval_pipeline_improved,
+            run_eval_pipeline,
             load_data_from_directory,
             save_results_to_excel,
             print_evaluation_summary
@@ -58,7 +58,7 @@ except ImportError:
         load_json_file = None
         create_lookup_dict = None
         fill_multiple_choice_data = None
-        run_eval_pipeline_improved = None
+        run_eval_pipeline = None
         load_data_from_directory = None
         save_results_to_excel = None
         print_evaluation_summary = None
@@ -70,7 +70,7 @@ __all__ = [
     'load_json_file',
     'create_lookup_dict',
     'fill_multiple_choice_data',
-    'run_eval_pipeline_improved',
+    'run_eval_pipeline',
     'load_data_from_directory',
     'save_results_to_excel',
     'print_evaluation_summary'

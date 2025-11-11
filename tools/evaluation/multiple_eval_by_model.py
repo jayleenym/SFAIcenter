@@ -70,12 +70,6 @@ CIRCLED_MAP = {"①":"1","②":"2","③":"3","④":"4","⑤":"5"}
 from core.utils import TextProcessor
 normalize_option_text = TextProcessor.normalize_option_text
 
-# parse_answer_set는 parse_answer_set_improved로 대체됨 (O, X 문제 지원)
-# 하위 호환성을 위해 parse_answer_set_improved를 사용하도록 변경
-def parse_answer_set(ans: str) -> Set[int]:
-    """'①, ⑤' 같은 복수정답도 {1,5}로 파싱. 빈/이상값은 빈 set. (deprecated: parse_answer_set_improved 사용 권장)"""
-    return parse_answer_set_improved(ans)
-
 # -----------------------------
 # O, X 문제 처리 개선
 # -----------------------------
@@ -90,8 +84,8 @@ def is_ox_question(question: str, options: list) -> bool:
         return "O" in option_text or "X" in option_text
     return False
 
-def parse_answer_set_improved(ans: str, question: str = "", options: list = None) -> Set[int]:
-    """개선된 정답 파싱 함수 - O, X 문제도 처리"""
+def parse_answer_set(ans: str, question: str = "", options: list = None) -> Set[int]:
+    """정답 파싱 함수 - O, X 문제도 처리"""
     if not ans:
         return set()
     s = str(ans).strip()
@@ -112,86 +106,28 @@ def parse_answer_set_improved(ans: str, question: str = "", options: list = None
 # JSON → df_all 변환
 # -----------------------------
 
-def json_to_df_all(json_list: List[dict]) -> pd.DataFrame:
+def json_to_df_all(json_list: List[dict], use_ox_support: bool = False) -> pd.DataFrame:
     """
-    입력 JSON(list[dict])을 파싱해 df_all 생성.
-    컬럼: subject, domain, subdomain, book_id, tag, id, question, opt1..opt5, answer_set
-    """
-    rows = []
-    for item in json_list:
-        book_id = str(item.get("file_id", ""))
-        
-        # Mock exam 파일 구조 처리 (qna_data가 없는 경우)
-        if "qna_data" in item:
-            # 일반 파일 구조
-            qna = item.get("qna_data", {}) or {}
-            tag  = qna.get("tag", "")
-            desc = qna.get("description", {}) or {}
-            q    = (desc.get("question") or "").strip()
-            opts = desc.get("options") or []
-            ans_set = parse_answer_set(desc.get("answer", ""))
-            domain = item.get("qna_domain", "")
-            subdomain = item.get("qna_subdomain", "")
-        else:
-            # Mock exam 파일 구조
-            tag = item.get("tag", "")
-            q = (item.get("question") or "").strip()
-            opts = item.get("options") or []
-            ans_set = parse_answer_set(item.get("answer", ""))
-            domain = item.get("domain", "")
-            subdomain = item.get("subdomain", "")
-        
-        # subject 정보 추출
-        subject = item.get("subject", "")
-        
-        # 5지선다 기준으로 빈칸 보정
-        opts = list(opts)[:5] + [""] * max(0, 5 - len(opts))
-        opts = [normalize_option_text(x) for x in opts]
-
-        rows.append({
-            "subject": subject,
-            "domain": domain,
-            "subdomain": subdomain,
-            "book_id": book_id,
-            "tag": tag,
-            "id": f"{book_id}_{tag}",
-            "question": q,
-            "opt1": opts[0], "opt2": opts[1], "opt3": opts[2], "opt4": opts[3], "opt5": opts[4],
-            "answer_set": ans_set
-        })
-    df = pd.DataFrame(rows)
-    # 혹시 id 중복이 있으면 마지막 것 유지(필요시 정책 변경)
-    df = df.drop_duplicates("id", keep="last").reset_index(drop=True)
-    return df
-
-def json_to_df_all_improved(json_list: List[dict], use_ox_support: bool = False) -> pd.DataFrame:
-    """
-    개선된 JSON → df_all 변환 함수 - O, X 문제도 처리
+    JSON → df_all 변환 함수
     컬럼: subject, domain, subdomain, book_id, tag, id, question, opt1..opt5, answer_set [, is_ox_question]
+    
+    Args:
+        json_list: JSON 데이터 리스트
+        use_ox_support: O, X 문제 지원 여부 (기본값: False)
     """
     rows = []
     for item in json_list:
         book_id = str(item.get("file_id", ""))
         
-        # Mock exam 파일 구조 처리 (qna_data가 없는 경우)
-        if "qna_data" in item:
-            # 일반 파일 구조
-            qna = item.get("qna_data", {}) or {}
-            tag  = qna.get("tag", "")
-            desc = qna.get("description", {}) or {}
-            q    = (desc.get("question") or "").strip()
-            opts = desc.get("options") or []
-            ans_set = parse_answer_set_improved(desc.get("answer", ""), q, opts)
-            domain = item.get("qna_domain", "")
-            subdomain = item.get("qna_subdomain", "")
-        else:
-            # Mock exam 파일 구조
-            tag = item.get("tag", "")
-            q = (item.get("question") or "").strip()
-            opts = item.get("options") or []
-            ans_set = parse_answer_set_improved(item.get("answer", ""), q, opts)
-            domain = item.get("domain", "")
-            subdomain = item.get("subdomain", "")
+        # 일반 파일 구조
+        qna = item.get("qna_data", {}) or {}
+        tag  = qna.get("tag", "")
+        desc = qna.get("description", {}) or {}
+        q    = (desc.get("question") or "").strip()
+        opts = desc.get("options") or []
+        ans_set = parse_answer_set(desc.get("answer", ""), q, opts)
+        domain = item.get("qna_domain", "")
+        subdomain = item.get("qna_subdomain", "")
         
         # O, X 문제인지 판단 (ox 모드가 켜진 경우에만)
         is_ox = False
@@ -443,11 +379,10 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
 # 모델 출력 파싱 
 # -----------------------------
 
-def parse_model_output(raw: str, expected_ids: List[str], reasoning: bool = False) -> Dict[str, float]:
+def parse_model_output(raw: str, expected_ids: List[str]) -> Dict[str, float]:
     """
     모델 원시 출력(raw)을 {id: answer(1~5)}로 변환.
-    - 'ID\\t번호' 포맷 기준 (일반 모델)
-    - reasoning=True일 경우, 답변에서 ID와 정답을 직접 찾음
+    - 'ID\\t번호' 포맷 기준
     - 잘못된 줄/누락 줄은 NaN 처리
     """
     id_set = set(expected_ids)
@@ -457,36 +392,7 @@ def parse_model_output(raw: str, expected_ids: List[str], reasoning: bool = Fals
         logger.warning("모델 출력이 비어있습니다.")
         return out
 
-    # 추론 모델일 경우, 전체 텍스트에서 ID와 정답을 직접 찾기
-    if reasoning:
-        logger.debug("추론 모델 모드: 답변에서 ID와 정답을 직접 찾는 중...")
-        for _id in expected_ids:
-            # ID 패턴으로 해당 ID가 포함된 부분 찾기
-            id_pattern = re.escape(_id)
-            # 여러 패턴을 시도 (우선순위 순서)
-            patterns = [
-                rf"{id_pattern}.*?정답은\s*(?:보기\s*)?([1-5])",  # "정답은 4" 또는 "정답은 보기 4"
-                rf"{id_pattern}.*?가장\s*근접한\s*것은\s*(?:보기\s*)?([1-5])",  # "가장 근접한 것은 4" 또는 "가장 근접한 것은 보기 4"
-                rf"{id_pattern}.*?가장\s*근접한\s*것은\s*([1-5])\s*번",  # "가장 근접한 것은 4번"
-            ]
-            
-            found = False
-            for pattern in patterns:
-                match = re.search(pattern, raw, re.IGNORECASE | re.DOTALL)
-                if match:
-                    answer = float(match.group(1))
-                    out[_id] = answer
-                    logger.debug(f"ID '{_id}' -> 답변 {answer} (추론 모델에서 추출)")
-                    found = True
-                    break
-            
-            if not found:
-                # '정답은' 또는 '가장 근접한 것은' 키워드가 없으면 0으로 표시
-                out[_id] = 0.0
-                logger.debug(f"ID '{_id}' -> '정답은' 또는 '가장 근접한 것은' 키워드를 찾을 수 없어 0으로 설정")
-        return out
-
-    # 일반 모델: 탭 구분 포맷 처리
+    # 탭 구분 포맷 처리
     lines = raw.splitlines()
     logger.debug(f"파싱할 줄 수: {len(lines)}")
     
@@ -529,8 +435,6 @@ def parse_model_output(raw: str, expected_ids: List[str], reasoning: bool = Fals
 # 평가 파이프라인
 # -----------------------------
 
-# run_eval_pipeline는 run_eval_pipeline_improved로 대체됨 (O, X 문제 지원)
-# 하위 호환성을 위해 run_eval_pipeline_improved를 사용하도록 변경
 def run_eval_pipeline(
     json_list: List[dict],
     models: List[str],
@@ -539,50 +443,38 @@ def run_eval_pipeline(
     seed: int = 42,
     mock_mode: bool = False,
     use_server_mode: bool = False,
-    reasoning: bool = False,
+    use_ox_support: bool = True,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
-    반환:
-      df_all      : 전체 원장 (정규화 선지 + answer_set)
-      pred_long   : (id, model_name, answer) 롱 포맷
-      pred_wide   : id 기준 모델별 예측 와이드
-      acc_by_model: 모델별 정확도 (복수정답 지원: 예측 ∈ answer_set 이면 정답)
+    평가 파이프라인
     
-    (deprecated: run_eval_pipeline_improved 사용 권장)
-    """
-    return run_eval_pipeline_improved(
-        json_list, models, sample_size, batch_size, seed, 
-        mock_mode, use_server_mode, reasoning, use_ox_support=False
-    )
-
-def run_eval_pipeline_improved(
-    json_list: List[dict],
-    models: List[str],
-    sample_size: int = 300,
-    batch_size: int = 50,
-    seed: int = 42,
-    mock_mode: bool = False,
-    use_server_mode: bool = False,
-    reasoning: bool = False,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """
-    O, X 문제를 지원하는 개선된 평가 파이프라인
+    Args:
+        json_list: 평가할 JSON 데이터 리스트
+        models: 평가할 모델 목록
+        sample_size: 샘플 크기
+        batch_size: 배치 크기
+        seed: 랜덤 시드
+        mock_mode: Mock 모드 여부
+        use_server_mode: vLLM 서버 모드 사용 여부
+        use_ox_support: O, X 문제 지원 여부
+    
     반환:
       df_all      : 전체 원장 (정규화 선지 + answer_set + is_ox_question)
       pred_long   : (id, model_name, answer) 롱 포맷
       pred_wide   : id 기준 모델별 예측 와이드
       acc_by_model: 모델별 정확도 (복수정답 지원: 예측 ∈ answer_set 이면 정답)
     """
-    logger.info(f"개선된 평가 파이프라인 시작 - 샘플수: {sample_size}, 배치크기: {batch_size}, 모델수: {len(models)}")
+    logger.info(f"평가 파이프라인 시작 - 샘플수: {sample_size}, 배치크기: {batch_size}, 모델수: {len(models)}, O/X 지원: {use_ox_support}")
     
-    # (1) JSON → df_all (O, X 문제 지원)
+    # (1) JSON → df_all
     logger.info("1단계: JSON 데이터를 DataFrame으로 변환 중...")
-    df_all = json_to_df_all_improved(json_list, use_ox_support=True)
+    df_all = json_to_df_all(json_list, use_ox_support=use_ox_support)
     df_all = df_all.sort_values(by=['book_id', 'tag'], ascending=False).reset_index(drop=True)
     logger.info(f"전체 데이터: {len(df_all)}개 문제")
 
-    # O, X 문제 분석
-    ox_questions, regular_questions = analyze_ox_questions(df_all)
+    # O, X 문제 분석 (use_ox_support가 True일 때만)
+    if use_ox_support:
+        ox_questions, regular_questions = analyze_ox_questions(df_all)
 
     # (2) 샘플링
     logger.info(f"2단계: {sample_size}개 샘플 추출 중...")
@@ -593,10 +485,11 @@ def run_eval_pipeline_improved(
     df_sample = df_all.sample(n=actual_sample_size, random_state=seed).reset_index(drop=True)
     logger.info(f"샘플 데이터: {len(df_sample)}개 문제")
 
-    # 샘플에서 O, X 문제 비율 확인
-    sample_ox = df_sample[df_sample['is_ox_question'] == True]
-    sample_regular = df_sample[df_sample['is_ox_question'] == False]
-    logger.info(f"샘플 내 O, X 문제: {len(sample_ox)}개, 일반 객관식: {len(sample_regular)}개")
+    # 샘플에서 O, X 문제 비율 확인 (use_ox_support가 True일 때만)
+    if use_ox_support:
+        sample_ox = df_sample[df_sample['is_ox_question'] == True]
+        sample_regular = df_sample[df_sample['is_ox_question'] == False]
+        logger.info(f"샘플 내 O, X 문제: {len(sample_ox)}개, 일반 객관식: {len(sample_regular)}개")
 
     # (3) 배치 분할
     batches = [df_sample.iloc[i:i+batch_size] for i in range(0, len(df_sample), batch_size)]
@@ -610,8 +503,6 @@ def run_eval_pipeline_improved(
 
     # SYSTEM_PROMPT를 로컬 변수로 복사 (전역 변수 수정 방지)
     local_system_prompt = SYSTEM_PROMPT
-    if reasoning:
-        local_system_prompt += "- 반드시 추론 과정 등 추가 설명 없이 1~5 중 하나의 정답만 출력하세요."
     
     # 전체 진행상황 표시
     with tqdm(total=total_calls, desc="모델 호출 진행", unit="call") as pbar:
@@ -639,11 +530,10 @@ def run_eval_pipeline_improved(
                         f.write(f"\n{'='*80}\n")
                         f.write(f"배치: {bidx}/{len(batches)}, 모델: {model}, 시간: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                         f.write(f"ID 목록: {ids}\n")
-                        f.write(f"Reasoning 모드: {reasoning}\n")
                         f.write(f"{'='*80}\n")
                         f.write(raw)
                         f.write(f"\n{'='*80}\n\n")
-                    parsed = parse_model_output(raw, ids, reasoning=reasoning)
+                    parsed = parse_model_output(raw, ids)
                     
                     # 파싱 결과 검증
                     valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
@@ -1123,26 +1013,8 @@ def print_domain_analysis_summary(df_all: pd.DataFrame, domain_acc: pd.DataFrame
 # 태그 대치 함수들
 # -----------------------------
 
-# replace_tags_in_text와 replace_tags_in_qna_data는 qna.qna_processor.TagProcessor로 통합됨
-# 중복 제거를 위해 TagProcessor를 사용하도록 변경
+# TagProcessor를 직접 사용
 from qna.qna_processor import TagProcessor
-
-def replace_tags_in_text(text: str, additional_tag_data: list, max_depth: int = 5) -> str:
-    """
-    텍스트에서 {f_0000_0000}이나 {tb_0000_0000} 같은 태그를 additional_tag_data에서 찾아서 대치합니다.
-    중첩된 태그도 재귀적으로 처리합니다.
-    
-    (deprecated: TagProcessor.replace_tags_in_text 사용 권장)
-    """
-    return TagProcessor.replace_tags_in_text(text, additional_tag_data, max_depth)
-
-def replace_tags_in_qna_data(qna_data: dict, additional_tag_data: list) -> dict:
-    """
-    Q&A 데이터의 question과 options에서 태그를 대치합니다.
-    
-    (deprecated: TagProcessor.replace_tags_in_qna_data 사용 권장)
-    """
-    return TagProcessor.replace_tags_in_qna_data(qna_data, additional_tag_data)
 
 # -----------------------------
 # 유틸리티 함수들
@@ -1152,16 +1024,12 @@ def extract_subject_from_filename(filename: str) -> str:
     """파일명에서 subject 정보를 추출합니다.
     
     Args:
-        filename: 파일명 (예: "금융실무1_mock_exam_set1.json" 또는 "금융실무1_exam.json")
+        filename: 파일명 (예: "금융실무1_exam.json")
     
     Returns:
         str: 추출된 subject (예: "금융실무1")
     """
-    if '_mock_exam' in filename:
-        # mock_exam 파일인 경우 파일명에서 subject 추출
-        subject = filename.split("_")[0]
-        return subject
-    elif '_exam.json' in filename:
+    if '_exam.json' in filename:
         # exam 파일인 경우 파일명에서 subject 추출
         # 파일명 형식: "{exam_name}_exam.json" (예: "금융실무1_exam.json")
         subject = filename.split("_exam.json")[0]
@@ -1174,7 +1042,7 @@ def extract_subject_from_filename(filename: str) -> str:
 # 데이터 로딩 함수
 # -----------------------------
 
-def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False) -> Tuple[List[dict], bool]:
+def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False) -> List[dict]:
     """디렉토리 또는 파일 경로에서 JSON 파일들을 로드하여 데이터 리스트 반환
     
     Args:
@@ -1182,10 +1050,9 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
         apply_tag_replacement: 태그 대치 적용 여부
     
     Returns:
-        Tuple[List[dict], bool]: (데이터 리스트, mock_exam 파일 포함 여부)
+        List[dict]: 데이터 리스트
     """
     json_files = []
-    is_mock_exam = False
     
     # 파일 경로인지 디렉토리 경로인지 확인
     # 먼저 경로가 존재하는지 확인
@@ -1196,7 +1063,7 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
     
     if not os.path.exists(data_path):
         logger.warning(f"경로를 찾을 수 없습니다: {data_path}")
-        return [], False
+        return []
     
     if os.path.isfile(data_path):
         # 파일 경로인 경우
@@ -1204,9 +1071,6 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
         if data_path.endswith(".json") and ('merged' not in os.path.basename(data_path)):
             json_files.append(data_path)
             logger.info(f"JSON 파일 추가: {data_path}")
-            # mock_exam 파일인지 확인
-            if '_mock_exam' in os.path.basename(data_path):
-                is_mock_exam = True
         else:
             logger.warning(f"JSON 파일이 아니거나 merged 파일입니다: {data_path}")
             logger.warning(f"  - 파일명: {os.path.basename(data_path)}")
@@ -1219,19 +1083,14 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
             for f in files:
                 if f.endswith(".json") and ('merged' not in f):
                     json_files.append(os.path.join(root, f))
-                    # mock_exam 파일인지 확인
-                    if '_mock_exam' in f:
-                        is_mock_exam = True
     else:
         logger.warning(f"경로를 찾을 수 없습니다: {data_path}")
         logger.warning(f"  - 파일 존재: {os.path.exists(data_path)}")
         logger.warning(f"  - 파일인지: {os.path.isfile(data_path)}")
         logger.warning(f"  - 디렉토리인지: {os.path.isdir(data_path)}")
-        return [], False
+        return []
     
     logger.info(f"발견된 JSON 파일 수: {len(json_files)}")
-    if is_mock_exam:
-        logger.info("Mock exam 파일이 감지되었습니다. 객관식 필터링을 건너뜁니다.")
     
     all_data = []
     for file_path in json_files:
@@ -1270,14 +1129,14 @@ def load_data_from_directory(data_path: str, apply_tag_replacement: bool = False
         for item in all_data:
             if 'additional_tags_found' in item and item['additional_tags_found']:
                 if 'additional_tag_data' in item:
-                    item['qna_data'] = replace_tags_in_qna_data(
+                    item['qna_data'] = TagProcessor.replace_tags_in_qna_data(
                         item['qna_data'], 
                         item['additional_tag_data']
                     )
                     processed_count += 1
         logger.info(f"태그 대치 완료: {processed_count}개 항목 처리")
     
-    return all_data, is_mock_exam
+    return all_data
 
 def filter_multiple_choice_questions(data: List[dict]) -> List[dict]:
     """객관식 문제만 필터링"""
@@ -1306,7 +1165,6 @@ def main():
     parser.add_argument('--seed', type=int, default=42, help='랜덤 시드 (기본값: 42)')
     parser.add_argument('--output_filename', type=str, help='결과 Excel 파일명 (기본값: 자동 생성)')
     parser.add_argument('--debug', action='store_true', help='디버그 로그 활성화')
-    parser.add_argument('--reasoning', action='store_true', default=False, help='추론 모델 여부')
     
     # API 모드 옵션 추가
     mode_group = parser.add_mutually_exclusive_group()
@@ -1329,7 +1187,6 @@ def main():
     logger.info(f"모델: {args.models}")
     logger.info(f"Mock 모드: {args.mock_mode}")
     logger.info(f"O, X 문제 지원: {args.use_ox_support}")
-    logger.info(f"추론 모델 여부: {args.reasoning}")
     logger.info(f"출력 파일명: {args.output_filename or '자동 생성'}")
     
     # API 모드 확인
@@ -1349,19 +1206,9 @@ def main():
     try:
         # 데이터 로딩
         logger.info("데이터 로딩 중...")
-        all_data, is_mock_exam = load_data_from_directory(args.data_path, apply_tag_replacement)
+        all_data = load_data_from_directory(args.data_path, apply_tag_replacement)
         
-        # mock_exam 파일이 아닌 경우에만 객관식 필터링 적용
-        # if is_mock_exam:
-        #     multiple_choice_data = all_data
-        #     logger.info("Mock exam 파일이므로 모든 데이터를 사용합니다.")
-        # else:
-        #     multiple_choice_data = filter_multiple_choice_questions(all_data)
-        #     logger.info(f"객관식 문제 필터링 완료: {len(multiple_choice_data)}개")
-        
-        # if len(multiple_choice_data) == 0:
-        #     logger.error("처리할 데이터를 찾을 수 없습니다.")
-        #     return
+        # 모든 데이터 사용
         multiple_choice_data = all_data
         
         # 샘플링
@@ -1373,10 +1220,7 @@ def main():
             logger.info(f"전체 데이터 사용: {len(sample_data)}개")
         
         # 데이터 품질 검사
-        if args.use_ox_support:
-            df_temp = json_to_df_all_improved(sample_data, use_ox_support=True)
-        else:
-            df_temp = json_to_df_all(sample_data)
+        df_temp = json_to_df_all(sample_data, use_ox_support=args.use_ox_support)
         
         quality_issues = check_data_quality(df_temp, df_temp.sample(n=min(50, len(df_temp)), random_state=args.seed))
         
@@ -1386,14 +1230,9 @@ def main():
         
         # 평가 실행
         logger.info("평가 실행 중...")
-        if args.use_ox_support:
-            df_all, pred_long, pred_wide, acc = run_eval_pipeline_improved(
-                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode, args.reasoning
-            )
-        else:
-            df_all, pred_long, pred_wide, acc = run_eval_pipeline(
-                sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode, args.reasoning
-            )
+        df_all, pred_long, pred_wide, acc = run_eval_pipeline(
+            sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode, args.use_ox_support
+        )
         
         # 결과 출력
         print_evaluation_summary(acc, pred_long)

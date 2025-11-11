@@ -16,14 +16,14 @@ tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> p
 sys.path.insert(0, tools_dir)
 try:
     from evaluation.multiple_eval_by_model import (
-        run_eval_pipeline_improved,
+        run_eval_pipeline,
         load_data_from_directory,
         save_results_to_excel,
         print_evaluation_summary
     )
 except ImportError:
     # fallback: 이미 tools_dir에 추가되어 있으므로 None으로 설정
-    run_eval_pipeline_improved = None
+    run_eval_pipeline = None
     load_data_from_directory = None
     save_results_to_excel = None
     print_evaluation_summary = None
@@ -34,7 +34,7 @@ class Step6Evaluate(PipelineBase):
     
     def execute(self, models: List[str] = None, batch_size: int = 10, 
                 use_ox_support: bool = True, use_server_mode: bool = False,
-                reasoning: bool = False, exam_dir: str = None, sets: List[int] = None) -> Dict[str, Any]:
+                exam_dir: str = None, sets: List[int] = None) -> Dict[str, Any]:
         """
         6단계: 시험지 평가
         - 만들어진 시험지(1st/2nd/3rd/4th/5th) 모델별 답변 평가
@@ -45,13 +45,12 @@ class Step6Evaluate(PipelineBase):
             batch_size: 배치 크기
             use_ox_support: O, X 문제 지원 활성화
             use_server_mode: vLLM 서버 모드 사용
-            reasoning: 추론 모델 여부
             exam_dir: 시험지 디렉토리 경로 (None이면 기본 경로 사용)
             sets: 평가할 세트 번호 리스트 (None이면 모든 세트 평가, 예: [1] 또는 [1, 2, 3])
         """
         self.logger.info(f"=== 6단계: 시험지 평가 (배치 크기: {batch_size}) ===")
         
-        if run_eval_pipeline_improved is None or load_data_from_directory is None:
+        if run_eval_pipeline is None or load_data_from_directory is None:
             self.logger.error("multiple_eval_by_model 모듈을 import할 수 없습니다.")
             return {'success': False, 'error': 'multiple_eval_by_model import 실패'}
         
@@ -109,7 +108,7 @@ class Step6Evaluate(PipelineBase):
                 exam_name = os.path.splitext(os.path.basename(exam_dir))[0]
                 self.logger.info(f"데이터 로딩 중: {exam_dir}")
                 
-                file_data, is_mock_exam = load_data_from_directory(
+                file_data = load_data_from_directory(
                     exam_dir,
                     apply_tag_replacement=False
                 )
@@ -124,7 +123,7 @@ class Step6Evaluate(PipelineBase):
                 
                 # 평가 실행
                 self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size})")
-                df_all, pred_long, pred_wide, acc = run_eval_pipeline_improved(
+                df_all, pred_long, pred_wide, acc = run_eval_pipeline(
                     file_data,
                     models,
                     sample_size=len(file_data),
@@ -132,7 +131,7 @@ class Step6Evaluate(PipelineBase):
                     seed=42,
                     mock_mode=False,
                     use_server_mode=use_server_mode,
-                    reasoning=reasoning
+                    use_ox_support=use_ox_support
                 )
                 
                 # 결과 출력
@@ -234,7 +233,7 @@ class Step6Evaluate(PipelineBase):
                     exam_name = os.path.splitext(os.path.basename(exam_file))[0].replace('_exam', '')
                     self.logger.info(f"데이터 로딩 중: {exam_file}")
                     
-                    file_data, is_mock_exam = load_data_from_directory(
+                    file_data = load_data_from_directory(
                         exam_file,
                         apply_tag_replacement=False
                     )
@@ -256,7 +255,7 @@ class Step6Evaluate(PipelineBase):
                 
                 # 평가 실행
                 self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size})")
-                df_all, pred_long, pred_wide, acc = run_eval_pipeline_improved(
+                df_all, pred_long, pred_wide, acc = run_eval_pipeline(
                     all_combined_data,
                     models,
                     sample_size=len(all_combined_data),
@@ -264,7 +263,7 @@ class Step6Evaluate(PipelineBase):
                     seed=42,
                     mock_mode=False,
                     use_server_mode=use_server_mode,
-                    reasoning=reasoning
+                    use_ox_support=use_ox_support
                 )
                 
                 # 결과 출력

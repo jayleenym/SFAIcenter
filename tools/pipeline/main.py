@@ -44,7 +44,7 @@ class Pipeline(PipelineBase):
                          qna_type: str = 'multiple', model: str = 'x-ai/grok-4-fast',
                          num_sets: int = 5, eval_models: List[str] = None,
                          eval_batch_size: int = 10, eval_use_ox_support: bool = True,
-                         eval_use_server_mode: bool = False, eval_reasoning: bool = False,
+                         eval_use_server_mode: bool = False,
                          eval_exam_dir: str = None, eval_sets: List[int] = None) -> Dict[str, Any]:
         """
         전체 파이프라인 실행
@@ -60,7 +60,6 @@ class Pipeline(PipelineBase):
             eval_batch_size: 평가 배치 크기 (6단계에서 사용)
             eval_use_ox_support: O, X 문제 지원 활성화 (6단계에서 사용)
             eval_use_server_mode: vLLM 서버 모드 사용 (6단계에서 사용)
-            eval_reasoning: 추론 모델 여부 (6단계에서 사용)
             eval_exam_dir: 시험지 디렉토리 경로 (6단계에서 사용, None이면 기본 경로 사용)
             eval_sets: 평가할 세트 번호 리스트 (6단계에서 사용, None이면 모든 세트 평가)
         
@@ -116,7 +115,6 @@ class Pipeline(PipelineBase):
                     batch_size=eval_batch_size,
                     use_ox_support=eval_use_ox_support,
                     use_server_mode=eval_use_server_mode,
-                    reasoning=eval_reasoning,
                     exam_dir=eval_exam_dir,
                     sets=eval_sets
                 )

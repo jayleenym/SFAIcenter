@@ -11,9 +11,14 @@ import subprocess
 
 # Import handling for both script and module execution
 try:
-    from .multiple_eval_by_model import replace_tags_in_qna_data
+    from qna.qna_processor import TagProcessor
 except ImportError:
-    from multiple_eval_by_model import replace_tags_in_qna_data
+    import sys
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    sys.path.insert(0, project_root)
+    from qna.qna_processor import TagProcessor
 
 
 # pipeline/config에서 ONEDRIVE_PATH import 시도
@@ -108,7 +113,7 @@ def rearrange_data(data_path: list or str = None, qtype: str = None):
 
     rearranged_data = []
     for m in data:
-        qna_data = replace_tags_in_qna_data(m.get('qna_data'), m.get('additional_tag_data'))
+        qna_data = TagProcessor.replace_tags_in_qna_data(m.get('qna_data'), m.get('additional_tag_data'))
         
         # qtype 유효성 검사
         if qtype not in ["multiple-choice", "short-answer", "essay", "etc"]:

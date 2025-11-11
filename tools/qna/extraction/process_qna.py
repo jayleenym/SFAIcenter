@@ -567,23 +567,7 @@ def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any
     
 
 
-# replace_tags_in_text와 replace_tags_in_qna_data는 qna.qna_processor.TagProcessor로 통합됨
-# 중복 제거를 위해 TagProcessor를 사용하도록 변경
-def replace_tags_in_text(text: str, additional_tag_data: list) -> str:
-    """
-    텍스트에서 {f_0000_0000}이나 {tb_0000_0000} 같은 태그를 additional_tag_data에서 찾아서 대치합니다.
-    
-    (deprecated: TagProcessor.replace_tags_in_text 사용 권장)
-    """
-    return TagProcessor.replace_tags_in_text(text, additional_tag_data)
-
-def replace_tags_in_qna_data(qna_data: dict, additional_tag_data: list) -> dict:
-    """
-    Q&A 데이터의 question과 options에서 태그를 대치합니다.
-    
-    (deprecated: TagProcessor.replace_tags_in_qna_data 사용 권장)
-    """
-    return TagProcessor.replace_tags_in_qna_data(qna_data, additional_tag_data)
+# TagProcessor를 직접 사용
 
 def process_json_file_with_tag_replacement(file_path: str) -> bool:
     """
@@ -604,9 +588,15 @@ def process_json_file_with_tag_replacement(file_path: str) -> bool:
         if 'extracted_qna' in data and isinstance(data['extracted_qna'], list):
             print(f"Processing {os.path.basename(file_path)}: {len(data['extracted_qna'])} Q&A items")
             
+            # additional_tag_data 가져오기 (파일 레벨 또는 각 항목에서)
+            additional_tag_data = data.get('additional_tag_data', [])
+            
             # 각 Q&A 항목에 대해 태그 대치 수행
             for i, qna_item in enumerate(data['extracted_qna']):
-                data['extracted_qna'][i] = replace_tags_in_qna_data(qna_item)
+                # 항목별 additional_tag_data가 있으면 우선 사용
+                item_tag_data = qna_item.get('additional_tag_data', additional_tag_data)
+                if item_tag_data:
+                    data['extracted_qna'][i] = TagProcessor.replace_tags_in_qna_data(qna_item, item_tag_data)
             
             # 백업 파일 생성
             backup_path = file_path + '.backup'

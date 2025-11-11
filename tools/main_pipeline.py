@@ -58,8 +58,6 @@ def main():
                        help='O, X 문제 지원 활성화 (6단계에서 사용)')
     parser.add_argument('--eval_use_server_mode', action='store_true',
                        help='vLLM 서버 모드 사용 (6단계에서 사용)')
-    parser.add_argument('--eval_reasoning', action='store_true',
-                       help='추론 모델 여부 (6단계에서 사용)')
     parser.add_argument('--eval_exam_dir', type=str, default=None,
                        help='시험지 디렉토리 경로 (6단계에서 사용, None이면 기본 경로 사용)')
     parser.add_argument('--eval_sets', type=int, nargs='+', default=None,
@@ -96,7 +94,6 @@ def main():
         eval_batch_size=args.eval_batch_size,
         eval_use_ox_support=args.eval_use_ox_support,
         eval_use_server_mode=args.eval_use_server_mode,
-        eval_reasoning=args.eval_reasoning,
         eval_exam_dir=args.eval_exam_dir,
         eval_sets=args.eval_sets
     )
