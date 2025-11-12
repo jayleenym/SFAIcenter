@@ -1,3 +1,4 @@
+llm_config.ini
 *.pyc
 *.log
 
@@ -5,4 +6,3 @@
 .ipynb_checkpoints
 SFAIcenter/data
 SFAIcenter/evaluation
-llm_config.ini
