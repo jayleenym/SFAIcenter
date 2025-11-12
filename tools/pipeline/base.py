@@ -21,14 +21,14 @@ from core.utils import FileManager, TextProcessor, JSONHandler
 from core.llm_query import LLMQuery
 from data_processing.json_cleaner import JSONCleaner
 
-# evaluation 모듈 import (tools 폴더에서 우선 시도)
+# qna processing 및 evaluation 모듈 import (tools 폴더에서 우선 시도)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 tools_dir = os.path.dirname(current_dir)  # pipeline -> tools
 sys.path.insert(0, tools_dir)
 
 # 전역 변수로 export (steps에서 사용)
 try:
-    from evaluation.qna_subdomain_classifier import QnASubdomainClassifier
+    from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
     from evaluation.fill_multiple_choice_data import (
         load_json_file, create_lookup_dict, fill_multiple_choice_data
     )
@@ -43,7 +43,7 @@ except ImportError:
     tools_dir = os.path.dirname(current_dir)  # pipeline -> tools
     sys.path.insert(0, tools_dir)
     try:
-        from evaluation.qna_subdomain_classifier import QnASubdomainClassifier
+        from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
         from evaluation.fill_multiple_choice_data import (
             load_json_file, create_lookup_dict, fill_multiple_choice_data
         )

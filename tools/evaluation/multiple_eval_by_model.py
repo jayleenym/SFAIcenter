@@ -6,10 +6,10 @@ O, X 문제를 포함한 객관식 문제 평가 시스템
 
 사용법:
     # OpenRouter API 모드 (기본값)
-    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 1000 --api --mock_mode
+    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 1000 --api
     
     # vLLM 서버 모드
-    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 1000 --server --mock_mode
+    python multiple_eval_by_model.py --data_path /path/to/data --sample_size 1000 --server
 """
 
 import os
@@ -283,10 +283,15 @@ def _load_config():
     
     return _config_cache
 
-def _load_query_models():
-    """LLMQuery 인스턴스를 한 번만 생성하고 캐시"""
+def _load_query_models(api_key: str = None):
+    """LLMQuery 인스턴스를 한 번만 생성하고 캐시
+    
+    Args:
+        api_key: API 키 (None이면 기본 key 사용, key_evaluate 등 다른 키 사용 가능)
+    """
     global _query_models_module
-    if _query_models_module is None:
+    # api_key가 제공되면 캐시를 무시하고 새 인스턴스 생성
+    if _query_models_module is None or api_key is not None:
         import sys
         import os
         # tools/core/llm_query.py에서 LLMQuery 클래스 import
@@ -296,8 +301,11 @@ def _load_query_models():
         
         try:
             from core.llm_query import LLMQuery
-            _query_models_module = LLMQuery()
-            logger.info(f"[CACHE] LLMQuery 인스턴스 생성 완료: {tools_dir}")
+            _query_models_module = LLMQuery(api_key=api_key)
+            if api_key:
+                logger.info(f"[CACHE] LLMQuery 인스턴스 생성 완료 (커스텀 API 키 사용): {tools_dir}")
+            else:
+                logger.info(f"[CACHE] LLMQuery 인스턴스 생성 완료: {tools_dir}")
         except Exception as e:
             logger.error(f"[CACHE] LLMQuery 인스턴스 생성 실패: {e}")
             raise
@@ -344,35 +352,17 @@ def get_cache_info():
         "query_models_loaded": _query_models_module is not None
     }
 
-def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: bool=False, use_server_mode: bool=False, max_retries: int=3) -> Tuple[str, float]:
+def call_llm(model_name: str, system_prompt: str, user_prompt: str, use_server_mode: bool=False, max_retries: int=3, api_key: str = None) -> Tuple[str, float]:
     """
-    - mock_mode=True면 임의 번호(1~5)를 생성해 파이프라인 검증용 출력 반환.
     - use_server_mode=True면 vLLM 서버 모드로 호출
     - use_server_mode=False면 OpenRouter API로 호출
+    - api_key: API 키 (None이면 기본 key 사용, key_evaluate 등 다른 키 사용 가능)
     - 에러 핸들링 및 재시도 로직 포함
     
     Returns:
         Tuple[str, float]: (응답 문자열, 소요 시간(초))
     """
-    if mock_mode:
-        logger.info(f"[MOCK] 모델 {model_name} 호출 시작")
-        start_time = time.time()
-        # 입력 user_prompt에서 ID 목록 회수
-        ids = [ln.split("\t")[0] for ln in user_prompt.splitlines() if "\t{번호}" in ln]
-        if not ids:
-            # ID를 찾지 못한 경우 다른 방법으로 시도
-            ids = [ln.split("ID: ")[1].strip() for ln in user_prompt.splitlines() if ln.startswith("ID: ")]
-        
-        # 무작위 예측(1~5)
-        rng = np.random.default_rng(42)
-        preds = rng.integers(1, 6, size=len(ids))
-        result = "\n".join(f"{_id}\t{int(a)}" for _id, a in zip(ids, preds))
-        elapsed_time = time.time() - start_time
-        logger.info(f"[MOCK] 모델 {model_name} 호출 완료 - {len(ids)}개 문제 처리")
-        return result, elapsed_time
-    
-    else:
-        for attempt in range(max_retries):
+    for attempt in range(max_retries):
             try:
                 if use_server_mode:
                     # vLLM 서버 모드 - 캐시된 모델 사용
@@ -381,7 +371,7 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     
                     # 캐시된 모델 로드
                     llm, tokenizer, sampling_params = _load_model_cached(model_name)
-                    llm_query = _load_query_models()
+                    llm_query = _load_query_models(api_key=api_key)
                     
                     # LLMQuery.query_vllm은 인스턴스 메서드이므로 직접 호출
                     # 하지만 모델이 이미 로드되어 있어야 함
@@ -397,7 +387,7 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, mock_mode: b
                     start_time = time.time()
                     
                     # LLMQuery 인스턴스 사용
-                    llm_query = _load_query_models()
+                    llm_query = _load_query_models(api_key=api_key)
                     
                     # LLMQuery.query_openrouter 시그니처: (system_prompt, user_prompt, model_name)
                     ans = llm_query.query_openrouter(system_prompt, user_prompt, model_name)
@@ -485,9 +475,9 @@ def run_eval_pipeline(
     sample_size: int = 300,
     batch_size: int = 50,
     seed: int = 42,
-    mock_mode: bool = False,
     use_server_mode: bool = False,
     use_ox_support: bool = True,
+    api_key: str = None,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     평가 파이프라인
@@ -498,9 +488,9 @@ def run_eval_pipeline(
         sample_size: 샘플 크기
         batch_size: 배치 크기
         seed: 랜덤 시드
-        mock_mode: Mock 모드 여부
         use_server_mode: vLLM 서버 모드 사용 여부
         use_ox_support: O, X 문제 지원 여부
+        api_key: API 키 (None이면 기본 key 사용, key_evaluate 등 다른 키 사용 가능)
     
     반환:
       df_all      : 전체 원장 (정규화 선지 + answer_set + is_ox_question)
@@ -570,7 +560,7 @@ def run_eval_pipeline(
                     # 배치별 진행상황 표시 (tqdm 진행바에만 표시, 로그는 최소화)
                     pbar.set_description(f"배치 {bidx}/{len(batches)} - {model}")
                     
-                    raw, response_time = call_llm(model, local_system_prompt, user_prompt, mock_mode=mock_mode, use_server_mode=use_server_mode)
+                    raw, response_time = call_llm(model, local_system_prompt, user_prompt, use_server_mode=use_server_mode, api_key=api_key)
                     # 모델별 응답 시간 기록
                     model_response_times[model].append(response_time)
                     # 모든 모델 응답을 backlog로 저장 - ONEDRIVE_PATH/evaluation/6_exam_evaluation/model_output/에 저장
@@ -1221,7 +1211,7 @@ def calculate_subject_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) ->
     
     return subject_acc
 
-def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd.DataFrame, pred_long: pd.DataFrame = None, filename: str = None, mock_mode: bool = False):
+def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd.DataFrame, pred_long: pd.DataFrame = None, filename: str = None):
     """결과를 Excel 파일로 저장 (domain, subdomain 분석 포함)"""
     
     # ONEDRIVE_PATH 기반 경로 사용
@@ -1233,33 +1223,20 @@ def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd
     
     if filename is None:
         timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
-        if mock_mode:
-            filename = f"{default_base_path}evaluation_results_test_{timestamp}.xlsx"
-        else:
-            filename = f"{default_base_path}evaluation_results_{timestamp}.xlsx"
+        filename = f"{default_base_path}evaluation_results_{timestamp}.xlsx"
     elif not filename.startswith(('/', './', 'evaluation/')):
         # 파일명만 주어진 경우 (확장자 포함 여부 확인)
         timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
         if filename.endswith('.xlsx'):
             # 확장자가 있는 경우
             name = filename[:-5]  # .xlsx 제거
-            if mock_mode and 'test' not in name:
-                filename = f"{default_base_path}{name}_test_{timestamp}.xlsx"
-            else:
-                filename = f"{default_base_path}{name}_{timestamp}.xlsx"
+            filename = f"{default_base_path}{name}_{timestamp}.xlsx"
         else:
             # 확장자가 없는 경우
-            if mock_mode and 'test' not in filename:
-                filename = f"{default_base_path}{filename}_test_{timestamp}.xlsx"
-            else:
-                filename = f"{default_base_path}{filename}_{timestamp}.xlsx"
+            filename = f"{default_base_path}{filename}_{timestamp}.xlsx"
     elif filename.startswith('evaluation/'):
         # evaluation/로 시작하는 경우 기본 경로 사용
-        if mock_mode and 'test' not in filename:
-            name, ext = os.path.splitext(filename)
-            filename = f"{default_base_path}{name}_test{ext}"
-        else:
-            filename = f"{default_base_path}{filename}"
+        filename = f"{default_base_path}{filename}"
     
     # 디렉토리가 없으면 생성
     os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -1503,7 +1480,6 @@ def main():
     parser.add_argument('--sample_size', type=int, default=1000, help='샘플 크기 (기본값: 1000)')
     parser.add_argument('--batch_size', type=int, default=10, help='배치 크기 (기본값: 10)')
     parser.add_argument('--models', nargs='+', default=['anthropic/claude-sonnet-4.5', 'google/gemini-2.5-flash', 'openai/gpt-5', 'google/gemini-2.5-pro', 'google/gemma-3-27b-it:free'], help='평가할 모델 목록')
-    parser.add_argument('--mock_mode', action='store_true', help='Mock 모드로 실행 (실제 API 호출 없음)')
     parser.add_argument('--use_ox_support', action='store_true', help='O, X 문제 지원 활성화')
     parser.add_argument('--apply_tag_replacement', action='store_true', default=False, help='태그 대치 적용 (기본값: False)')
     parser.add_argument('--no_tag_replacement', action='store_true', help='태그 대치 비활성화 (deprecated: 기본값이 False이므로 더 이상 필요 없음)')
@@ -1530,7 +1506,6 @@ def main():
     logger.info(f"샘플 크기: {args.sample_size}")
     logger.info(f"배치 크기: {args.batch_size}")
     logger.info(f"모델: {args.models}")
-    logger.info(f"Mock 모드: {args.mock_mode}")
     logger.info(f"O, X 문제 지원: {args.use_ox_support}")
     logger.info(f"출력 파일명: {args.output_filename or '자동 생성'}")
     
@@ -1576,7 +1551,7 @@ def main():
         # 평가 실행
         logger.info("평가 실행 중...")
         df_all, pred_long, pred_wide, acc = run_eval_pipeline(
-            sample_data, args.models, args.sample_size, args.batch_size, args.seed, args.mock_mode, use_server_mode, args.use_ox_support
+            sample_data, args.models, args.sample_size, args.batch_size, args.seed, use_server_mode, args.use_ox_support
         )
         
         # 결과 출력
@@ -1609,7 +1584,7 @@ def main():
         # save_detailed_logs(pred_long, "evaluation")
         
         # Excel 파일 저장
-        save_results_to_excel(df_all, pred_wide, acc, pred_long, args.output_filename, args.mock_mode)
+        save_results_to_excel(df_all, pred_wide, acc, pred_long, args.output_filename)
         
         logger.info("=" * 60)
         logger.info("평가 완료")

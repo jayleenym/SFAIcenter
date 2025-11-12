@@ -38,12 +38,6 @@ python tools/evaluation/llm_evaluation_system.py --data_path /path/to/your/data 
 python tools/evaluation/llm_evaluation_system.py --data_path /path/to/your/data --sample_size 100 --no_tag_replacement
 ```
 
-### Mock 모드 (실제 API 호출 없이 테스트)
-
-```bash
-python tools/evaluation/llm_evaluation_system.py --data_path /path/to/your/data --sample_size 50 --mock_mode
-```
-
 ### 모든 옵션 사용
 
 ```bash
@@ -64,7 +58,6 @@ python tools/evaluation/llm_evaluation_system.py \
 | `--sample_size` | 샘플 크기 | 100 |
 | `--batch_size` | 배치 크기 | 10 |
 | `--models` | 평가할 모델 목록 | ['anthropic/claude-sonnet-4.5'] |
-| `--mock_mode` | Mock 모드 활성화 | False |
 | `--use_ox_support` | O, X 문제 지원 활성화 | False |
 | `--apply_tag_replacement` | 태그 대치 적용 (기본값: True) | True |
 | `--no_tag_replacement` | 태그 대치 비활성화 | False |
@@ -145,9 +138,6 @@ python tools/evaluation/llm_evaluation_system.py --data_path ./data/FIN_workbook
 # O, X 문제 포함 실행
 python tools/evaluation/llm_evaluation_system.py --data_path ./data/FIN_workbook --sample_size 100 --use_ox_support
 
-# Mock 모드로 테스트
-python tools/evaluation/llm_evaluation_system.py --data_path ./data/FIN_workbook --sample_size 20 --mock_mode --use_ox_support
-
 # 태그 대치 비활성화
 python tools/evaluation/llm_evaluation_system.py --data_path ./data/FIN_workbook --sample_size 50 --no_tag_replacement
 ```
@@ -155,7 +145,7 @@ python tools/evaluation/llm_evaluation_system.py --data_path ./data/FIN_workbook
 ## 문제 해결
 
 ### API 호출 오류
-- `tools.Openrouter` 모듈이 필요한 경우, 해당 모듈을 설치하거나 Mock 모드로 실행
+- `tools.Openrouter` 모듈이 필요한 경우, 해당 모듈을 설치
 - API 키 설정 확인
 
 ### 메모리 부족

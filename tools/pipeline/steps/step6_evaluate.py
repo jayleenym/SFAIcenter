@@ -6,6 +6,7 @@
 
 import os
 import sys
+import configparser
 from typing import List, Dict, Any
 from ..base import PipelineBase
 from ..config import PROJECT_ROOT_PATH
@@ -53,6 +54,28 @@ class Step6Evaluate(PipelineBase):
         if run_eval_pipeline is None or load_data_from_directory is None:
             self.logger.error("multiple_eval_by_model 모듈을 import할 수 없습니다.")
             return {'success': False, 'error': 'multiple_eval_by_model import 실패'}
+        
+        # llm_config.ini에서 key_evaluate 읽기 (OpenRouter 사용 시 필수)
+        api_key = None
+        if not use_server_mode:  # OpenRouter API 모드일 때만 key_evaluate 필수
+            try:
+                config_path = os.path.join(self.project_root_path, 'llm_config.ini')
+                if not os.path.exists(config_path):
+                    self.logger.error(f"설정 파일을 찾을 수 없습니다: {config_path}")
+                    return {'success': False, 'error': f'설정 파일 없음: {config_path}'}
+                
+                config = configparser.ConfigParser()
+                config.read(config_path, encoding='utf-8')
+                
+                if not config.has_option("OPENROUTER", "key_evaluate"):
+                    self.logger.error("key_evaluate가 설정 파일에 없습니다. step6_evaluate에서는 key_evaluate가 필수입니다.")
+                    return {'success': False, 'error': 'key_evaluate가 설정 파일에 없습니다.'}
+                
+                api_key = config.get("OPENROUTER", "key_evaluate")
+                self.logger.info("key_evaluate를 사용하여 LLM 호출합니다.")
+            except Exception as e:
+                self.logger.error(f"key_evaluate를 읽는 중 오류 발생: {e}")
+                return {'success': False, 'error': f'key_evaluate 읽기 실패: {str(e)}'}
         
         if models is None:
             models = [
@@ -139,9 +162,9 @@ class Step6Evaluate(PipelineBase):
                     sample_size=len(file_data),
                     batch_size=batch_size,
                     seed=42,
-                    mock_mode=False,
                     use_server_mode=use_server_mode,
-                    use_ox_support=use_ox_support
+                    use_ox_support=use_ox_support,
+                    api_key=api_key
                 )
                 
                 # 결과 출력
@@ -176,7 +199,7 @@ class Step6Evaluate(PipelineBase):
                 if save_results_to_excel:
                     save_results_to_excel(
                         df_all, pred_wide, acc, pred_long,
-                        output_path, mock_mode=False
+                        output_path
                     )
                     self.logger.info(f"결과 저장 완료: {output_path}")
                 
@@ -285,9 +308,9 @@ class Step6Evaluate(PipelineBase):
                     sample_size=len(all_combined_data),
                     batch_size=batch_size,
                     seed=42,
-                    mock_mode=False,
                     use_server_mode=use_server_mode,
-                    use_ox_support=use_ox_support
+                    use_ox_support=use_ox_support,
+                    api_key=api_key
                 )
                 
                 # 결과 출력
@@ -314,7 +337,7 @@ class Step6Evaluate(PipelineBase):
                 if save_results_to_excel:
                     save_results_to_excel(
                         df_all, pred_wide, acc, pred_long,
-                        output_path, mock_mode=False
+                        output_path
                     )
                     self.logger.info(f"결과 저장 완료: {output_path}")
                 

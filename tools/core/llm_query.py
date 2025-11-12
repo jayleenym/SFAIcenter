@@ -5,29 +5,35 @@ LLM 쿼리 클래스
 """
 
 import os
+import json
+import re
 import configparser
 from openai import OpenAI
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 from typing import Optional
-import re
 
 
 class LLMQuery:
     """LLM 쿼리 클래스 (OpenRouter, vLLM 지원)"""
     
-    def __init__(self, config_path: str = None):
+    def __init__(self, config_path: str = None, api_key: str = None):
         """
         Args:
             config_path: 설정 파일 경로 (None이면 자동 검색)
+            api_key: API 키 (None이면 config 파일에서 key 사용)
         """
         self.config_path = self._find_config_file(config_path)
         self.config = configparser.ConfigParser()
         self.config.read(self.config_path, encoding='utf-8')
         
+        # API 키 결정: api_key 파라미터가 있으면 사용, 없으면 config에서 key 사용
+        if api_key is None:
+            api_key = self.config.get("OPENROUTER", "key")
+        
         # OpenRouter 클라이언트 초기화
         self.client = OpenAI(
-            api_key=self.config.get("OPENROUTER", "key"),
+            api_key=api_key,
             base_url=self.config.get("OPENROUTER", "url")
         )
         
@@ -133,3 +139,26 @@ class LLMQuery:
         if isinstance(text, str):
             return re.sub(r"<think>.*?</think>\s*", "", text, flags=re.DOTALL)
         return text
+    
+    def parse_api_response(self, response: str) -> Optional[list]:
+        """API 응답 파싱 (JSON 배열 추출)"""
+        try:
+            # JSON 응답에서 배열 부분만 추출
+            start_idx = response.find('[')
+            end_idx = response.rfind(']') + 1
+            
+            if start_idx == -1 or end_idx == 0:
+                return None
+            
+            json_str = response[start_idx:end_idx]
+            parsed_data = json.loads(json_str)
+            
+            if not isinstance(parsed_data, list):
+                return None
+            
+            return parsed_data
+            
+        except json.JSONDecodeError:
+            return None
+        except Exception:
+            return None

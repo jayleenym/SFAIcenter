@@ -13,7 +13,7 @@
 ## 📁 폴더 구조
 
 ```
-tools_arrange/
+tools/
 ├── main_pipeline.py        # 메인 파이프라인 엔트리 포인트
 │
 ├── pipeline/                # 파이프라인 모듈
@@ -210,34 +210,119 @@ pipeline/steps/step6_evaluate.py → 시험지 평가
 
 ```bash
 # 전체 파이프라인 실행 (Cycle 1)
-python tools_arrange/main_pipeline.py --cycle 1
+python tools/main_pipeline.py --cycle 1
 
 # 특정 단계만 실행
-python tools_arrange/main_pipeline.py --cycle 1 --steps preprocess extract_basic extract_full
+python tools/main_pipeline.py --cycle 1 --steps preprocess extract_basic extract_full
 
 # 4단계: Domain/Subdomain 분류
-python tools_arrange/main_pipeline.py --steps fill_domain --qna_type multiple --model x-ai/grok-4-fast
+python tools/main_pipeline.py --steps fill_domain --qna_type multiple --model x-ai/grok-4-fast
 
 # 5단계: 시험문제 만들기
-python tools_arrange/main_pipeline.py --steps create_exam --num_sets 5
+python tools/main_pipeline.py --steps create_exam --num_sets 5
 
 # 6단계: 시험지 평가
-python tools_arrange/main_pipeline.py --steps evaluate_exams --eval_models anthropic/claude-sonnet-4.5 google/gemini-2.5-flash
+python tools/main_pipeline.py --steps evaluate_exams --eval_models anthropic/claude-sonnet-4.5 google/gemini-2.5-flash
 
 # 6단계: 시험지 평가 (1세트만 평가)
-python tools_arrange/main_pipeline.py --steps evaluate_exams --eval_sets 1
+python tools/main_pipeline.py --steps evaluate_exams --eval_sets 1
 
 # 6단계: 시험지 평가 (여러 세트 지정: 1, 2, 3세트만 평가)
-python tools_arrange/main_pipeline.py --steps evaluate_exams --eval_sets 1 2 3
+python tools/main_pipeline.py --steps evaluate_exams --eval_sets 1 2 3
 
 # 6단계: 시험지 평가 (커스텀 시험지 경로 지정)
-python tools_arrange/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/exam/directory
+python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/exam/directory
 
 # 6단계: 시험지 평가 (상대 경로로 시험지 경로 지정)
-python tools_arrange/main_pipeline.py --steps evaluate_exams --eval_exam_dir evaluation/custom_exam_dir
+python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir evaluation/custom_exam_dir
 
 # 커스텀 경로 지정
-python tools_arrange/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --project_root_path /path/to/project
+python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --project_root_path /path/to/project
+```
+
+### main_pipeline.py 명령행 옵션
+
+#### 기본 옵션
+
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--cycle` | 사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 필요 | None |
+| `--steps` | 실행할 단계 목록 (공백으로 구분) | None (전체 실행) |
+| `--base_path` | 기본 데이터 경로 | None (ONEDRIVE_PATH 사용) |
+| `--config_path` | LLM 설정 파일 경로 | None (PROJECT_ROOT_PATH/llm_config.ini 사용) |
+| `--onedrive_path` | OneDrive 경로 | None (자동 감지) |
+| `--project_root_path` | 프로젝트 루트 경로 | None (자동 감지) |
+| `--debug` | 디버그 로그 활성화 | False |
+
+#### 단계별 옵션
+
+**4단계 (Domain/Subdomain 분류)**
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--qna_type` | QnA 타입 (multiple, short, essay) | 'multiple' |
+| `--model` | 사용할 모델 | 'x-ai/grok-4-fast' |
+
+**5단계 (시험문제 만들기)**
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--num_sets` | 시험 세트 개수 | 5 |
+
+**6단계 (시험지 평가)**
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--eval_models` | 평가할 모델 목록 (공백으로 구분) | None (자동 설정) |
+| `--eval_batch_size` | 평가 배치 크기 | 10 |
+| `--eval_use_ox_support` | O, X 문제 지원 활성화 | True |
+| `--eval_use_server_mode` | vLLM 서버 모드 사용 | False |
+| `--eval_exam_dir` | 시험지 디렉토리 경로 (단일 JSON 파일 또는 디렉토리) | None (기본 경로 사용) |
+| `--eval_sets` | 평가할 세트 번호 (1, 2, 3, 4, 5 중 선택, 공백으로 구분) | None (모든 세트 평가) |
+
+#### 실행 가능한 단계 목록
+
+`--steps` 옵션에 사용할 수 있는 단계 이름:
+- `preprocess`: 0단계 - 텍스트 전처리
+- `extract_basic`: 1단계 - 기본 문제 추출
+- `extract_full`: 2단계 - 전체 문제 추출 (태그 대치)
+- `classify`: 3단계 - Q&A 타입별 분류
+- `fill_domain`: 4단계 - Domain/Subdomain 분류
+- `create_exam`: 5단계 - 시험문제 만들기
+- `evaluate_exams`: 6단계 - 시험지 평가
+
+#### 사용 예제
+
+```bash
+# 전체 파이프라인 실행 (Cycle 1)
+python tools/main_pipeline.py --cycle 1
+
+# 특정 단계만 실행
+python tools/main_pipeline.py --cycle 1 --steps preprocess extract_basic
+
+# 4단계만 실행 (객관식 문제, 특정 모델 사용)
+python tools/main_pipeline.py --steps fill_domain --qna_type multiple --model openai/gpt-5
+
+# 5단계만 실행 (3세트 생성)
+python tools/main_pipeline.py --steps create_exam --num_sets 3
+
+# 6단계만 실행 (특정 모델들로 평가)
+python tools/main_pipeline.py --steps evaluate_exams --eval_models openai/gpt-5 google/gemini-2.5-pro
+
+# 6단계만 실행 (1세트만 평가, 배치 크기 20)
+python tools/main_pipeline.py --steps evaluate_exams --eval_sets 1 --eval_batch_size 20
+
+# 6단계만 실행 (여러 세트 지정: 1, 2, 3세트만 평가)
+python tools/main_pipeline.py --steps evaluate_exams --eval_sets 1 2 3
+
+# 6단계만 실행 (커스텀 시험지 경로 지정)
+python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/exam/directory
+
+# 6단계만 실행 (단일 JSON 파일 평가)
+python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/exam.json
+
+# 6단계만 실행 (vLLM 서버 모드 사용)
+python tools/main_pipeline.py --steps evaluate_exams --eval_use_server_mode
+
+# 디버그 모드로 실행
+python tools/main_pipeline.py --cycle 1 --debug
 ```
 
 ### 파이프라인 모듈 직접 사용
@@ -287,9 +372,9 @@ result = pipeline.step6.execute(sets=[1, 2, 3])  # 1, 2, 3세트만 평가
 ### 개별 클래스 사용
 
 ```python
-from tools_arrange.core import FileManager, TextProcessor, JSONHandler, LLMQuery
-from tools_arrange.data_processing import JSONCleaner
-from tools_arrange.qna import QnAExtractor, TagProcessor
+from core import FileManager, TextProcessor, JSONHandler, LLMQuery
+from data_processing import JSONCleaner
+from qna import QnAExtractor, TagProcessor
 
 # 파일 관리
 file_manager = FileManager()
@@ -375,7 +460,11 @@ response = llm.query_openrouter(system_prompt, user_prompt, model_name='openai/g
 - 4단계(Domain/Subdomain 분류)에서 실패한 항목은 자동으로 감지되어 재처리됩니다.
 - 실패 항목은 `evaluation/eval_data/2_subdomain/{qna_type}_failed_items.json`에 저장됩니다.
 
-## 🔗 원본 위치
+## 📝 참고사항
 
-이 파일들은 원래 `tools/` 폴더에 있었으며, 기능별로 재구성하고 Class 기반으로 리팩토링하여 `tools_arrange/` 폴더에 정리되었습니다.
+### 6단계 (시험지 평가) API 키 설정
+
+6단계에서 OpenRouter API를 사용할 때는 `llm_config.ini`의 `key_evaluate`를 사용합니다.
+- `key_evaluate`가 설정 파일에 없으면 에러가 발생합니다.
+- vLLM 서버 모드(`--eval_use_server_mode`)를 사용할 때는 API 키가 필요 없습니다.
 
