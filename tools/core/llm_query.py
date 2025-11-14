@@ -131,13 +131,20 @@ class LLMQuery:
         outputs = self.llm.generate([prompt], self.sampling_params)
         generated_text = outputs[0].outputs[0].text.strip()
         generated_text = self.remove_think_block(generated_text)
-        
+        generated_text = self.remove_assistant_block(generated_text)
         return generated_text
 
 
     def remove_think_block(self, text):   ## for Qwen3
         if isinstance(text, str):
             return re.sub(r"<think>.*?</think>\s*", "", text, flags=re.DOTALL)
+        return text
+
+
+    def remove_assistant_block(self, text): ## for gpt-oss-120b
+        if isinstance(text, str):
+            match = re.search(r"assistantfinal(.*)$", text, flags=re.DOTALL)
+            return match.group(1).strip() if match else text
         return text
     
     def parse_api_response(self, response: str) -> Optional[list]:
