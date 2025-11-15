@@ -10,7 +10,6 @@ import re
 import configparser
 from openai import OpenAI
 from transformers import AutoTokenizer
-from vllm import LLM, SamplingParams
 from typing import Optional
 
 
@@ -87,6 +86,7 @@ class LLMQuery:
     
     def load_vllm_model(self, model_path: str):
         """vLLM 모델 로드"""
+        from vllm import LLM, SamplingParams
         os.environ["CUDA_VISIBLE_DEVICES"] = self.config.get("VLLM", "gpu")
         
         self.llm = LLM(
