@@ -7,7 +7,6 @@
 import os
 import sys
 import logging
-from datetime import datetime
 from typing import Optional
 
 from .config import ONEDRIVE_PATH, PROJECT_ROOT_PATH, SFAICENTER_PATH
@@ -113,20 +112,12 @@ class PipelineBase:
         self._setup_logging()
     
     def _setup_logging(self):
-        """로깅 설정"""
-        # SFAICENTER_PATH/logs에 로그 저장
-        log_dir = os.path.join(SFAICENTER_PATH, 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-        
-        log_file = os.path.join(log_dir, f'pipeline_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
-        
+        """로깅 설정 (step별 로그는 각 step에서 생성)"""
+        # 기본 로거만 설정 (파일 핸들러는 step별로 생성)
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.StreamHandler(),
-                logging.FileHandler(log_file, encoding='utf-8')
-            ]
+            handlers=[logging.StreamHandler()]
         )
         self.logger = logging.getLogger(__name__)
 

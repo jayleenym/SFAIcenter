@@ -6,9 +6,10 @@
 
 import os
 import sys
+import logging
 from typing import Dict, Any
 from ..base import PipelineBase
-from ..config import PROJECT_ROOT_PATH
+from ..config import PROJECT_ROOT_PATH, SFAICENTER_PATH
 
 # qna processing 모듈 import (tools 폴더에서)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -29,6 +30,11 @@ except ImportError:
 class Step4DomainSubdomain(PipelineBase):
     """4단계: Domain/Subdomain 분류"""
     
+    def __init__(self, base_path: str = None, config_path: str = None, 
+                 onedrive_path: str = None, project_root_path: str = None):
+        super().__init__(base_path, config_path, onedrive_path, project_root_path)
+        self._step_log_handler = None
+    
     def execute(self, qna_type: str = 'multiple', model: str = 'x-ai/grok-4-fast') -> Dict[str, Any]:
         """
         4단계: domain/subdomain/classification_reason/is_calculation 빈칸 채우기
@@ -38,51 +44,54 @@ class Step4DomainSubdomain(PipelineBase):
         """
         self.logger.info(f"=== 4단계: Domain/Subdomain 분류 (QnA Type: {qna_type}) ===")
         
-        if QnASubdomainClassifier is None:
-            self.logger.error("QnASubdomainClassifier를 import할 수 없습니다.")
-            return {'success': False, 'error': 'QnASubdomainClassifier import 실패'}
+        # 로깅 설정
+        self._setup_step_logging('domain_subdomain')
         
-        # 입력 파일 경로
-        input_file = os.path.join(
-            self.onedrive_path,
-            f'evaluation/eval_data/1_filter_with_tags/{qna_type}.json'
-        )
-        
-        if not os.path.exists(input_file):
-            self.logger.error(f"입력 파일을 찾을 수 없습니다: {input_file}")
-            return {'success': False, 'error': f'입력 파일 없음: {input_file}'}
-        
-        # 기존 분류 파일 확인
-        existing_file = os.path.join(
-            self.onedrive_path,
-            f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
-        )
-        
-        # 기존 파일이 있으면 먼저 채워넣기
-        if os.path.exists(existing_file) and load_json_file and create_lookup_dict and fill_multiple_choice_data:
-            self.logger.info(f"기존 분류 파일 발견: {existing_file}")
-            self.logger.info("기존 데이터로 빈칸 채우기 중...")
-            
-            try:
-                source_data = load_json_file(existing_file)
-                multiple_choice_data = load_json_file(input_file)
-                lookup_dict = create_lookup_dict(source_data)
-                updated_data, stats = fill_multiple_choice_data(multiple_choice_data, lookup_dict)
-                
-                # 업데이트된 데이터 저장
-                output_file = os.path.join(
-                    self.onedrive_path,
-                    f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
-                )
-                os.makedirs(os.path.dirname(output_file), exist_ok=True)
-                self.json_handler.save(updated_data, output_file)
-                
-                self.logger.info(f"기존 데이터로 채워넣기 완료: {stats}")
-            except Exception as e:
-                self.logger.error(f"기존 데이터 채우기 오류: {e}")
-        
-        # QnASubdomainClassifier로 분류
         try:
+            if QnASubdomainClassifier is None:
+                self.logger.error("QnASubdomainClassifier를 import할 수 없습니다.")
+                return {'success': False, 'error': 'QnASubdomainClassifier import 실패'}
+            
+            # 입력 파일 경로
+            input_file = os.path.join(
+                self.onedrive_path,
+                f'evaluation/eval_data/1_filter_with_tags/{qna_type}.json'
+            )
+            
+            if not os.path.exists(input_file):
+                self.logger.error(f"입력 파일을 찾을 수 없습니다: {input_file}")
+                return {'success': False, 'error': f'입력 파일 없음: {input_file}'}
+            
+            # 기존 분류 파일 확인
+            existing_file = os.path.join(
+                self.onedrive_path,
+                f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
+            )
+            
+            # 기존 파일이 있으면 먼저 채워넣기
+            if os.path.exists(existing_file) and load_json_file and create_lookup_dict and fill_multiple_choice_data:
+                self.logger.info(f"기존 분류 파일 발견: {existing_file}")
+                self.logger.info("기존 데이터로 빈칸 채우기 중...")
+                
+                try:
+                    source_data = load_json_file(existing_file)
+                    multiple_choice_data = load_json_file(input_file)
+                    lookup_dict = create_lookup_dict(source_data)
+                    updated_data, stats = fill_multiple_choice_data(multiple_choice_data, lookup_dict)
+                    
+                    # 업데이트된 데이터 저장
+                    output_file = os.path.join(
+                        self.onedrive_path,
+                        f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
+                    )
+                    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+                    self.json_handler.save(updated_data, output_file)
+                    
+                    self.logger.info(f"기존 데이터로 채워넣기 완료: {stats}")
+                except Exception as e:
+                    self.logger.error(f"기존 데이터 채우기 오류: {e}")
+            
+            # QnASubdomainClassifier로 분류
             classifier = QnASubdomainClassifier(config_path=None, mode=qna_type, onedrive_path=self.onedrive_path)
             results = classifier.process_all_questions(
                 data_path=input_file,
@@ -189,4 +198,31 @@ class Step4DomainSubdomain(PipelineBase):
         except Exception as e:
             self.logger.error(f"Domain/Subdomain 분류 오류: {e}")
             return {'success': False, 'error': str(e)}
+        finally:
+            self._remove_step_logging()
+    
+    def _setup_step_logging(self, step_name: str):
+        """단계별 로그 파일 핸들러 설정"""
+        log_dir = os.path.join(SFAICENTER_PATH, 'logs')
+        os.makedirs(log_dir, exist_ok=True)
+        
+        log_file = os.path.join(log_dir, f'step4_{step_name}.log')
+        
+        # 파일 핸들러 생성 (append 모드)
+        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        
+        # 로거에 핸들러 추가
+        self.logger.addHandler(file_handler)
+        self._step_log_handler = file_handler
+        
+        self.logger.info(f"로그 파일 생성/추가: {log_file}")
+    
+    def _remove_step_logging(self):
+        """단계별 로그 파일 핸들러 제거"""
+        if self._step_log_handler:
+            self.logger.removeHandler(self._step_log_handler)
+            self._step_log_handler.close()
+            self._step_log_handler = None
 

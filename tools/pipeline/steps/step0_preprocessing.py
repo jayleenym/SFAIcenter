@@ -5,12 +5,19 @@
 """
 
 import os
+import logging
 from typing import List, Dict, Any
 from ..base import PipelineBase
+from ..config import SFAICENTER_PATH
 
 
 class Step0Preprocessing(PipelineBase):
     """0단계: 텍스트 전처리"""
+    
+    def __init__(self, base_path: str = None, config_path: str = None, 
+                 onedrive_path: str = None, project_root_path: str = None):
+        super().__init__(base_path, config_path, onedrive_path, project_root_path)
+        self._step_log_handler = None
     
     def execute(self, cycle: int, levels: List[str] = None) -> Dict[str, Any]:
         """
@@ -22,50 +29,81 @@ class Step0Preprocessing(PipelineBase):
         """
         self.logger.info(f"=== 0단계: 텍스트 전처리 (Cycle {cycle}) ===")
         
-        if levels is None:
-            levels = ['Lv2']
+        # 로깅 설정
+        self._setup_step_logging('preprocessing')
         
-        data_path = self.file_manager.final_data_path
-        cycle_path = os.path.join(data_path, self.file_manager.cycle_path[cycle])
-        
-        processed_files = 0
-        
-        for level in levels:
-            level_path = os.path.join(cycle_path, level)
-            if not os.path.exists(level_path):
-                self.logger.warning(f"경로가 존재하지 않습니다: {level_path}")
-                continue
+        try:
+            if levels is None:
+                levels = ['Lv2']
             
-            json_files = self.file_manager.get_json_file_list(cycle, level_path)
-            self.logger.info(f"{level}: 총 {len(json_files)}개의 JSON 파일을 찾았습니다.")
+            data_path = self.file_manager.final_data_path
+            cycle_path = os.path.join(data_path, self.file_manager.cycle_path[cycle])
             
-            for json_file in json_files:
-                try:
-                    json_data = self.json_handler.load(json_file)
-                    
-                    # 텍스트 전처리
-                    json_data = self.text_processor.fill_missing_chapters(json_data)
-                    
-                    # 선지 텍스트 정규화
-                    for page_data in json_data.get('contents', []):
-                        for add_item in page_data.get('add_info', []):
-                            if 'description' in add_item and 'options' in add_item['description']:
-                                options = add_item['description']['options']
-                                if isinstance(options, list):
-                                    normalized_options = []
-                                    for option in options:
-                                        normalized = self.text_processor.remove_inline_newlines(str(option))
-                                        normalized = self.text_processor.normalize_option_text(normalized)
-                                        normalized_options.append(normalized)
-                                    add_item['description']['options'] = normalized_options
-                    
-                    # 저장
-                    self.json_handler.save(json_data, json_file)
-                    processed_files += 1
-                    
-                except Exception as e:
-                    self.logger.error(f"파일 처리 오류 ({json_file}): {e}")
+            processed_files = 0
+            
+            for level in levels:
+                level_path = os.path.join(cycle_path, level)
+                if not os.path.exists(level_path):
+                    self.logger.warning(f"경로가 존재하지 않습니다: {level_path}")
+                    continue
+                
+                json_files = self.file_manager.get_json_file_list(cycle, level_path)
+                self.logger.info(f"{level}: 총 {len(json_files)}개의 JSON 파일을 찾았습니다.")
+                
+                for json_file in json_files:
+                    try:
+                        json_data = self.json_handler.load(json_file)
+                        
+                        # 텍스트 전처리
+                        json_data = self.text_processor.fill_missing_chapters(json_data)
+                        
+                        # 선지 텍스트 정규화
+                        for page_data in json_data.get('contents', []):
+                            for add_item in page_data.get('add_info', []):
+                                if 'description' in add_item and 'options' in add_item['description']:
+                                    options = add_item['description']['options']
+                                    if isinstance(options, list):
+                                        normalized_options = []
+                                        for option in options:
+                                            normalized = self.text_processor.remove_inline_newlines(str(option))
+                                            normalized = self.text_processor.normalize_option_text(normalized)
+                                            normalized_options.append(normalized)
+                                        add_item['description']['options'] = normalized_options
+                        
+                        # 저장
+                        self.json_handler.save(json_data, json_file)
+                        processed_files += 1
+                        
+                    except Exception as e:
+                        self.logger.error(f"파일 처리 오류 ({json_file}): {e}")
+            
+            self.logger.info(f"처리 완료: {processed_files}개 파일")
+            return {'success': True, 'processed_files': processed_files}
+        finally:
+            self._remove_step_logging()
+    
+    def _setup_step_logging(self, step_name: str):
+        """단계별 로그 파일 핸들러 설정"""
+        log_dir = os.path.join(SFAICENTER_PATH, 'logs')
+        os.makedirs(log_dir, exist_ok=True)
         
-        self.logger.info(f"처리 완료: {processed_files}개 파일")
-        return {'success': True, 'processed_files': processed_files}
+        log_file = os.path.join(log_dir, f'step0_{step_name}.log')
+        
+        # 파일 핸들러 생성 (append 모드)
+        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        
+        # 로거에 핸들러 추가
+        self.logger.addHandler(file_handler)
+        self._step_log_handler = file_handler
+        
+        self.logger.info(f"로그 파일 생성/추가: {log_file}")
+    
+    def _remove_step_logging(self):
+        """단계별 로그 파일 핸들러 제거"""
+        if self._step_log_handler:
+            self.logger.removeHandler(self._step_log_handler)
+            self._step_log_handler.close()
+            self._step_log_handler = None
 
