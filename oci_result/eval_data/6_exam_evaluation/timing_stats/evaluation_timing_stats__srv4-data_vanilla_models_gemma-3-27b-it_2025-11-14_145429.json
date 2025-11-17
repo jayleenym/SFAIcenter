@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-14 14:51:06",
+    "end_time": "2025-11-14 14:54:29",
+    "start_time_iso": "2025-11-14T14:51:06.598380",
+    "end_time_iso": "2025-11-14T14:54:29.486513",
+    "elapsed_time_seconds": 202.88813400268555,
+    "elapsed_time_minutes": 3.381468900044759,
+    "elapsed_time_hours": 0.056357815000745985,
+    "model_name": "/srv4-data/vanilla_models/gemma-3-27b-it"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 0.211062290576309,
+    "total_response_time_seconds": 201.9866120815277,
+    "total_response_time_minutes": 3.3664435346921286,
+    "call_count": 957,
+    "min_response_time_seconds": 0.2050325870513916,
+    "max_response_time_seconds": 0.22827625274658203,
+    "std_response_time_seconds": 0.004547451767830138
+  }
+}

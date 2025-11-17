@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-14 14:46:54",
+    "end_time": "2025-11-14 14:50:27",
+    "start_time_iso": "2025-11-14T14:46:54.838303",
+    "end_time_iso": "2025-11-14T14:50:27.402232",
+    "elapsed_time_seconds": 212.5639293193817,
+    "elapsed_time_minutes": 3.5427321553230287,
+    "elapsed_time_hours": 0.059045535922050474,
+    "model_name": "/srv1-data/auto_merged_models/27b-l4096-bs2-acc4-lr1e5-wr0.005-v2/checkpoint-6000-merged"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 0.21133826756477356,
+    "total_response_time_seconds": 211.33826756477356,
+    "total_response_time_minutes": 3.5223044594128927,
+    "call_count": 1000,
+    "min_response_time_seconds": 0.19983863830566406,
+    "max_response_time_seconds": 0.22954440116882324,
+    "std_response_time_seconds": 0.0034473453057426106
+  }
+}

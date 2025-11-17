@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-14 17:10:27",
+    "end_time": "2025-11-14 17:11:17",
+    "start_time_iso": "2025-11-14T17:10:27.167089",
+    "end_time_iso": "2025-11-14T17:11:17.377563",
+    "elapsed_time_seconds": 50.2104754447937,
+    "elapsed_time_minutes": 0.8368412574132283,
+    "elapsed_time_hours": 0.013947354290220473,
+    "model_name": "/srv4-data/vanilla_models/Midm-2.0-Mini-Instruct/"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 0.04964496660232544,
+    "total_response_time_seconds": 49.64496660232544,
+    "total_response_time_minutes": 0.8274161100387574,
+    "call_count": 1000,
+    "min_response_time_seconds": 0.048089027404785156,
+    "max_response_time_seconds": 0.2627739906311035,
+    "std_response_time_seconds": 0.007033319770025695
+  }
+}

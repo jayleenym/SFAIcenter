@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-14 14:25:56",
+    "end_time": "2025-11-14 14:29:26",
+    "start_time_iso": "2025-11-14T14:25:56.254643",
+    "end_time_iso": "2025-11-14T14:29:26.202018",
+    "elapsed_time_seconds": 209.94737553596497,
+    "elapsed_time_minutes": 3.499122925599416,
+    "elapsed_time_hours": 0.05831871542665693,
+    "model_name": "/srv4-data/vanilla_models/EXAONE-4.0-32B"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 0.20932108545303343,
+    "total_response_time_seconds": 209.32108545303345,
+    "total_response_time_minutes": 3.4886847575505575,
+    "call_count": 1000,
+    "min_response_time_seconds": 0.20552968978881836,
+    "max_response_time_seconds": 0.23062443733215332,
+    "std_response_time_seconds": 0.00295887199284146
+  }
+}

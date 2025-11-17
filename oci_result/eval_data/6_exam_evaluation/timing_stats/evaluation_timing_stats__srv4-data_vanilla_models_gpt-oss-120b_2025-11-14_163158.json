@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-14 15:42:22",
+    "end_time": "2025-11-14 16:31:58",
+    "start_time_iso": "2025-11-14T15:42:22.809249",
+    "end_time_iso": "2025-11-14T16:31:58.162747",
+    "elapsed_time_seconds": 2975.3534984588623,
+    "elapsed_time_minutes": 49.58922497431437,
+    "elapsed_time_hours": 0.8264870829052395,
+    "model_name": "/srv4-data/vanilla_models/gpt-oss-120b"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 2.97464691901207,
+    "total_response_time_seconds": 2974.6469190120697,
+    "total_response_time_minutes": 49.57744865020116,
+    "call_count": 1000,
+    "min_response_time_seconds": 0.37683892250061035,
+    "max_response_time_seconds": 88.90777277946472,
+    "std_response_time_seconds": 3.9362767122344695
+  }
+}

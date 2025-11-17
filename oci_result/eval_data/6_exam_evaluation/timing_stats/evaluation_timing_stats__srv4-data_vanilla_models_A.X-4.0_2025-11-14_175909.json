@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-14 17:57:50",
+    "end_time": "2025-11-14 17:59:09",
+    "start_time_iso": "2025-11-14T17:57:50.206877",
+    "end_time_iso": "2025-11-14T17:59:09.089352",
+    "elapsed_time_seconds": 78.88247561454773,
+    "elapsed_time_minutes": 1.3147079269091289,
+    "elapsed_time_hours": 0.021911798781818814,
+    "model_name": "/srv4-data/vanilla_models/A.X-4.0"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 78.86200404167175,
+    "total_response_time_seconds": 78.86200404167175,
+    "total_response_time_minutes": 1.3143667340278626,
+    "call_count": 1,
+    "min_response_time_seconds": 78.86200404167175,
+    "max_response_time_seconds": 78.86200404167175,
+    "std_response_time_seconds": 0.0
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-14 17:38:23",
+    "end_time": "2025-11-14 17:39:36",
+    "start_time_iso": "2025-11-14T17:38:23.308167",
+    "end_time_iso": "2025-11-14T17:39:36.071354",
+    "elapsed_time_seconds": 72.76318740844727,
+    "elapsed_time_minutes": 1.2127197901407878,
+    "elapsed_time_hours": 0.020211996502346462,
+    "model_name": "/srv4-data/vanilla_models/Qwen2.5-72B-Instruct"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 72.742680311203,
+    "total_response_time_seconds": 72.742680311203,
+    "total_response_time_minutes": 1.2123780051867168,
+    "call_count": 1,
+    "min_response_time_seconds": 72.742680311203,
+    "max_response_time_seconds": 72.742680311203,
+    "std_response_time_seconds": 0.0
+  }
+}
