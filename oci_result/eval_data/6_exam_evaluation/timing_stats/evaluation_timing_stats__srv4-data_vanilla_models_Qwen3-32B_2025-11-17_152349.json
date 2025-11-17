@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-17 14:27:15",
+    "end_time": "2025-11-17 15:23:49",
+    "start_time_iso": "2025-11-17T14:27:15.998912",
+    "end_time_iso": "2025-11-17T15:23:49.164239",
+    "elapsed_time_seconds": 3393.165326833725,
+    "elapsed_time_minutes": 56.55275544722875,
+    "elapsed_time_hours": 0.9425459241204791,
+    "model_name": "/srv4-data/vanilla_models/Qwen3-32B"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 37.69943090014988,
+    "total_response_time_seconds": 3392.9487810134888,
+    "total_response_time_minutes": 56.54914635022481,
+    "call_count": 90,
+    "min_response_time_seconds": 17.403465032577515,
+    "max_response_time_seconds": 76.51107025146484,
+    "std_response_time_seconds": 6.410469460244828
+  }
+}
