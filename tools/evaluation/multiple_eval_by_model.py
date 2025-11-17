@@ -458,10 +458,11 @@ def parse_model_output(raw: str, expected_ids: List[str]) -> Dict[str, float]:
             logger.debug(f"줄 {i+1}: ID '{_id}'가 예상 목록에 없음, 스킵")
             continue
             
-        # 첫 번째 1~5 추출
-        m = re.search(r"[1-5]", right)
+        # 첫 번째 1~5 추출 (중괄호 포함: {4}, {5} 등도 인식)
+        # 중괄호로 둘러싸인 숫자 또는 일반 숫자 모두 인식
+        m = re.search(r"\{?([1-5])\}?", right)
         if m:
-            answer = float(m.group(0))
+            answer = float(m.group(1))
             out[_id] = answer
             logger.debug(f"줄 {i+1}: ID '{_id}' -> 답변 {answer}")
         else:
