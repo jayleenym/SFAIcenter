@@ -293,6 +293,53 @@ class AnswerTypeClassifier:
             with open(os.path.join(self.output_dir, f"answer_type_classified{suffix}_fail_q.json"), 'w', encoding='utf-8') as f:
                 json.dump(fail_question, f, ensure_ascii=False, indent=2)
     
+    def _cleanup_files(self, fail_response: List, fail_question: List[Dict[str, Any]]):
+        """처리 완료 후 중간 파일 및 빈 fail 파일 정리"""
+        # intermediate 파일 삭제
+        intermediate_file = os.path.join(self.output_dir, "answer_type_classified_intermediate.json")
+        if os.path.exists(intermediate_file):
+            try:
+                os.remove(intermediate_file)
+                logger.info("중간 결과 파일 삭제 완료: answer_type_classified_intermediate.json")
+            except Exception as e:
+                logger.warning(f"중간 결과 파일 삭제 실패: {e}")
+        
+        # intermediate fail_response 파일 삭제
+        intermediate_fail_response = os.path.join(self.output_dir, "answer_type_classified_intermediate_fail_response.json")
+        if os.path.exists(intermediate_fail_response):
+            try:
+                os.remove(intermediate_fail_response)
+                logger.info("중간 fail_response 파일 삭제 완료")
+            except Exception as e:
+                logger.warning(f"중간 fail_response 파일 삭제 실패: {e}")
+        
+        # intermediate fail_q 파일 삭제
+        intermediate_fail_q = os.path.join(self.output_dir, "answer_type_classified_intermediate_fail_q.json")
+        if os.path.exists(intermediate_fail_q):
+            try:
+                os.remove(intermediate_fail_q)
+                logger.info("중간 fail_q 파일 삭제 완료")
+            except Exception as e:
+                logger.warning(f"중간 fail_q 파일 삭제 실패: {e}")
+        
+        # 최종 fail_response 파일이 비어있으면 삭제
+        final_fail_response = os.path.join(self.output_dir, "answer_type_classified_fail_response.json")
+        if not fail_response and os.path.exists(final_fail_response):
+            try:
+                os.remove(final_fail_response)
+                logger.info("빈 fail_response 파일 삭제 완료")
+            except Exception as e:
+                logger.warning(f"fail_response 파일 삭제 실패: {e}")
+        
+        # 최종 fail_q 파일이 비어있으면 삭제
+        final_fail_q = os.path.join(self.output_dir, "answer_type_classified_fail_q.json")
+        if not fail_question and os.path.exists(final_fail_q):
+            try:
+                os.remove(final_fail_q)
+                logger.info("빈 fail_q 파일 삭제 완료")
+            except Exception as e:
+                logger.warning(f"fail_q 파일 삭제 실패: {e}")
+    
     def process_all_questions(self, data_path: str = None, questions: List[Dict[str, Any]] = None,
                               model: str = "x-ai/grok-4-fast", batch_size: int = 10) -> List[Dict[str, Any]]:
         """모든 문제 처리 (answer_type 분류)"""
@@ -319,6 +366,9 @@ class AnswerTypeClassifier:
         logger.info("분류 결과 통계:")
         for answer_type, count in sorted(answer_type_counts.items()):
             logger.info(f"  {answer_type}: {count}")
+        
+        # 처리 완료 후 파일 정리
+        self._cleanup_files(fail_response, fail_question)
         
         return updated_questions
 

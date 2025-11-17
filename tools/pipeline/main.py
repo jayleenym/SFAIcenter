@@ -13,7 +13,8 @@ from .steps import (
     Step3Classify,
     Step4DomainSubdomain,
     Step5CreateExam,
-    Step6Evaluate
+    Step6Evaluate,
+    Step7TransformMultipleChoice
 )
 
 
@@ -39,20 +40,26 @@ class Pipeline(PipelineBase):
         self.step4 = Step4DomainSubdomain(base_path, config_path, onedrive_path, project_root_path)
         self.step5 = Step5CreateExam(base_path, config_path, onedrive_path, project_root_path)
         self.step6 = Step6Evaluate(base_path, config_path, onedrive_path, project_root_path)
+        self.step7 = Step7TransformMultipleChoice(base_path, config_path, onedrive_path, project_root_path)
     
     def run_full_pipeline(self, cycle: int = None, steps: List[str] = None,
                          qna_type: str = 'multiple', model: str = 'x-ai/grok-4-fast',
                          num_sets: int = 5, eval_models: List[str] = None,
                          eval_batch_size: int = 10, eval_use_ox_support: bool = True,
                          eval_use_server_mode: bool = False,
-                         eval_exam_dir: str = None, eval_sets: List[int] = None) -> Dict[str, Any]:
+                         eval_exam_dir: str = None, eval_sets: List[int] = None,
+                         transform_input_data_path: str = None, transform_questions: List[Dict[str, Any]] = None,
+                         transform_classify_model: str = 'openai/gpt-5', transform_classify_batch_size: int = 10,
+                         transform_model: str = 'openai/o3', transform_wrong_to_right: bool = True,
+                         transform_right_to_wrong: bool = True, transform_abcd: bool = True,
+                         transform_seed: int = 42) -> Dict[str, Any]:
         """
         전체 파이프라인 실행
         
         Args:
             cycle: 사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 사용
             steps: 실행할 단계 리스트 (None이면 전체 실행)
-                가능한 값: 'preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams'
+                가능한 값: 'preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice'
             qna_type: QnA 타입 (4단계에서 사용)
             model: 사용할 모델 (4단계에서 사용)
             num_sets: 시험 세트 개수 (5단계에서 사용)
@@ -62,12 +69,21 @@ class Pipeline(PipelineBase):
             eval_use_server_mode: vLLM 서버 모드 사용 (6단계에서 사용)
             eval_exam_dir: 시험지 디렉토리 경로 (6단계에서 사용, None이면 기본 경로 사용)
             eval_sets: 평가할 세트 번호 리스트 (6단계에서 사용, None이면 모든 세트 평가)
+            transform_input_data_path: 변형 입력 데이터 파일 경로 (7단계에서 사용)
+            transform_questions: 변형 입력 문제 리스트 (7단계에서 사용)
+            transform_classify_model: 분류에 사용할 모델 (7단계에서 사용)
+            transform_classify_batch_size: 분류 배치 크기 (7단계에서 사용)
+            transform_model: 변형에 사용할 모델 (7단계에서 사용)
+            transform_wrong_to_right: wrong -> right 변형 수행 여부 (7단계에서 사용)
+            transform_right_to_wrong: right -> wrong 변형 수행 여부 (7단계에서 사용)
+            transform_abcd: abcd 변형 수행 여부 (7단계에서 사용)
+            transform_seed: 랜덤 시드 (7단계에서 사용)
         
         Returns:
             실행 결과
         """
         if steps is None:
-            steps = ['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams']
+            steps = ['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice']
         
         self.logger.info(f"=== 전체 파이프라인 시작 ===")
         self.logger.info(f"실행 단계: {', '.join(steps)}")
@@ -117,6 +133,19 @@ class Pipeline(PipelineBase):
                     use_server_mode=eval_use_server_mode,
                     exam_dir=eval_exam_dir,
                     sets=eval_sets
+                )
+            
+            if 'transform_multiple_choice' in steps:
+                results['transform_multiple_choice'] = self.step7.execute(
+                    input_data_path=transform_input_data_path,
+                    questions=transform_questions,
+                    classify_model=transform_classify_model,
+                    classify_batch_size=transform_classify_batch_size,
+                    transform_model=transform_model,
+                    transform_wrong_to_right=transform_wrong_to_right,
+                    transform_right_to_wrong=transform_right_to_wrong,
+                    transform_abcd=transform_abcd,
+                    seed=transform_seed
                 )
             
             self.logger.info("=== 전체 파이프라인 완료 ===")

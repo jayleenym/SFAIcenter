@@ -872,23 +872,17 @@ def save_timing_statistics(
             "model_statistics": model_stat
         }
         
-        json_filename = os.path.join(log_dir, f"{filename_prefix}_timing_stats_{model_name_safe}_{timestamp}.json")
-        with open(json_filename, 'w', encoding='utf-8') as f:
-            json.dump(json_data, f, ensure_ascii=False, indent=2)
-        logger.info(f"실행 시간 통계 (JSON) 저장 [{model}]: {json_filename}")
-        saved_files.append(json_filename)
-        
-        # 모델별 텍스트 파일 저장
-        text_filename = os.path.join(log_dir, f"{filename_prefix}_timing_stats_{model_name_safe}_{timestamp}.txt")
-        with open(text_filename, 'w', encoding='utf-8') as f:
-            f.write("=" * 80 + "\n")
-            f.write(f"⏱️  실행 시간 통계 - {model}\n")
-            f.write("=" * 80 + "\n")
-            f.write(f"전체 실행 시작 시간: {overall_start_datetime.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write(f"전체 실행 종료 시간: {overall_end_datetime.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write(f"전체 실행 소요 시간: {overall_elapsed_time:.2f}초 ({overall_elapsed_time/60:.2f}분, {overall_elapsed_time/3600:.2f}시간)\n")
-            f.write(f"모델: {model}\n")
-            f.write("\n")
+        # 모델별 마크다운 파일 저장
+        md_filename = os.path.join(log_dir, f"STATS_{filename_prefix}_timing_{model_name_safe}_{timestamp}.md")
+        with open(md_filename, 'w', encoding='utf-8') as f:
+            f.write(f"# ⏱️ 실행 시간 통계 - {model}\n\n")
+            f.write("---\n\n")
+            f.write(f"**전체 실행 시작 시간**: {overall_start_datetime.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"**전체 실행 종료 시간**: {overall_end_datetime.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"**전체 실행 소요 시간**: {overall_elapsed_time:.2f}초 ({overall_elapsed_time/60:.2f}분, {overall_elapsed_time/3600:.2f}시간)\n\n")
+            f.write(f"**모델**: {model}\n\n")
+            f.write("---\n\n")
+            
             if model_response_times[model]:
                 avg_time = np.mean(model_response_times[model])
                 total_time = np.sum(model_response_times[model])
@@ -896,18 +890,21 @@ def save_timing_statistics(
                 min_time = np.min(model_response_times[model])
                 max_time = np.max(model_response_times[model])
                 std_time = np.std(model_response_times[model])
-                f.write("응답 시간 통계:\n")
-                f.write(f"  - 평균 응답 시간: {avg_time:.2f}초\n")
-                f.write(f"  - 총 응답 시간: {total_time:.2f}초 ({total_time/60:.2f}분)\n")
-                f.write(f"  - 호출 횟수: {call_count}회\n")
-                f.write(f"  - 최소 응답 시간: {min_time:.2f}초\n")
-                f.write(f"  - 최대 응답 시간: {max_time:.2f}초\n")
-                f.write(f"  - 표준 편차: {std_time:.2f}초\n")
+                
+                f.write("## 응답 시간 통계\n\n")
+                f.write("| 항목 | 값 |\n")
+                f.write("|------|-----|\n")
+                f.write(f"| 평균 응답 시간 | {avg_time:.2f}초 |\n")
+                f.write(f"| 총 응답 시간 | {total_time:.2f}초 ({total_time/60:.2f}분) |\n")
+                f.write(f"| 호출 횟수 | {call_count:,}회 |\n")
+                f.write(f"| 최소 응답 시간 | {min_time:.2f}초 |\n")
+                f.write(f"| 최대 응답 시간 | {max_time:.2f}초 |\n")
+                f.write(f"| 표준 편차 | {std_time:.2f}초 |\n")
             else:
+                f.write("## 응답 시간 통계\n\n")
                 f.write("호출 기록 없음\n")
-            f.write("=" * 80 + "\n")
-        logger.info(f"실행 시간 통계 (텍스트) 저장 [{model}]: {text_filename}")
-        saved_files.append(text_filename)
+        logger.info(f"실행 시간 통계 (마크다운) 저장 [{model}]: {md_filename}")
+        saved_files.append(md_filename)
     
     return saved_files
 
