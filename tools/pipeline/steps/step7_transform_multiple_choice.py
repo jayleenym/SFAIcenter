@@ -180,27 +180,43 @@ class Step7TransformMultipleChoice(PipelineBase):
         
         log_file = os.path.join(log_dir, f'step7_{step_name}.log')
         
-        # 파일 핸들러 생성 (append 모드)
-        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        
-        # 로거에 핸들러 추가
-        self.logger.addHandler(file_handler)
-        
-        # 핸들러 저장 (나중에 제거하기 위해)
-        self._step_log_handlers[step_name] = file_handler
-        
-        self.logger.info(f"로그 파일 생성/추가: {log_file}")
+        try:
+            # 파일 핸들러 생성 (append 모드, delay=True로 버퍼링 최적화)
+            file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8', delay=False)
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            
+            # 로거에 핸들러 추가
+            self.logger.addHandler(file_handler)
+            
+            # 핸들러 저장 (나중에 제거하기 위해)
+            self._step_log_handlers[step_name] = file_handler
+            
+            self._safe_log_info(f"로그 파일 생성/추가: {log_file}")
+        except Exception as e:
+            self.logger.warning(f"로그 파일 핸들러 설정 실패: {e}")
+    
+    def _safe_log_info(self, message: str):
+        """안전한 로깅 (타임아웃 예외 처리)"""
+        try:
+            self.logger.info(message)
+        except (TimeoutError, OSError) as e:
+            # 로깅 실패해도 프로그램은 계속 실행
+            print(f"[로그 실패] {message} (에러: {e})")
     
     def _remove_step_logging(self, step_name: str):
         """단계별 로그 파일 핸들러 제거"""
         if step_name in self._step_log_handlers:
             handler = self._step_log_handlers[step_name]
-            self.logger.removeHandler(handler)
-            handler.close()
-            del self._step_log_handlers[step_name]
-            self.logger.info(f"로그 파일 핸들러 제거: step7_{step_name}.log")
+            try:
+                self.logger.removeHandler(handler)
+                handler.flush()  # 버퍼 비우기
+                handler.close()
+            except Exception as e:
+                self.logger.warning(f"로그 핸들러 제거 중 오류: {e}")
+            finally:
+                del self._step_log_handlers[step_name]
+                self._safe_log_info(f"로그 파일 핸들러 제거: step7_{step_name}.log")
     
     def _load_questions(self, input_data_path: str = None, 
                        questions: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
@@ -302,43 +318,98 @@ class Step7TransformMultipleChoice(PipelineBase):
     
     def _sample_questions_by_answer_count(self, questions: List[Dict[str, Any]], 
                                          seed: int) -> Dict[int, List[Dict[str, Any]]]:
-        """정답 개수별로 문제 샘플링 (모든 문제 포함)"""
+        """정답 개수별로 문제 샘플링 (옵션 개수에 따라 4지선다/5지선다로 분류 후 공평하게 배치)"""
         random.seed(seed)
         
-        # 정답 개수별로 문제 그룹화
-        questions_by_answer_count = {}
-        for q in questions:
-            answer = q.get('answer', [])
-            if isinstance(answer, str):
-                # answer가 문자열인 경우 리스트로 변환
-                answer = [answer] if answer else []
-            answer_count = len(answer) if isinstance(answer, list) else 0
-            
-            # 정답 개수가 0이거나 선지 개수보다 큰 경우는 제외
-            options_count = len(q.get('options', []))
-            if answer_count == 0 or answer_count > options_count:
-                self.logger.warning(f"문제 ID {q.get('file_id', 'unknown')}의 정답 개수({answer_count})가 유효하지 않습니다. 선지 개수: {options_count}")
-                continue
-            
-            if answer_count not in questions_by_answer_count:
-                questions_by_answer_count[answer_count] = []
-            questions_by_answer_count[answer_count].append(q)
+        # 옵션 개수에 따라 분류
+        options_4 = []
+        options_5 = []
+        option_others = []
         
-        # 정답 개수별로 그룹화된 문제를 랜덤 셔플
+        for q in questions:
+            options_count = len(q.get('options', []))
+            if options_count == 4:
+                options_4.append(q)
+            elif options_count == 5:
+                options_5.append(q)
+            else:
+                option_others.append(q)
+        
+        self.logger.info(f"4지선다 문제 수: {len(options_4)}")
+        self.logger.info(f"5지선다 문제 수: {len(options_5)}")
+        if option_others:
+            self.logger.warning(f"기타 옵션 개수 문제 수: {len(option_others)} (제외됨)")
+        
+        # 4지선다: 정답 개수 2, 3, 4로 3개 그룹으로 나눔
+        ans_num_4 = {
+            2: len(options_4) // 3,
+            3: len(options_4) // 3,
+            4: len(options_4) // 3
+        }
+        # 5지선다: 정답 개수 2, 3, 4, 5로 4개 그룹으로 나눔
+        ans_num_5 = {
+            2: len(options_5) // 4,
+            3: len(options_5) // 4,
+            4: len(options_5) // 4,
+            5: len(options_5) // 4
+        }
+        
+        # 나머지 문제를 공평하게 분배
+        if len(options_4) % 3 != 0:
+            remainder_4 = len(options_4) % 3
+            for i in range(remainder_4):
+                ans_num_4[3] += 1
+        
+        if len(options_5) % 4 != 0:
+            remainder_5 = len(options_5) % 4
+            for i in range(remainder_5):
+                ans_num_5[4] += 1
+        
+        self.logger.info(f"4지선다 배치 계획: {ans_num_4}")
+        self.logger.info(f"5지선다 배치 계획: {ans_num_5}")
+        
+        # 4지선다와 5지선다를 독립적으로 랜덤 샘플링
+        remaining_4 = options_4.copy()
+        remaining_5 = options_5.copy()
         sampling_result = {}
-        for answer_count, grouped_questions in questions_by_answer_count.items():
-            random.shuffle(grouped_questions)
-            sampling_result[answer_count] = grouped_questions
+        
+        for answer_count in range(2, 6):
+            sampling_result[answer_count] = []
+            
+            # 4지선다에서 샘플링 (answer_count가 2, 3, 4일 때만)
+            if answer_count in ans_num_4 and ans_num_4[answer_count] > 0:
+                random.shuffle(remaining_4)
+                sampled_4 = random.sample(remaining_4, ans_num_4[answer_count])
+                sampling_result[answer_count].extend(sampled_4)
+                remaining_4 = [x for x in remaining_4 if x not in sampled_4]
+            
+            # 5지선다에서 샘플링 (answer_count가 2, 3, 4, 5일 때)
+            if answer_count in ans_num_5 and ans_num_5[answer_count] > 0:
+                random.shuffle(remaining_5)
+                sampled_5 = random.sample(remaining_5, ans_num_5[answer_count])
+                sampling_result[answer_count].extend(sampled_5)
+                remaining_5 = [x for x in remaining_5 if x not in sampled_5]
         
         # 검증: 모든 문제가 포함되었는지 확인
         total_sampled = sum(len(questions_list) for questions_list in sampling_result.values())
-        if total_sampled != len(questions):
+        total_valid = len(options_4) + len(options_5)
+        
+        if total_sampled != total_valid:
             self.logger.warning(
-                f"샘플링 결과 검증 실패: 원본 문제 수({len(questions)}) != 샘플링된 문제 수({total_sampled}). "
-                f"누락된 문제: {len(questions) - total_sampled}개"
+                f"샘플링 결과 검증 실패: 유효한 문제 수({total_valid}) != 샘플링된 문제 수({total_sampled}). "
+                f"누락된 문제: {total_valid - total_sampled}개"
             )
+            self.logger.warning(f"4지선다 남은 문제 수: {len(remaining_4)}")
+            self.logger.warning(f"5지선다 남은 문제 수: {len(remaining_5)}")
         else:
-            self.logger.info(f"샘플링 검증 성공: 모든 {len(questions)}개 문제가 샘플링 결과에 포함되었습니다.")
+            self.logger.info(f"샘플링 검증 성공: 모든 {total_valid}개 문제가 샘플링 결과에 포함되었습니다.")
+        
+        # 각 answer_count별 문제 수 로깅
+        self.logger.info("각 answer_count별 문제 수:")
+        for answer_count in range(2, 6):
+            count = len(sampling_result.get(answer_count, []))
+            if count > 0:
+                self.logger.info(f"  answer_count={answer_count}: {count}개")
         
         return sampling_result
     
@@ -396,7 +467,9 @@ class Step7TransformMultipleChoice(PipelineBase):
         
         for idx, p in enumerate(questions, 1):
             question_id = p.get('file_id', '') + '_' + p.get('tag', '')
-            self.logger.info(f"    [{target_answer_count}개 그룹] {idx}/{len(questions)} - 문제 ID: {question_id}")
+            # 로깅 빈도 줄이기: 10개마다 또는 마지막 문제일 때만 로그
+            if idx % 10 == 0 or idx == len(questions):
+                self._safe_log_info(f"    [{target_answer_count}개 그룹] {idx}/{len(questions)} - 문제 ID: {question_id}")
             
             # 프롬프트 생성
             system_prompt, user_prompt = prompt_creator(p, target_answer_count)
@@ -689,7 +762,9 @@ class Step7TransformMultipleChoice(PipelineBase):
         
         for idx, p in enumerate(questions, 1):
             question_id = p.get('file_id', '') + '_' + p.get('tag', '')
-            self.logger.info(f"  {idx}/{len(questions)} - 문제 ID: {question_id}")
+            # 로깅 빈도 줄이기: 10개마다 또는 마지막 문제일 때만 로그
+            if idx % 10 == 0 or idx == len(questions):
+                self._safe_log_info(f"  {idx}/{len(questions)} - 문제 ID: {question_id}")
             
             user_prompt = f"""
 ========== 다음 ===========
