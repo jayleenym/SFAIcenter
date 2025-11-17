@@ -438,9 +438,13 @@ def parse_model_output(raw: str, expected_ids: List[str]) -> Dict[str, float]:
             logger.debug(f"줄 {i+1}: 빈 줄, 스킵")
             continue
         
-        # 이중 이스케이프 처리: \\t -> \t
+        # 탭 정규화: <TAB>, 실제 탭, \\t 모두 \t로 변환
+        # 1. <TAB> (literal string) -> \t
+        ln = ln.replace("<TAB>", "\t")
+        # 2. \\t (backslash-t) -> \t
         ln = ln.replace("\\t", "\t")
-        logger.debug(f"줄 {i+1} (이스케이프 처리 후): '{ln}'")
+        # 3. 실제 탭 문자는 이미 \t이므로 추가 처리 불필요
+        logger.debug(f"줄 {i+1} (탭 정규화 후): '{ln}'")
             
         if "\t" not in ln:
             logger.debug(f"줄 {i+1}: 탭이 없음, 스킵")
