@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 7단계: 객관식 문제 변형
-- AnswerTypeClassifier로 문제를 right/wrong/abcd로 분류
+- AnswerTypeClassifier로 문제를 right/wrong/abcd로 분류 (선택적)
+- 이미 분류된 파일을 입력으로 받을 수 있음
 - wrong -> right 변형 (옳지 않은 것 -> 옳은 것)
 - right -> wrong 변형 (옳은 것 -> 옳지 않은 것)
 - abcd 변형 (단일정답형 -> 복수정답형)
@@ -13,8 +14,10 @@ import sys
 import json
 import time
 import random
+import logging
 from typing import List, Dict, Any, Optional, Tuple, Callable
 from ..base import PipelineBase
+from ..config import SFAICENTER_PATH
 
 # AnswerTypeClassifier import
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -35,8 +38,13 @@ class Step7TransformMultipleChoice(PipelineBase):
         
         if AnswerTypeClassifier is None:
             self.logger.warning("AnswerTypeClassifier를 import할 수 없습니다.")
+        
+        # 단계별 로그 핸들러 저장용
+        self._step_log_handlers = {}
     
-    def execute(self, input_data_path: str = None, questions: List[Dict[str, Any]] = None,
+    def execute(self, classified_data_path: str = None,
+                input_data_path: str = None, questions: List[Dict[str, Any]] = None,
+                run_classify: bool = False,
                 classify_model: str = 'openai/gpt-5', classify_batch_size: int = 10,
                 transform_model: str = 'openai/o3', 
                 transform_wrong_to_right: bool = True,
@@ -47,10 +55,12 @@ class Step7TransformMultipleChoice(PipelineBase):
         7단계: 객관식 문제 변형
         
         Args:
-            input_data_path: 입력 데이터 파일 경로 (None이면 questions 사용)
-            questions: 입력 문제 리스트 (None이면 input_data_path에서 로드)
-            classify_model: 분류에 사용할 모델
-            classify_batch_size: 분류 배치 크기
+            classified_data_path: 이미 분류된 데이터 파일 경로 (run_classify가 False일 때 필수)
+            input_data_path: 입력 데이터 파일 경로 (run_classify가 True일 때 사용)
+            questions: 입력 문제 리스트 (run_classify가 True일 때 사용)
+            run_classify: 분류 단계 실행 여부 (기본값: False, True일 때만 분류 수행)
+            classify_model: 분류에 사용할 모델 (run_classify가 True일 때만 사용)
+            classify_batch_size: 분류 배치 크기 (run_classify가 True일 때만 사용)
             transform_model: 변형에 사용할 모델
             transform_wrong_to_right: wrong -> right 변형 수행 여부
             transform_right_to_wrong: right -> wrong 변형 수행 여부
@@ -62,28 +72,53 @@ class Step7TransformMultipleChoice(PipelineBase):
         """
         self.logger.info("=== 7단계: 객관식 문제 변형 ===")
         
-        if AnswerTypeClassifier is None:
-            self.logger.error("AnswerTypeClassifier를 import할 수 없습니다.")
-            return {'success': False, 'error': 'AnswerTypeClassifier import 실패'}
-        
         if self.llm_query is None:
             self.logger.error("LLMQuery가 초기화되지 않았습니다.")
             return {'success': False, 'error': 'LLMQuery 초기화 실패'}
         
-        # 데이터 로드
-        questions = self._load_questions(input_data_path, questions)
-        if not questions:
-            self.logger.error("로드된 문제가 없습니다.")
-            return {'success': False, 'error': '문제 데이터 없음'}
+        # 분류된 데이터 로드 또는 분류 수행
+        if run_classify:
+            # 분류 수행
+            if AnswerTypeClassifier is None:
+                self.logger.error("AnswerTypeClassifier를 import할 수 없습니다.")
+                return {'success': False, 'error': 'AnswerTypeClassifier import 실패'}
+            
+            # 원본 문제 데이터 로드
+            questions = self._load_questions(input_data_path, questions)
+            if not questions:
+                self.logger.error("로드된 문제가 없습니다.")
+                return {'success': False, 'error': '문제 데이터 없음'}
+            
+            self.logger.info(f"총 {len(questions)}개 문제 로드")
+            
+            # 분류 수행
+            classified_questions = self._classify_questions(questions, classify_model, classify_batch_size)
+            if not classified_questions:
+                return {'success': False, 'error': '분류 실패'}
+        else:
+            # 이미 분류된 파일 사용
+            if not classified_data_path:
+                # 기본 경로에서 answer_type_classified.json 읽기
+                default_classified_path = os.path.join(
+                    self.onedrive_path,
+                    'evaluation/eval_data/7_multiple_rw/answer_type_classified.json'
+                )
+                if os.path.exists(default_classified_path):
+                    classified_data_path = default_classified_path
+                    self.logger.info(f"기본 경로에서 분류된 데이터 파일 사용: {classified_data_path}")
+                else:
+                    self.logger.error(f"기본 경로에 분류된 데이터 파일이 없습니다: {default_classified_path}")
+                    return {'success': False, 'error': f'분류된 데이터 파일을 찾을 수 없습니다. 기본 경로: {default_classified_path}'}
+            else:
+                self.logger.info(f"지정된 분류된 데이터 파일 로드: {classified_data_path}")
+            
+            classified_questions = self._load_classified_questions(classified_data_path)
+            if not classified_questions:
+                return {'success': False, 'error': '분류된 데이터 로드 실패'}
         
-        self.logger.info(f"총 {len(questions)}개 문제 로드")
+        self.logger.info(f"총 {len(classified_questions)}개 분류된 문제 사용")
         
-        # 1단계: AnswerTypeClassifier로 분류
-        classified_questions = self._classify_questions(questions, classify_model, classify_batch_size)
-        if not classified_questions:
-            return {'success': False, 'error': '분류 실패'}
-        
-        # 2단계: 타입별 변형
+        # 타입별 변형
         results = {
             'classified': len(classified_questions),
             'transformations': {}
@@ -94,9 +129,13 @@ class Step7TransformMultipleChoice(PipelineBase):
             wrong_questions = [q for q in classified_questions if q.get('answer_type') == 'wrong']
             if wrong_questions:
                 self.logger.info("2단계-1: wrong -> right 변형 시작")
-                results['transformations']['wrong_to_right'] = self._transform_wrong_to_right(
-                    wrong_questions, transform_model, seed
-                )
+                self._setup_step_logging('wrong_to_right')
+                try:
+                    results['transformations']['wrong_to_right'] = self._transform_wrong_to_right(
+                        wrong_questions, transform_model, seed
+                    )
+                finally:
+                    self._remove_step_logging('wrong_to_right')
             else:
                 self.logger.info("wrong 문제가 없어 변형을 건너뜁니다.")
         
@@ -105,9 +144,13 @@ class Step7TransformMultipleChoice(PipelineBase):
             right_questions = [q for q in classified_questions if q.get('answer_type') == 'right']
             if right_questions:
                 self.logger.info("2단계-2: right -> wrong 변형 시작")
-                results['transformations']['right_to_wrong'] = self._transform_right_to_wrong(
-                    right_questions, transform_model, seed
-                )
+                self._setup_step_logging('right_to_wrong')
+                try:
+                    results['transformations']['right_to_wrong'] = self._transform_right_to_wrong(
+                        right_questions, transform_model, seed
+                    )
+                finally:
+                    self._remove_step_logging('right_to_wrong')
             else:
                 self.logger.info("right 문제가 없어 변형을 건너뜁니다.")
         
@@ -116,15 +159,48 @@ class Step7TransformMultipleChoice(PipelineBase):
             abcd_questions = [q for q in classified_questions if q.get('answer_type') == 'abcd']
             if abcd_questions:
                 self.logger.info("2단계-3: abcd 변형 시작")
-                results['transformations']['abcd'] = self._transform_abcd(
-                    abcd_questions, transform_model
-                )
+                self._setup_step_logging('abcd')
+                try:
+                    results['transformations']['abcd'] = self._transform_abcd(
+                        abcd_questions, transform_model
+                    )
+                finally:
+                    self._remove_step_logging('abcd')
             else:
                 self.logger.info("abcd 문제가 없어 변형을 건너뜁니다.")
         
         self.logger.info("=== 7단계 완료 ===")
         results['success'] = True
         return results
+    
+    def _setup_step_logging(self, step_name: str):
+        """단계별 로그 파일 핸들러 설정"""
+        log_dir = os.path.join(SFAICENTER_PATH, 'logs')
+        os.makedirs(log_dir, exist_ok=True)
+        
+        log_file = os.path.join(log_dir, f'step7_{step_name}.log')
+        
+        # 파일 핸들러 생성 (append 모드)
+        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        
+        # 로거에 핸들러 추가
+        self.logger.addHandler(file_handler)
+        
+        # 핸들러 저장 (나중에 제거하기 위해)
+        self._step_log_handlers[step_name] = file_handler
+        
+        self.logger.info(f"로그 파일 생성/추가: {log_file}")
+    
+    def _remove_step_logging(self, step_name: str):
+        """단계별 로그 파일 핸들러 제거"""
+        if step_name in self._step_log_handlers:
+            handler = self._step_log_handlers[step_name]
+            self.logger.removeHandler(handler)
+            handler.close()
+            del self._step_log_handlers[step_name]
+            self.logger.info(f"로그 파일 핸들러 제거: step7_{step_name}.log")
     
     def _load_questions(self, input_data_path: str = None, 
                        questions: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
@@ -159,6 +235,35 @@ class Step7TransformMultipleChoice(PipelineBase):
             
             with open(input_data_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
+    
+    def _load_classified_questions(self, classified_data_path: str) -> List[Dict[str, Any]]:
+        """분류된 문제 데이터 로드"""
+        # 절대 경로가 아니면 onedrive_path 기준으로 처리
+        if not os.path.isabs(classified_data_path):
+            classified_data_path = os.path.join(self.onedrive_path, classified_data_path)
+        
+        if not os.path.exists(classified_data_path):
+            self.logger.error(f"분류된 데이터 파일이 존재하지 않습니다: {classified_data_path}")
+            return []
+        
+        try:
+            with open(classified_data_path, 'r', encoding='utf-8') as f:
+                classified_questions = json.load(f)
+            
+            # 분류 결과 통계
+            answer_type_counts = {}
+            for item in classified_questions:
+                answer_type = item.get('answer_type', 'unknown')
+                answer_type_counts[answer_type] = answer_type_counts.get(answer_type, 0) + 1
+            
+            self.logger.info("분류된 데이터 통계:")
+            for answer_type, count in sorted(answer_type_counts.items()):
+                self.logger.info(f"  {answer_type}: {count}")
+            
+            return classified_questions
+        except Exception as e:
+            self.logger.error(f"분류된 데이터 파일 로드 실패 ({classified_data_path}): {e}")
+            return []
     
     def _classify_questions(self, questions: List[Dict[str, Any]], 
                           model: str, batch_size: int) -> List[Dict[str, Any]]:
@@ -197,54 +302,43 @@ class Step7TransformMultipleChoice(PipelineBase):
     
     def _sample_questions_by_answer_count(self, questions: List[Dict[str, Any]], 
                                          seed: int) -> Dict[int, List[Dict[str, Any]]]:
-        """정답 개수별로 문제 샘플링"""
+        """정답 개수별로 문제 샘플링 (모든 문제 포함)"""
         random.seed(seed)
         
-        # 4지선다/5지선다 분류
-        options_4 = [q for q in questions if len(q.get('options', [])) == 4]
-        options_5 = [q for q in questions if len(q.get('options', [])) == 5]
+        # 정답 개수별로 문제 그룹화
+        questions_by_answer_count = {}
+        for q in questions:
+            answer = q.get('answer', [])
+            if isinstance(answer, str):
+                # answer가 문자열인 경우 리스트로 변환
+                answer = [answer] if answer else []
+            answer_count = len(answer) if isinstance(answer, list) else 0
+            
+            # 정답 개수가 0이거나 선지 개수보다 큰 경우는 제외
+            options_count = len(q.get('options', []))
+            if answer_count == 0 or answer_count > options_count:
+                self.logger.warning(f"문제 ID {q.get('file_id', 'unknown')}의 정답 개수({answer_count})가 유효하지 않습니다. 선지 개수: {options_count}")
+                continue
+            
+            if answer_count not in questions_by_answer_count:
+                questions_by_answer_count[answer_count] = []
+            questions_by_answer_count[answer_count].append(q)
         
-        # 정답 개수별 샘플링 수 계산
-        ans_num_4 = {
-            2: len(options_4) // 3,
-            3: len(options_4) // 3,
-            4: len(options_4) // 3
-        }
-        ans_num_5 = {
-            2: len(options_5) // 4,
-            3: len(options_5) // 4,
-            4: len(options_5) // 4,
-            5: len(options_5) // 4
-        }
-        
-        # 나머지 처리
-        if len(options_4) % 3 != 0:
-            for i in range(len(options_4) % 3):
-                ans_num_4[3] += 1
-        if len(options_5) % 4 != 0:
-            ans_num_5[4] += 1
-        
-        # 샘플링
-        remaining_4 = options_4.copy()
-        remaining_5 = options_5.copy()
+        # 정답 개수별로 그룹화된 문제를 랜덤 셔플
         sampling_result = {}
+        for answer_count, grouped_questions in questions_by_answer_count.items():
+            random.shuffle(grouped_questions)
+            sampling_result[answer_count] = grouped_questions
         
-        for i in range(2, 6):
-            result = []
-            
-            if i in ans_num_4:
-                random.shuffle(remaining_4)
-                sampled_4 = random.sample(remaining_4, ans_num_4[i])
-                result.extend(sampled_4)
-                remaining_4 = [x for x in remaining_4 if x not in sampled_4]
-            
-            if i in ans_num_5:
-                random.shuffle(remaining_5)
-                sampled_5 = random.sample(remaining_5, ans_num_5[i])
-                result.extend(sampled_5)
-                remaining_5 = [x for x in remaining_5 if x not in sampled_5]
-            
-            sampling_result[i] = result
+        # 검증: 모든 문제가 포함되었는지 확인
+        total_sampled = sum(len(questions_list) for questions_list in sampling_result.values())
+        if total_sampled != len(questions):
+            self.logger.warning(
+                f"샘플링 결과 검증 실패: 원본 문제 수({len(questions)}) != 샘플링된 문제 수({total_sampled}). "
+                f"누락된 문제: {len(questions) - total_sampled}개"
+            )
+        else:
+            self.logger.info(f"샘플링 검증 성공: 모든 {len(questions)}개 문제가 샘플링 결과에 포함되었습니다.")
         
         return sampling_result
     
@@ -436,68 +530,54 @@ class Step7TransformMultipleChoice(PipelineBase):
         options_ct = len(question.get('options', []))
         question_id = question.get('file_id', '') + '_' + question.get('tag', '')
         
-        if options_ct - target_answer_count == 1:
-            system_prompt = f"""당신은 25년 경력의 문제 출제 전문가입니다.
+        system_prompt = f"""
+당신은 25년 경력의 문제 출제 전문가입니다.
+
+검증
+- 목표 정답 수(= '옳은 것' 개수, {target_answer_count})가 2 이상 {options_ct} 이하인지 확인합니다. 범위를 벗어나면 오류를 보고합니다.
+- 선택지 수({options_ct})와 순서는 반드시 유지합니다.
 
 변형 규칙
-1) 주어진 답(원래의 '옳지 않은' 선택지)은 그대로 유지합니다.
-3) 문제 지문을 '옳은 것을 모두 고르시오'로 명확히 바꿉니다. 그 외 문장과 LaTeX 수식이나 테이블 표현은 원형을 최대한 보존합니다.
-4) 새로운 정답은 변형 후 '옳은' 선택지 전부입니다(총 선택지 수가 {options_ct}개라면 {target_answer_count}개).
+- 문제 지문은 “옳은 것을 모두 고르시오”로 바꿉니다. 그 외 본문, 수식(LaTeX), 표, 선택지 문구(변형 대상 제외)는 원형을 최대한 보존합니다.
+- 목표 오답 수 = '옳지 않은 것' 개수 = {options_ct - target_answer_count}.
+  - 목표 오답 수 = 0: 원래 오답({question.get('answer', '')})을 최소 수정으로 ‘옳음’으로 뒤집습니다. 그 외 선택지는 변경하지 않습니다. 결과적으로 모든 선택지가 옳음입니다.
+  - 목표 오답 수 = 1: 원래 오답을 그대로 유지합니다. 그 외 선택지는 변경하지 않습니다. 결과적으로 원래 오답 1개만 남습니다(단일선택형 재검증).
+  - 목표 오답 수 ≥ 2: 원래 오답은 그대로 유지하고, 추가로 (목표 오답 수 - 1)개 만큼 원래 옳았던 선택지를 골라 최소 수정으로 ‘옳지 않음’으로 만듭니다.
+- 최소 수정 원칙
+  - 허용되는 변경 예: 수치/단위/부등호/최대↔최소/있다↔없다/반드시↔경우도 있다/조건의 범위·한정어 조정 등.
+  - 제공된 해설의 논리 범위를 벗어나는 임의 창작 금지. 외부 사실 의존 금지.
+  - 변형 대상이 아닌 선택지의 문구는 절대 수정하지 않습니다.
+- 선택지 선정 가이드
+  - 변형이 필요한 경우, 가장 적은 토큰 변경으로 참⇄거짓을 뒤집기 쉬운 선택지부터 우선 선택합니다.
+  - 의미 일관성 유지: 변형으로 인해 다른 선택지와 모순되거나 문제 전체의 전제가 깨지지 않도록 합니다.
 
-출력 형식
+정답과 설명
+- 정답(answer)은 변형 후 ‘옳은’ 선택지의 번호 목록입니다. 번호는 "①","②",... 형식의 문자열로, 오름차순으로 정렬합니다.
+- explanation에는 모든 선택지를 순회하며 다음 형식으로 간단·명확히 기술합니다.
+  - “① 옳다: 근거 …”
+  - “③ 옳지 않다(원래 오답): 근거 …”
+  - “⑤ 옳지 않다(변형): 변경 ‘높다→낮다’, 근거 …”
+- 변형된 선택지는 반드시 어떤 단어/수치/기호를 어떻게 바꿨는지 구체적으로 한 토큰 수준으로 표기합니다.
+
+출력 형식(JSON)
 {{
   "question_id": "문제번호",
   "question": "변형된 문제(옳은 것을 모두 고르시오)",
-  "options": ["① 선택지1", "② 선택지2", "③ 선택지3", "④ 선택지4", "⑤ 선택지5"],
+  "options": ["① 선택지1", "② 선택지2", ...],  
   "answer": ["정답번호1", "정답번호2", ...], 
-  "explanation": "① 옳다: 근거 ... / ③ 옳지 않다(원래 오답): 근거 ... / ⑤ 옳지 않다(변형): 변경 단어 '높다→낮다', 근거 ..."
-}}"""
-        elif options_ct - target_answer_count == 0:
-            system_prompt = f"""당신은 25년 경력의 문제 출제 전문가입니다.
-
-변형 규칙
-1) 주어진 답(원래의 '옳지 않은' 선택지)을 단어 1~2개 수준의 최소 변경으로 '옳은' 선택지로 만듭니다. (ex. 높다 -> 낮다, 한다 -> 하지 않는다)
-2) 문제 지문을 '옳은 것을 모두 고르시오'로 명확히 바꿉니다. 그 외 문장과 LaTeX 수식이나 테이블 표현 원형을 최대한 보존합니다.
-3) 새로운 정답은 변형 후 '옳은' 선택지 전부입니다(총 선택지 수가 {options_ct}개라면 {target_answer_count}개).
-4) 해설에는 각 선택지의 옳고 그름과 간단한 근거를 명시하세요. 특히 새로 만든 정답 1개의 변경 포인트를 밝혀주세요.
-
-출력 형식
-{{
-  "question_id": "문제번호",
-  "question": "변형된 문제(옳은 것을 모두 고르시오)",
-  "options": ["① 선택지1", "② 선택지2", "③ 선택지3", "④ 선택지4", "⑤ 선택지5"],
-  "answer": ["정답번호1", "정답번호2", ...], 
-  "explanation": "① 옳다: 근거 ... / ③ 옳지 않다(원래 오답): 근거 ... / ⑤ 옳지 않다(변형): 변경 단어 '높다→낮다', 근거 ..."
+  "explanation": "① 옳다: … / ③ 옳지 않다(원래 오답): … / ⑤ 옳지 않다(변형): 변경 ‘…→…’, 근거 …"
 }}
 
 비고
-- 원문 선택지 수가 5개가 아닐 경우에도 동일 원칙을 적용합니다(총 {options_ct-target_answer_count-1}개 추가 오답, 나머지 전부 정답).
-- 사실과 상충하는 임의 창작을 피하고, 제공된 해설의 논리 범위 내에서만 최소 변경을 수행하세요."""
-        else:
-            system_prompt = f"""당신은 25년 경력의 문제 출제 전문가입니다.
-
-변형 규칙
-1) 주어진 답(원래의 '옳지 않은' 선택지)은 그대로 유지합니다.
-2) 나머지 선택지 중에서 정확히 {options_ct-target_answer_count-1}개를 골라, 단어 1~2개 수준의 최소 변경으로 '옳지 않은' 선택지로 만듭니다. (ex. 높다 -> 낮다, 한다 -> 하지 않는다)
-3) 문제 지문을 '옳은 것을 모두 고르시오'로 명확히 바꿉니다. 그 외 문장과 LaTeX 수식이나 테이블 표현 원형을 최대한 보존합니다.
-4) 새로운 정답은 변형 후 '옳은' 선택지 전부입니다(총 선택지 수가 {options_ct}개라면 {target_answer_count}개).
-5) 해설에는 각 선택지의 옳고 그름과 간단한 근거를 명시하세요. 특히 새로 만든 오답 1개의 변경 포인트를 밝혀주세요.
-
-출력 형식
-{{
-  "question_id": "문제번호",
-  "question": "변형된 문제(옳은 것을 모두 고르시오)",
-  "options": ["① 선택지1", "② 선택지2", "③ 선택지3", "④ 선택지4", "⑤ 선택지5"],
-  "answer": ["정답번호1", "정답번호2", ...], 
-  "explanation": "① 옳다: 근거 ... / ③ 옳지 않다(원래 오답): 근거 ... / ⑤ 옳지 않다(변형): 변경 단어 '높다→낮다', 근거 ..."
-}}
-
-비고
-- 원문 선택지 수가 5개가 아닐 경우에도 동일 원칙을 적용합니다(총 {options_ct-target_answer_count-1}개 추가 오답, 나머지 전부 정답).
-- 사실과 상충하는 임의 창작을 피하고, 제공된 해설의 논리 범위 내에서만 최소 변경을 수행하세요."""
+- 목표 오답 수 계산식으로 일관되게 제어합니다.
+  - 추가로 만들어야 할 오답 수 = {max(0, options_ct - target_answer_count - 1)}.
+  - 단, {options_ct - target_answer_count} = 0이면 원래 오답을 ‘옳음’으로 뒤집고 추가 오답은 0입니다.
+- 선택지 레이블(①, ②, …)과 원문 순서를 유지합니다.
+- 최종적으로 옳음 개수 = {target_answer_count}, 오답(옳지 않음) 개수 = {options_ct - target_answer_count}임을 자기점검합니다.
+"""
         
         user_prompt = f"""
-========== 다음 ===========
+========== 문제 ===========
 문제번호: {question_id}
 문제: {question.get('question', '')}
 선택지: {question.get('options', [])}
@@ -512,69 +592,54 @@ class Step7TransformMultipleChoice(PipelineBase):
         """right -> wrong 변형 프롬프트 생성"""
         options_ct = len(question.get('options', []))
         question_id = question.get('file_id', '') + '_' + question.get('tag', '')
+        system_prompt = f"""당신은 25년 경력의 문제 출제 전문가입니다.
+
+검증
+- 목표 정답 수(= '옳지 않은 것' 개수, {target_answer_count})가 2 이상 {options_ct} 이하인지 확인합니다. 범위를 벗어나면 오류를 보고합니다.
+- 선택지 수({options_ct})와 순서는 반드시 유지합니다.
+
+변형 규칙
+- 문제 지문은 “옳지 않은 것을 모두 고르시오”로 바꿉니다. 그 외 본문, 수식(LaTeX), 표, 선택지 문구(변형 대상 제외)는 원형을 최대한 보존합니다.
+- 목표 오답 수 = '옳은 것' 개수 = {options_ct - target_answer_count}.
+  - 목표 오답 수 = 0: 원래 오답({question.get('answer', '')})을 최소 수정으로 ‘옳지 않음’으로 뒤집습니다. 그 외 선택지는 변경하지 않습니다. 결과적으로 모든 선택지가 옳지 않음입니다.
+  - 목표 오답 수 = 1: 원래 오답을 그대로 유지합니다. 그 외 선택지는 변경하지 않습니다. 결과적으로 원래 오답인 '옳은 것' 1개만 남습니다(단일선택형 재검증).
+  - 목표 오답 수 ≥ 2: 원래 오답을 그대로 유지하고, 추가로 (목표 오답 수 - 1)개 만큼 원래 옳지 않았던 선택지를 골라 최소 수정으로 ‘옳음’으로 만듭니다.
+- 최소 수정 원칙
+  - 허용되는 변경 예: 수치/단위/부등호/최대↔최소/있다↔없다/반드시↔경우도 있다/조건의 범위·한정어 조정 등.
+  - 제공된 해설의 논리 범위를 벗어나는 임의 창작 금지. 외부 사실 의존 금지.
+  - 변형 대상이 아닌 선택지의 문구는 절대 수정하지 않습니다.
+- 선택지 선정 가이드
+  - 변형이 필요한 경우, 가장 적은 토큰 변경으로 참⇄거짓을 뒤집기 쉬운 선택지부터 우선 선택합니다.
+  - 의미 일관성 유지: 변형으로 인해 다른 선택지와 모순되거나 문제 전체의 전제가 깨지지 않도록 합니다.
+
+정답과 설명
+- 정답(answer)은 변형 후 ‘옳지 않은’ 선택지의 번호 목록입니다. 번호는 "①","②",... 형식의 문자열로, 오름차순으로 정렬합니다.
+- explanation에는 모든 선택지를 순회하며 다음 형식으로 간단·명확히 기술합니다.
+  - “① 옳다(원래 오답): 근거 …”
+  - “③ 옳지 않다: 근거 …”
+  - “⑤ 옳다(변형): 변경 ‘높다→낮다’, 근거 …”
+- 변형된 선택지는 반드시 어떤 단어/수치/기호를 어떻게 바꿨는지 구체적으로 한 토큰 수준으로 표기합니다.
+
+출력 형식(JSON)
+{{
+  "question_id": "문제번호",
+  "question": "변형된 문제(옳지 않은 것을 모두 고르시오)",
+  "options": ["① 선택지1", "② 선택지2", ...],  
+  "answer": ["정답번호1", "정답번호2", ...], 
+  "explanation": "① 옳다(원래 오답): … / ③ 옳지 않다: … / ⑤ 옳다(변형): 변경 ‘…→…’, 근거 …"
+}}
+
+비고
+- 목표 오답 수 계산식으로 일관되게 제어합니다.
+  - 추가로 만들어야 할 오답 수 = {max(0, options_ct - target_answer_count - 1)}.
+  - 단, {options_ct - target_answer_count} = 0이면 원래 오답을 ‘옳지 않음’으로 뒤집고 추가 오답은 0입니다.
+- 선택지 레이블(①, ②, …)과 원문 순서를 유지합니다.
+- 최종적으로 옳지 않음 개수 = {target_answer_count}, 오답(옳음) 개수 = {options_ct - target_answer_count}임을 자기점검합니다.
+"""
         
-        if options_ct - target_answer_count == 1:
-            system_prompt = f"""당신은 25년 경력의 문제 출제 전문가입니다.
-
-변형 규칙
-1) 주어진 답(원래의 '옳은' 선택지)은 그대로 유지합니다.
-3) 문제 지문을 '옳지 않은 것을 모두 고르시오'로 명확히 바꿉니다. 그 외 문장과 LaTeX 수식이나 테이블 표현은 원형을 최대한 보존합니다.
-4) 새로운 정답은 변형 후 '옳지 않은' 선택지 전부입니다(총 선택지 수가 {options_ct}개라면 {target_answer_count}개).
-
-출력 형식
-{{
-  "question_id": "문제번호",
-  "question": "변형된 문제(옳지 않은 것을 모두 고르시오)",
-  "options": ["① 선택지1", "② 선택지2", "③ 선택지3", "④ 선택지4", "⑤ 선택지5"],
-  "answer": ["정답번호1", "정답번호2", ...], 
-  "explanation": "① 옳지 않다: 근거 ... / ③ 옳다(원래 답): 근거 ... / ⑤ 옳지 않다: 근거 ..."
-}}"""
-        elif options_ct - target_answer_count == 0:
-            system_prompt = f"""당신은 25년 경력의 문제 출제 전문가입니다.
-
-변형 규칙
-1) 주어진 답(원래의 '옳은' 선택지)을 단어 1~2개 수준의 최소 변경으로 '옳지 않은' 선택지로 만듭니다. (ex. 높다 -> 낮다, 한다 -> 하지 않는다)
-2) 문제 지문을 '옳지 않은 것을 모두 고르시오'로 명확히 바꿉니다. 그 외 문장과 LaTeX 수식이나 테이블 표현 원형을 최대한 보존합니다.
-3) 새로운 정답은 변형 후 '옳지 않은' 선택지 전부입니다(총 선택지 수가 {options_ct}개라면 {target_answer_count}개).
-4) 해설에는 각 선택지의 옳고 그름과 간단한 근거를 명시하세요. 특히 새로 만든 정답 1개의 변경 포인트를 밝혀주세요.
-
-출력 형식
-{{
-  "question_id": "문제번호",
-  "question": "변형된 문제(옳지 않은 것을 모두 고르시오)",
-  "options": ["① 선택지1", "② 선택지2", "③ 선택지3", "④ 선택지4", "⑤ 선택지5"],
-  "answer": ["정답번호1", "정답번호2", ...], 
-  "explanation": "① 옳지 않다: 근거 ... / ③ 옳지 않다: 근거 ... / ⑤ 옳지 않다(원래 답): 변경 단어 '높다→낮다', 근거 ..."
-}}
-
-비고
-- 원문 선택지 수가 5개가 아닐 경우에도 동일 원칙을 적용합니다(총 {options_ct-target_answer_count-1}개 추가 오답, 나머지 전부 정답).
-- 사실과 상충하는 임의 창작을 피하고, 제공된 해설의 논리 범위 내에서만 최소 변경을 수행하세요."""
-        else:
-            system_prompt = f"""당신은 25년 경력의 문제 출제 전문가입니다.
-
-변형 규칙
-1) 주어진 답(원래의 '옳은' 선택지)은 그대로 유지합니다.
-2) 나머지 선택지 중에서 정확히 {options_ct-target_answer_count-1}개를 골라, 단어 1~2개 수준의 최소 변경으로 '옳지 않은' 선택지로 만듭니다. (ex. 높다 -> 낮다, 한다 -> 하지 않는다)
-3) 문제 지문을 '옳지 않은 것을 모두 고르시오'로 명확히 바꿉니다. 그 외 문장과 LaTeX 수식이나 테이블 표현 원형을 최대한 보존합니다.
-4) 새로운 정답은 변형 후 '옳지 않은' 선택지 전부입니다(총 선택지 수가 {options_ct}개라면 {target_answer_count}개).
-5) 해설에는 각 선택지의 옳고 그름과 간단한 근거를 명시하세요. 특히 새로 만든 오답 1개의 변경 포인트를 밝혀주세요.
-
-출력 형식
-{{
-  "question_id": "문제번호",
-  "question": "변형된 문제(옳지 않은 것을 모두 고르시오)",
-  "options": ["① 선택지1", "② 선택지2", "③ 선택지3", "④ 선택지4", "⑤ 선택지5"],
-  "answer": ["정답번호1", "정답번호2", ...], 
-  "explanation": "① 옳지 않다: 근거 ... / ③ 옳다(원래 답): 근거 ... / ⑤ 옳지 않다(변형): 변경 단어 '높다→낮다', 근거 ..."
-}}
-
-비고
-- 원문 선택지 수가 5개가 아닐 경우에도 동일 원칙을 적용합니다(총 {options_ct-target_answer_count-1}개 추가 오답, 나머지 전부 정답).
-- 사실과 상충하는 임의 창작을 피하고, 제공된 해설의 논리 범위 내에서만 최소 변경을 수행하세요."""
         
         user_prompt = f"""
-========== 다음 ===========
+========== 문제 ===========
 문제번호: {question_id}
 문제: {question.get('question', '')}
 선택지: {question.get('options', [])}

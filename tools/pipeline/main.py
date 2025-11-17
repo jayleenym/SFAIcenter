@@ -49,6 +49,8 @@ class Pipeline(PipelineBase):
                          eval_use_server_mode: bool = False,
                          eval_exam_dir: str = None, eval_sets: List[int] = None,
                          transform_input_data_path: str = None, transform_questions: List[Dict[str, Any]] = None,
+                         transform_classified_data_path: str = None,
+                         transform_run_classify: bool = False,
                          transform_classify_model: str = 'openai/gpt-5', transform_classify_batch_size: int = 10,
                          transform_model: str = 'openai/o3', transform_wrong_to_right: bool = True,
                          transform_right_to_wrong: bool = True, transform_abcd: bool = True,
@@ -69,10 +71,12 @@ class Pipeline(PipelineBase):
             eval_use_server_mode: vLLM 서버 모드 사용 (6단계에서 사용)
             eval_exam_dir: 시험지 디렉토리 경로 (6단계에서 사용, None이면 기본 경로 사용)
             eval_sets: 평가할 세트 번호 리스트 (6단계에서 사용, None이면 모든 세트 평가)
-            transform_input_data_path: 변형 입력 데이터 파일 경로 (7단계에서 사용)
-            transform_questions: 변형 입력 문제 리스트 (7단계에서 사용)
-            transform_classify_model: 분류에 사용할 모델 (7단계에서 사용)
-            transform_classify_batch_size: 분류 배치 크기 (7단계에서 사용)
+            transform_input_data_path: 변형 입력 데이터 파일 경로 (7단계에서 사용, run_classify가 True일 때)
+            transform_questions: 변형 입력 문제 리스트 (7단계에서 사용, run_classify가 True일 때)
+            transform_classified_data_path: 이미 분류된 데이터 파일 경로 (7단계에서 사용, run_classify가 False일 때 필수)
+            transform_run_classify: 분류 단계 실행 여부 (7단계에서 사용, 기본값: False)
+            transform_classify_model: 분류에 사용할 모델 (7단계에서 사용, run_classify가 True일 때만)
+            transform_classify_batch_size: 분류 배치 크기 (7단계에서 사용, run_classify가 True일 때만)
             transform_model: 변형에 사용할 모델 (7단계에서 사용)
             transform_wrong_to_right: wrong -> right 변형 수행 여부 (7단계에서 사용)
             transform_right_to_wrong: right -> wrong 변형 수행 여부 (7단계에서 사용)
@@ -85,36 +89,29 @@ class Pipeline(PipelineBase):
         if steps is None:
             steps = ['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice']
         
-        self.logger.info(f"=== 전체 파이프라인 시작 ===")
-        self.logger.info(f"실행 단계: {', '.join(steps)}")
-        
         results = {}
         
         try:
             if 'preprocess' in steps:
                 if cycle is None:
-                    self.logger.error("preprocess 단계는 cycle이 필요합니다.")
                     results['preprocess'] = {'success': False, 'error': 'cycle 필요'}
                 else:
                     results['preprocess'] = self.step0.execute(cycle)
             
             if 'extract_basic' in steps:
                 if cycle is None:
-                    self.logger.error("extract_basic 단계는 cycle이 필요합니다.")
                     results['extract_basic'] = {'success': False, 'error': 'cycle 필요'}
                 else:
                     results['extract_basic'] = self.step1.execute(cycle)
             
             if 'extract_full' in steps:
                 if cycle is None:
-                    self.logger.error("extract_full 단계는 cycle이 필요합니다.")
                     results['extract_full'] = {'success': False, 'error': 'cycle 필요'}
                 else:
                     results['extract_full'] = self.step2.execute(cycle)
             
             if 'classify' in steps:
                 if cycle is None:
-                    self.logger.error("classify 단계는 cycle이 필요합니다.")
                     results['classify'] = {'success': False, 'error': 'cycle 필요'}
                 else:
                     results['classify'] = self.step3.execute(cycle)
@@ -137,8 +134,10 @@ class Pipeline(PipelineBase):
             
             if 'transform_multiple_choice' in steps:
                 results['transform_multiple_choice'] = self.step7.execute(
+                    classified_data_path=transform_classified_data_path,
                     input_data_path=transform_input_data_path,
                     questions=transform_questions,
+                    run_classify=transform_run_classify,
                     classify_model=transform_classify_model,
                     classify_batch_size=transform_classify_batch_size,
                     transform_model=transform_model,
@@ -148,11 +147,9 @@ class Pipeline(PipelineBase):
                     seed=transform_seed
                 )
             
-            self.logger.info("=== 전체 파이프라인 완료 ===")
             results['success'] = True
             
         except Exception as e:
-            self.logger.error(f"파이프라인 실행 오류: {e}")
             results['success'] = False
             results['error'] = str(e)
         

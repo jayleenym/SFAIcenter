@@ -9,8 +9,9 @@
 2. 전체 문제 추출 (Lv3, Lv3_4, Lv5) - 태그들을 재귀로 돌면서 전체 대치 시키고 ~_extracted_qna.json으로 저장
 3. qna_type별 분류 - multiple/short/essay/etc로 분류 및 필터링
 4. domain/subdomain/classification_reason/is_calculation 빈칸 채우기 - openrouter 사용, 실패한 것들은 따로 저장해서 재처리
-5. 시험문제 만들기 - 5세트의 시험문제를 exam_statistics.json 참고하여 만들기
+5. 시험문제 만들기 - 5세트의 시험문제를 exam_config.json 참고하여 만들기
 6. 시험지 평가 - 만들어진 시험지(1st/2nd/3rd/4th/5th) 모델별 답변 평가 (10문제씩 배치화하여 호출)
+7. 객관식 문제 변형 - AnswerTypeClassifier로 문제 분류 (right/wrong/abcd) 및 변형
 """
 
 import os
@@ -31,7 +32,7 @@ def main():
     parser.add_argument('--cycle', type=int, default=None, choices=[1, 2, 3],
                        help='사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 필요')
     parser.add_argument('--steps', nargs='+',
-                       choices=['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams'],
+                       choices=['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice'],
                        default=None,
                        help='실행할 단계 (기본값: 전체 실행)')
     parser.add_argument('--base_path', type=str, default=None, 
@@ -63,6 +64,25 @@ def main():
     parser.add_argument('--eval_sets', type=int, nargs='+', default=None,
                        choices=[1, 2, 3, 4, 5],
                        help='평가할 세트 번호 (6단계에서 사용, 예: --eval_sets 1 또는 --eval_sets 1 2 3, None이면 모든 세트 평가)')
+    parser.add_argument('--transform_classified_data_path', type=str, default=None,
+                       help='이미 분류된 데이터 파일 경로 (7단계에서 사용, --transform_classify가 없을 때 필수)')
+    parser.add_argument('--transform_classify', action='store_true', default=False,
+                       help='분류 단계 실행 (7단계에서 사용, 기본값: False)')
+    parser.add_argument('--transform_input_data_path', type=str, default=None,
+                       help='변형 입력 데이터 파일 경로 (7단계에서 사용, --transform_classify가 있을 때)')
+    parser.add_argument('--transform_classify_model', type=str, default='openai/gpt-5',
+                       help='분류에 사용할 모델 (7단계에서 사용, --transform_classify가 있을 때만, 기본값: openai/gpt-5)')
+    parser.add_argument('--transform_classify_batch_size', type=int, default=10,
+                       help='분류 배치 크기 (7단계에서 사용, --transform_classify가 있을 때만, 기본값: 10)')
+    parser.add_argument('--transform_model', type=str, default='openai/o3',
+                       help='변형에 사용할 모델 (7단계에서 사용, 기본값: openai/o3)')
+    # 7단계 변형 옵션 (기본값: False, --transform_* 옵션으로 활성화)
+    parser.add_argument('--transform_wrong_to_right', action='store_true', default=False,
+                       help='wrong -> right 변형 수행 (7단계에서 사용)')
+    parser.add_argument('--transform_right_to_wrong', action='store_true', default=False,
+                       help='right -> wrong 변형 수행 (7단계에서 사용)')
+    parser.add_argument('--transform_abcd', action='store_true', default=False,
+                       help='abcd 변형 수행 (7단계에서 사용)')
     parser.add_argument('--debug', action='store_true',
                        help='디버그 로그 활성화')
     
@@ -95,24 +115,20 @@ def main():
         eval_use_ox_support=args.eval_use_ox_support,
         eval_use_server_mode=args.eval_use_server_mode,
         eval_exam_dir=args.eval_exam_dir,
-        eval_sets=args.eval_sets
+        eval_sets=args.eval_sets,
+        transform_classified_data_path=args.transform_classified_data_path,
+        transform_input_data_path=args.transform_input_data_path,
+        transform_run_classify=args.transform_classify,
+        transform_classify_model=args.transform_classify_model,
+        transform_classify_batch_size=args.transform_classify_batch_size,
+        transform_model=args.transform_model,
+        transform_wrong_to_right=args.transform_wrong_to_right,
+        transform_right_to_wrong=args.transform_right_to_wrong,
+        transform_abcd=args.transform_abcd
     )
     
-    # 결과 출력
-    print("\n=== 실행 결과 ===")
-    print(f"성공: {results.get('success', False)}")
-    
-    for step_name, step_result in results.items():
-        if step_name != 'success' and step_name != 'error':
-            print(f"\n{step_name}: {step_result.get('success', False)}")
-            if step_result.get('success'):
-                if 'processed_files' in step_result:
-                    print(f"  - 처리된 파일: {step_result['processed_files']}개")
-                if 'total_extracted' in step_result:
-                    print(f"  - 추출된 Q&A: {step_result['total_extracted']}개")
-    
+    # 결과 확인 (에러 시에만 종료)
     if not results.get('success'):
-        print(f"\n오류: {results.get('error', '알 수 없는 오류')}")
         sys.exit(1)
 
 

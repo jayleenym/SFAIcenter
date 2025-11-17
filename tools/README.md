@@ -29,11 +29,14 @@ tools/
 │       ├── step3_classify.py           # 3단계: Q&A 타입별 분류
 │       ├── step4_domain_subdomain.py   # 4단계: Domain/Subdomain 분류
 │       ├── step5_create_exam.py        # 5단계: 시험문제 만들기
-│       └── step6_evaluate.py           # 6단계: 시험지 평가
+│       ├── step6_evaluate.py           # 6단계: 시험지 평가
+│       └── step7_transform_multiple_choice.py  # 7단계: 객관식 문제 변형
 │
 ├── core/                    # 핵심 유틸리티 및 공통 기능
 │   ├── utils.py            # FileManager, TextProcessor, JSONHandler 클래스
-│   └── llm_query.py        # LLMQuery 클래스 (OpenRouter, vLLM)
+│   ├── llm_query.py        # LLMQuery 클래스 (OpenRouter, vLLM)
+│   ├── exam_config.py      # ExamConfig 클래스 (시험 설정 파일 로더)
+│   └── README_exam_config.md  # exam_config.json 사용 가이드
 │
 ├── data_processing/         # 데이터 처리 및 정제
 │   ├── json_cleaner.py     # JSONCleaner 클래스 (빈 페이지 제거)
@@ -46,7 +49,9 @@ tools/
 │   │   ├── qna_extract.py      # Q&A 추출 메인 함수 (레거시)
 │   │   └── process_qna.py      # Q&A 도메인 분류 (레거시)
 │   │
-│   ├── processing/         # Q&A 처리 및 변환 (레거시)
+│   ├── processing/         # Q&A 처리 및 변환
+│   │   ├── answer_type_classifier.py   # AnswerTypeClassifier (right/wrong/abcd 분류)
+│   │   ├── qna_subdomain_classifier.py # QnASubdomainClassifier (도메인/서브도메인 분류)
 │   │   ├── process_additional_tags.py  # 추가 태그 처리 (레거시)
 │   │   ├── reclassify_qna_types.py     # Q&A 타입 재분류 (레거시)
 │   │   └── verify_reclassification.py  # 재분류 검증 (레거시)
@@ -91,8 +96,9 @@ tools/
 - `Step2ExtractFull`: 전체 문제 추출 (Lv3, Lv3_4, Lv5) - 태그 대치 포함
 - `Step3Classify`: Q&A 타입별 분류 (multiple-choice/short-answer/essay/etc)
 - `Step4DomainSubdomain`: Domain/Subdomain 분류 (실패 항목 재처리 포함)
-- `Step5CreateExam`: 시험문제 만들기 (exam_statistics.json 참고)
+- `Step5CreateExam`: 시험문제 만들기 (exam_config.json 참고)
 - `Step6Evaluate`: 시험지 평가 (모델별 답변 평가, 배치 처리, 시험지 경로 설정 가능)
+- `Step7TransformMultipleChoice`: 객관식 문제 변형 (right/wrong/abcd 분류 및 변형)
 
 ### 🔧 core/ - 핵심 유틸리티
 
@@ -103,6 +109,13 @@ tools/
 
 **llm_query.py** - LLM 쿼리 클래스
 - `LLMQuery`: OpenRouter API를 통한 LLM 쿼리, vLLM을 통한 로컬 모델 쿼리, 설정 파일 관리
+
+**exam_config.py** - 시험 설정 파일 로더
+- `ExamConfig`: exam_config.json 파일을 로드하고 기존 코드와의 호환성을 제공
+- `get_exam_statistics()`: exam_statistics.json 형태로 가져오기
+- `get_exam_hierarchy()`: exam_hierarchy.json 형태로 가져오기
+- `get_domain_subdomain()`: domain_subdomain.json 형태로 가져오기
+- 자세한 사용법은 `README_exam_config.md` 참고
 
 ### 📊 data_processing/ - 데이터 처리
 
@@ -128,7 +141,9 @@ tools/
     - `analyze_extracted_qna()` → `QnATypeClassifier.classify_qna_type()`
     - `replace_tags_in_text()`, `replace_tags_in_qna_data()` → `TagProcessor.replace_tags_in_text()`, `TagProcessor.replace_tags_in_qna_data()`
 
-#### processing/ - 처리 (레거시)
+#### processing/ - 처리
+- **answer_type_classifier.py**: AnswerTypeClassifier 클래스 - 객관식 문제를 right/wrong/abcd로 분류
+- **qna_subdomain_classifier.py**: QnASubdomainClassifier 클래스 - Q&A 도메인/서브도메인 분류
 - **process_additional_tags.py**: 추가 태그 처리 (레거시)
 - **reclassify_qna_types.py**: Q&A 타입 재분류 (레거시)
 - **verify_reclassification.py**: 재분류 결과 검증 (레거시)
@@ -172,7 +187,8 @@ main_pipeline.py → 전체 프로세스 실행
 ├── Step 3: Q&A 타입별 분류
 ├── Step 4: Domain/Subdomain 분류 (실패 항목 재처리)
 ├── Step 5: 시험문제 만들기
-└── Step 6: 시험지 평가
+├── Step 6: 시험지 평가
+└── Step 7: 객관식 문제 변형 (right/wrong/abcd 분류 및 변형)
 ```
 
 ### 개별 단계 실행
@@ -202,6 +218,15 @@ pipeline/steps/step4_domain_subdomain.py → Domain/Subdomain 분류
 ```
 pipeline/steps/step5_create_exam.py → 시험문제 만들기
 pipeline/steps/step6_evaluate.py → 시험지 평가
+```
+
+#### 5. 객관식 문제 변형
+```
+pipeline/steps/step7_transform_multiple_choice.py → 객관식 문제 변형
+  ├── AnswerTypeClassifier로 문제 분류 (right/wrong/abcd)
+  ├── wrong -> right 변형
+  ├── right -> wrong 변형
+  └── abcd 변형 (단일정답형 -> 복수정답형)
 ```
 
 ## 🎯 사용 방법
@@ -248,6 +273,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 |------|------|--------|
 | `--cycle` | 사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 필요 | None |
 | `--steps` | 실행할 단계 목록 (공백으로 구분) | None (전체 실행) |
+| | | 가능한 값: `preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice` |
 | `--base_path` | 기본 데이터 경로 | None (ONEDRIVE_PATH 사용) |
 | `--config_path` | LLM 설정 파일 경로 | None (PROJECT_ROOT_PATH/llm_config.ini 사용) |
 | `--onedrive_path` | OneDrive 경로 | None (자동 감지) |
@@ -277,6 +303,23 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 | `--eval_exam_dir` | 시험지 디렉토리 경로 (단일 JSON 파일 또는 디렉토리) | None (기본 경로 사용) |
 | `--eval_sets` | 평가할 세트 번호 (1, 2, 3, 4, 5 중 선택, 공백으로 구분) | None (모든 세트 평가) |
 
+**7단계 (객관식 문제 변형)**
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--transform_classify` | 분류 단계 실행 여부 | False |
+| `--transform_classified_data_path` | 이미 분류된 데이터 파일 경로 (--transform_classify가 False일 때, None이면 기본 경로 사용) | None |
+| `--transform_input_data_path` | 입력 데이터 파일 경로 (--transform_classify가 True일 때만 사용) | None |
+| `--transform_classify_model` | 분류에 사용할 모델 (--transform_classify가 True일 때만 사용) | 'openai/gpt-5' |
+| `--transform_classify_batch_size` | 분류 배치 크기 (--transform_classify가 True일 때만 사용) | 10 |
+| `--transform_model` | 변형에 사용할 모델 | 'openai/o3' |
+| `--transform_wrong_to_right` | wrong -> right 변형 수행 여부 | False |
+| `--transform_right_to_wrong` | right -> wrong 변형 수행 여부 | False |
+| `--transform_abcd` | abcd 변형 수행 여부 | False |
+
+**참고:**
+- `--transform_classify`가 False이고 `--transform_classified_data_path`가 None이면 기본 경로(`evaluation/eval_data/7_multiple_rw/answer_type_classified.json`)를 자동으로 사용합니다.
+- 변형 옵션(`--transform_wrong_to_right`, `--transform_right_to_wrong`, `--transform_abcd`)은 기본값이 False이므로, 원하는 변형을 명시적으로 활성화해야 합니다.
+
 #### 실행 가능한 단계 목록
 
 `--steps` 옵션에 사용할 수 있는 단계 이름:
@@ -287,6 +330,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 - `fill_domain`: 4단계 - Domain/Subdomain 분류
 - `create_exam`: 5단계 - 시험문제 만들기
 - `evaluate_exams`: 6단계 - 시험지 평가
+- `transform_multiple_choice`: 7단계 - 객관식 문제 변형
 
 #### 사용 예제
 
@@ -320,6 +364,18 @@ python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/ex
 
 # 6단계만 실행 (vLLM 서버 모드 사용)
 python tools/main_pipeline.py --steps evaluate_exams --eval_use_server_mode
+
+# 7단계만 실행 (기본 경로의 answer_type_classified.json 사용)
+python tools/main_pipeline.py --steps transform_multiple_choice --transform_wrong_to_right
+
+# 7단계만 실행 (분류 단계 포함)
+python tools/main_pipeline.py --steps transform_multiple_choice --transform_classify --transform_input_data_path /path/to/data.json --transform_wrong_to_right
+
+# 7단계만 실행 (특정 분류된 파일 사용)
+python tools/main_pipeline.py --steps transform_multiple_choice --transform_classified_data_path /path/to/classified.json --transform_wrong_to_right
+
+# 7단계만 실행 (여러 변형 수행)
+python tools/main_pipeline.py --steps transform_multiple_choice --transform_wrong_to_right --transform_right_to_wrong --transform_abcd
 
 # 디버그 모드로 실행
 python tools/main_pipeline.py --cycle 1 --debug
@@ -367,14 +423,30 @@ result = pipeline.step5.execute(num_sets=5)
 result = pipeline.step6.execute(exam_dir="/path/to/exam/directory")  # 시험지 경로 지정
 result = pipeline.step6.execute(sets=[1])  # 1세트만 평가
 result = pipeline.step6.execute(sets=[1, 2, 3])  # 1, 2, 3세트만 평가
+result = pipeline.step7.execute(
+    classified_data_path="/path/to/classified.json",  # 또는 None (기본 경로 사용)
+    run_classify=False,  # True면 분류 단계 실행
+    transform_model='openai/o3',
+    transform_wrong_to_right=True
+)  # 7단계: 객관식 문제 변형
+
+# 분류 단계 포함 실행
+result = pipeline.step7.execute(
+    input_data_path="/path/to/data.json",
+    run_classify=True,
+    classify_model='openai/gpt-5',
+    transform_model='openai/o3',
+    transform_wrong_to_right=True
+)  # 7단계: 객관식 문제 변형 (분류 포함)
 ```
 
 ### 개별 클래스 사용
 
 ```python
-from core import FileManager, TextProcessor, JSONHandler, LLMQuery
+from core import FileManager, TextProcessor, JSONHandler, LLMQuery, ExamConfig
 from data_processing import JSONCleaner
 from qna import QnAExtractor, TagProcessor
+from qna.processing import AnswerTypeClassifier, QnASubdomainClassifier
 
 # 파일 관리
 file_manager = FileManager()
@@ -397,7 +469,23 @@ filled_count, total_empty = tag_processor.fill_empty_tag_data(qna_data, source_d
 # LLM 쿼리
 llm = LLMQuery()
 response = llm.query_openrouter(system_prompt, user_prompt, model_name='openai/gpt-5')
+
+# 시험 설정 로드
+config = ExamConfig()
+stats = config.get_exam_statistics()
+hierarchy = config.get_exam_hierarchy()
+domain_subdomain = config.get_domain_subdomain()
+
+# Answer Type 분류
+classifier = AnswerTypeClassifier()
+classified = classifier.classify_questions(questions, model='openai/gpt-5')
+
+# 도메인/서브도메인 분류
+subdomain_classifier = QnASubdomainClassifier(mode='multiple')
+classified = subdomain_classifier.classify_questions(questions, model='x-ai/grok-4-fast')
 ```
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+read_file
 
 ## 📋 클래스 구조
 
@@ -422,6 +510,14 @@ response = llm.query_openrouter(system_prompt, user_prompt, model_name='openai/g
   - `query_openrouter()`: OpenRouter API 쿼리
   - `load_vllm_model()`: vLLM 모델 로드
   - `query_vllm()`: vLLM 모델 쿼리
+- **ExamConfig**: 시험 설정 파일 로더
+  - `get_exam_statistics()`: exam_statistics.json 형태로 가져오기
+  - `get_exam_hierarchy()`: exam_hierarchy.json 형태로 가져오기
+  - `get_domain_subdomain()`: domain_subdomain.json 형태로 가져오기
+  - `get_exam_domains()`: 특정 시험의 도메인 리스트 가져오기
+  - `get_domain_info()`: 특정 도메인 정보 가져오기
+  - `get_subdomain_count()`: 서브도메인 문제 개수 가져오기
+  - `get_subdomain_description()`: 서브도메인 설명 가져오기
 
 ### data_processing/ - 데이터 처리
 - **JSONCleaner**: JSON 파일에서 빈 페이지 제거
@@ -438,6 +534,10 @@ response = llm.query_openrouter(system_prompt, user_prompt, model_name='openai/g
   - `fill_empty_tag_data()`: 빈 태그 데이터 채우기
 - **QnATypeClassifier**: Q&A 타입 분류
   - `classify_qna_type()`: Q&A 타입 분류 (multiple-choice/short-answer/essay/etc)
+- **AnswerTypeClassifier**: 객관식 문제 Answer Type 분류 (qna/processing/)
+  - `classify_questions()`: 객관식 문제를 right/wrong/abcd로 분류
+- **QnASubdomainClassifier**: Q&A 도메인/서브도메인 분류 (qna/processing/)
+  - `classify_questions()`: Q&A 도메인/서브도메인 분류
 
 ## 📝 참고사항
 
@@ -460,11 +560,19 @@ response = llm.query_openrouter(system_prompt, user_prompt, model_name='openai/g
 - 4단계(Domain/Subdomain 분류)에서 실패한 항목은 자동으로 감지되어 재처리됩니다.
 - 실패 항목은 `evaluation/eval_data/2_subdomain/{qna_type}_failed_items.json`에 저장됩니다.
 
-## 📝 참고사항
+### API 키 설정
 
-### 6단계 (시험지 평가) API 키 설정
-
-6단계에서 OpenRouter API를 사용할 때는 `llm_config.ini`의 `key_evaluate`를 사용합니다.
+**6단계 (시험지 평가)**
+- 6단계에서 OpenRouter API를 사용할 때는 `llm_config.ini`의 `key_evaluate`를 사용합니다.
 - `key_evaluate`가 설정 파일에 없으면 에러가 발생합니다.
 - vLLM 서버 모드(`--eval_use_server_mode`)를 사용할 때는 API 키가 필요 없습니다.
+
+**7단계 (객관식 문제 변형)**
+- 7단계는 `AnswerTypeClassifier`를 사용하여 문제를 분류하고, LLM을 사용하여 문제를 변형합니다.
+- `--transform_classify` 옵션을 사용하여 분류 단계를 실행할 수 있습니다 (기본값: False).
+- `--transform_classify`가 False일 때:
+  - `--transform_classified_data_path`를 지정하면 해당 파일을 사용합니다.
+  - `--transform_classified_data_path`가 None이면 기본 경로(`evaluation/eval_data/7_multiple_rw/answer_type_classified.json`)를 자동으로 사용합니다.
+- 분류 단계와 변형 단계에서 서로 다른 모델을 사용할 수 있습니다 (기본값: `openai/gpt-5`로 분류, `openai/o3`로 변형).
+- 변형 옵션: `wrong -> right`, `right -> wrong`, `abcd` 변형을 개별적으로 활성화/비활성화할 수 있습니다 (기본값: 모두 False).
 
