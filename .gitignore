@@ -1,11 +1,10 @@
 *.ini
 *.pyc
 *.log
+*@
 
 .DS_Store
 .ipynb_checkpoints
-SFAIcenter/data
-SFAIcenter/evaluation
 data/
 data_yejin/
 evaluation/
