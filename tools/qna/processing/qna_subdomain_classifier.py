@@ -12,6 +12,7 @@ import os
 import sys
 import json
 import time
+from datetime import datetime
 import logging
 from typing import List, Dict, Any, Tuple
 from tqdm import tqdm
@@ -376,6 +377,77 @@ class QnASubdomainClassifier:
         
         return updated_questions
     
+    def save_statistics(self, all_results: Dict[str, List[Dict[str, Any]]] = None):
+        """통계 정보 저장"""
+        # 통계 정보 저장
+        if all_results is None:
+            # 먼저 {mode}_subdomain_classified_ALL.json 파일을 찾아서 읽기
+            all_file = os.path.join(self.output_dir, f"{self.mode}_subdomain_classified_ALL.json")
+            if os.path.exists(all_file):
+                with open(all_file, 'r', encoding='utf-8') as f:
+                    all_questions = json.load(f)
+                # 도메인별로 그룹화
+                all_results = {}
+                for qna in all_questions:
+                    domain = qna.get('domain', '미분류')
+                    if domain not in all_results:
+                        all_results[domain] = []
+                    all_results[domain].append(qna)
+            else:
+                # fallback: 도메인별 파일 찾기 (하위 호환성)
+                all_results = {}
+                for filename in os.listdir(self.output_dir):
+                    if filename.endswith('_subdomain_classified.json') and not filename.endswith('_ALL.json'):
+                        domain = filename.replace('_subdomain_classified.json', '')
+                        with open(os.path.join(self.output_dir, filename), 'r', encoding='utf-8') as f:
+                            all_results[domain] = json.load(f)
+        else:
+            # all_results가 리스트 형태인 경우 처리
+            if isinstance(all_results, list):
+                # 도메인별로 그룹화
+                domain_groups = {}
+                for qna in all_results:
+                    domain = qna.get('domain', '미분류')
+                    if domain not in domain_groups:
+                        domain_groups[domain] = []
+                    domain_groups[domain].append(qna)
+                all_results = domain_groups
+        
+        stats = {}
+        for domain, questions in all_results.items():
+            subdomain_counts = {}
+            for qna in questions:
+                # subdomain 키를 우선 사용, 없으면 qna_subdomain 사용
+                subdomain = qna.get('subdomain', '미분류')
+                subdomain_counts[subdomain] = subdomain_counts.get(subdomain, 0) + 1
+            
+            stats[domain] = {
+                'total_questions': len(questions),
+                'subdomain_distribution': subdomain_counts
+            }
+            
+        stats_filepath = os.path.join(self.output_dir, "STATS_multiple_subdomain.md")
+        with open(stats_filepath, 'w', encoding='utf-8') as f:
+            f.write("# Multiple Subdomain 통계\n\n")
+            f.write(f"생성일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write("---\n\n")
+            
+            for domain, domain_stats in sorted(stats.items()):
+                f.write(f"## {domain}\n\n")
+                f.write(f"- **전체 문제 수**: {domain_stats['total_questions']:,}개\n\n")
+                f.write("### 서브도메인별 분포\n\n")
+                f.write("| 서브도메인 | 문제 수 | 비율 |\n")
+                f.write("|-----------|--------|------|\n")
+                
+                total = domain_stats['total_questions']
+                subdomain_dist = sorted(domain_stats['subdomain_distribution'].items(), 
+                                       key=lambda x: x[1], reverse=True)
+                for subdomain, count in subdomain_dist:
+                    percentage = (count / total * 100) if total > 0 else 0
+                    f.write(f"| {subdomain} | {count:,}개 | {percentage:.2f}% |\n")
+                f.write("\n")
+        
+        logger.info(f"통계 정보 저장 완료: {stats_filepath}")
 
 
 def main():

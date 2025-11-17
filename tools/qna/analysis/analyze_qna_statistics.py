@@ -9,7 +9,6 @@ import os
 import glob
 import re
 from collections import defaultdict, Counter
-import pandas as pd
 from pathlib import Path
 from datetime import datetime
 
@@ -201,166 +200,125 @@ def print_statistics(stats):
             print(f"  - {domain}: {count:,}개")
 
 def save_txt_report(stats, output_file):
-    """상세 보고서를 txt 파일로 저장합니다."""
+    """상세 보고서를 마크다운 파일로 저장합니다."""
     with open(output_file, 'w', encoding='utf-8') as f:
-        f.write("=" * 100 + "\n")
-        f.write("QnA 통계 분석 상세\n")
-        f.write(f"생성일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write("=" * 100 + "\n\n")
+        f.write("# QnA 통계 분석 상세\n\n")
+        f.write(f"**생성일시**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+        f.write("---\n\n")
         
         # 전체 통계
-        f.write("1. 전체 통계\n")
-        f.write("-" * 50 + "\n")
-        f.write(f"처리된 파일 수: {stats['total_files']:,}\n")
-        f.write(f"총 QnA 항목 수: {stats['total_qna_items']:,}\n")
-        f.write(f"유효한 도메인 항목: {stats['valid_domain_items']:,}\n")
-        f.write(f"유효하지 않은 도메인 항목: {stats['invalid_domain_items']:,}\n\n")
+        f.write("## 1. 전체 통계\n\n")
+        f.write("| 항목 | 값 |\n")
+        f.write("|------|-----|\n")
+        f.write(f"| 처리된 파일 수 | {stats['total_files']:,}개 |\n")
+        f.write(f"| 총 QnA 항목 수 | {stats['total_qna_items']:,}개 |\n")
+        f.write(f"| 유효한 도메인 항목 | {stats['valid_domain_items']:,}개 |\n")
+        f.write(f"| 유효하지 않은 도메인 항목 | {stats['invalid_domain_items']:,}개 |\n\n")
         
         # 유효한 도메인별 통계
-        f.write("2. 유효한 QnA Domain별 통계\n")
-        f.write("-" * 50 + "\n")
+        f.write("## 2. 유효한 QnA Domain별 통계\n\n")
+        f.write("| 도메인 | 개수 | 비율 |\n")
+        f.write("|--------|------|------|\n")
         domain_stats = sorted(stats['qna_domain_stats'].items(), key=lambda x: x[1], reverse=True)
         for domain, count in domain_stats:
             percentage = (count / stats['valid_domain_items']) * 100 if stats['valid_domain_items'] > 0 else 0
-            f.write(f"{domain}: {count:,}개 ({percentage:.1f}%)\n")
+            f.write(f"| {domain} | {count:,}개 | {percentage:.1f}% |\n")
         f.write("\n")
         
         # QnA Type별 통계
-        f.write("3. QnA Type별 통계\n")
-        f.write("-" * 50 + "\n")
+        f.write("## 3. QnA Type별 통계\n\n")
+        f.write("| 타입 | 개수 | 비율 |\n")
+        f.write("|------|------|------|\n")
         type_stats = sorted(stats['qna_type_stats'].items(), key=lambda x: x[1], reverse=True)
         for qna_type, count in type_stats:
             percentage = (count / stats['valid_domain_items']) * 100 if stats['valid_domain_items'] > 0 else 0
-            f.write(f"{qna_type}: {count:,}개 ({percentage:.1f}%)\n")
+            f.write(f"| {qna_type} | {count:,}개 | {percentage:.1f}% |\n")
         f.write("\n")
         
         # Domain-Type 조합별 통계
-        f.write("4. Domain-Type 조합별 통계\n")
-        f.write("-" * 50 + "\n")
+        f.write("## 4. Domain-Type 조합별 통계\n\n")
         for domain in sorted(stats['domain_type_combination'].keys()):
-            f.write(f"\n[{domain}]\n")
+            f.write(f"### {domain}\n\n")
+            f.write("| 타입 | 개수 | 비율 |\n")
+            f.write("|------|------|------|\n")
             type_combinations = sorted(stats['domain_type_combination'][domain].items(), 
                                      key=lambda x: x[1], reverse=True)
             for qna_type, count in type_combinations:
                 percentage = (count / stats['qna_domain_stats'][domain]) * 100
-                f.write(f"  {qna_type}: {count:,}개 ({percentage:.1f}%)\n")
-        f.write("\n")
+                f.write(f"| {qna_type} | {count:,}개 | {percentage:.1f}% |\n")
+            f.write("\n")
         
         # 유효하지 않은 도메인 통계
         if stats['invalid_domain_items'] > 0:
-            f.write("5. 유효하지 않은 도메인 통계\n")
-            f.write("-" * 50 + "\n")
+            f.write("## 5. 유효하지 않은 도메인 통계\n\n")
+            f.write("| 도메인 | 개수 | 비율 |\n")
+            f.write("|--------|------|------|\n")
             invalid_domain_stats = Counter()
             for domain, items in stats['invalid_domain_details'].items():
                 invalid_domain_stats[domain] = len(items)
             for domain, count in invalid_domain_stats.most_common():
                 percentage = (count / stats['invalid_domain_items']) * 100
-                f.write(f"{domain}: {count:,}개 ({percentage:.1f}%)\n")
+                f.write(f"| {domain} | {count:,}개 | {percentage:.1f}% |\n")
             f.write("\n")
             
             # SS 패턴별 분석
             if stats['ss_pattern_details']:
-                f.write("6. SS 패턴별 분석 (유효하지 않은 도메인)\n")
-                f.write("-" * 50 + "\n")
+                f.write("## 6. SS 패턴별 분석 (유효하지 않은 도메인)\n\n")
                 for ss_pattern, items in sorted(stats['ss_pattern_details'].items()):
-                    f.write(f"\n[{ss_pattern}] - {len(items)}개\n")
+                    f.write(f"### {ss_pattern} - {len(items)}개\n\n")
                     for item in items[:5]:  # 상위 5개만 표시
-                        f.write(f"  파일: {item['file_id']}, 도메인: {item['domain']}, 타입: {item['type']}\n")
-                        f.write(f"  질문: {item['question']}\n")
+                        f.write(f"- **파일**: {item['file_id']}, **도메인**: {item['domain']}, **타입**: {item['type']}\n")
+                        f.write(f"  - 질문: {item['question']}\n")
                     if len(items) > 5:
-                        f.write(f"  ... 외 {len(items) - 5}개\n")
-                f.write("\n")
+                        f.write(f"\n... 외 {len(items) - 5}개\n")
+                    f.write("\n")
         
         # 파일별 통계
-        f.write("7. 파일별 통계\n")
-        f.write("-" * 50 + "\n")
-        f.write("파일ID\t\t총QnA\t유효도메인\t무효도메인\n")
-        f.write("-" * 50 + "\n")
+        f.write("## 7. 파일별 통계\n\n")
+        f.write("| 파일ID | 총QnA | 유효도메인 | 무효도메인 |\n")
+        f.write("|--------|-------|-----------|-----------|\n")
         for file_stat in sorted(stats['file_stats'], key=lambda x: x['file_id']):
-            f.write(f"{file_stat['file_id']}\t{file_stat['qna_count']}\t{file_stat['valid_domain_count']}\t{file_stat['invalid_domain_count']}\n")
+            f.write(f"| {file_stat['file_id']} | {file_stat['qna_count']} | {file_stat['valid_domain_count']} | {file_stat['invalid_domain_count']} |\n")
         f.write("\n")
         
         # 유효하지 않은 도메인 상세 정보
         if stats['invalid_domain_details']:
-            f.write("8. 유효하지 않은 도메인 상세 정보\n")
-            f.write("-" * 50 + "\n")
+            f.write("## 8. 유효하지 않은 도메인 상세 정보\n\n")
             for domain, items in sorted(stats['invalid_domain_details'].items()):
-                f.write(f"\n[{domain}] - {len(items)}개\n")
+                f.write(f"### {domain} - {len(items)}개\n\n")
                 for i, item in enumerate(items[:10]):  # 상위 10개만 표시
-                    f.write(f"  {i+1}. 파일: {item['file_id']}, 페이지: {item['page']}\n")
-                    f.write(f"     제목: {item['title']}\n")
-                    f.write(f"     챕터: {item['chapter']}\n")
-                    f.write(f"     원래 도메인: '{item['original_domain']}'\n")
-                    f.write(f"     QnA 타입: {item['qna_type']}\n")
-                    f.write(f"     질문: {item['question']}\n")
+                    f.write(f"{i+1}. **파일**: {item['file_id']}, **페이지**: {item['page']}\n")
+                    f.write(f"   - 제목: {item['title']}\n")
+                    f.write(f"   - 챕터: {item['chapter']}\n")
+                    f.write(f"   - 원래 도메인: '{item['original_domain']}'\n")
+                    f.write(f"   - QnA 타입: {item['qna_type']}\n")
+                    f.write(f"   - 질문: {item['question']}\n")
                     if item['ss_pattern']:
-                        f.write(f"     SS패턴: {item['ss_pattern']}\n")
+                        f.write(f"   - SS패턴: {item['ss_pattern']}\n")
                     f.write("\n")
                 if len(items) > 10:
-                    f.write(f"  ... 외 {len(items) - 10}개\n\n")
+                    f.write(f"... 외 {len(items) - 10}개\n\n")
+        
+        # Domain-Type 조합별 상세 정보
+        if 'domain_type_details' in stats and stats['domain_type_details']:
+            f.write("## 9. Domain-Type 조합별 상세 정보\n\n")
+            for domain in sorted(stats['domain_type_details'].keys()):
+                f.write(f"### {domain}\n\n")
+                for qna_type in sorted(stats['domain_type_details'][domain].keys()):
+                    items = stats['domain_type_details'][domain][qna_type]
+                    f.write(f"#### {qna_type} ({len(items)}개)\n\n")
+                    f.write("| 파일ID | 제목 | 챕터 | 페이지 |\n")
+                    f.write("|--------|------|------|--------|\n")
+                    for item in items[:20]:  # 상위 20개만 표시
+                        title = item.get('title', '')[:50]  # 제목 길이 제한
+                        chapter = item.get('chapter', '')[:30]  # 챕터 길이 제한
+                        f.write(f"| {item.get('file_id', '')} | {title} | {chapter} | {item.get('page', '')} |\n")
+                    if len(items) > 20:
+                        f.write(f"\n... 외 {len(items) - 20}개\n")
+                    f.write("\n")
     
-    print(f"\n💾 상세 txt 보고서가 저장되었습니다: {output_file}")
+    print(f"\n💾 상세 마크다운 보고서가 저장되었습니다: {output_file}")
 
-def save_detailed_report(stats, output_file):
-    """상세 보고서를 Excel 파일로 저장합니다."""
-    # Domain-Type 조합별 상세 데이터 생성
-    detailed_data = []
-    
-    for domain, type_data in stats['domain_type_details'].items():
-        for qna_type, items in type_data.items():
-            for item in items:
-                detailed_data.append({
-                    'Domain': domain,
-                    'Type': qna_type,
-                    'File_ID': item['file_id'],
-                    'Title': item['title'],
-                    'Chapter': item['chapter'],
-                    'Page': item['page'],
-                    'QnA_Reason': item['qna_reason']
-                })
-    
-    # DataFrame 생성
-    df = pd.DataFrame(detailed_data)
-    
-    # Excel 파일로 저장 (여러 시트)
-    with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-        # 전체 데이터
-        df.to_excel(writer, sheet_name='전체_데이터', index=False)
-        
-        # Domain별 요약
-        domain_summary = df.groupby('Domain').agg({
-            'Type': 'count',
-            'File_ID': 'nunique'
-        }).rename(columns={'Type': 'QnA_Count', 'File_ID': 'File_Count'})
-        domain_summary.to_excel(writer, sheet_name='Domain별_요약')
-        
-        # Type별 요약
-        type_summary = df.groupby('Type').agg({
-            'Domain': 'count',
-            'File_ID': 'nunique'
-        }).rename(columns={'Domain': 'QnA_Count', 'File_ID': 'File_Count'})
-        type_summary.to_excel(writer, sheet_name='Type별_요약')
-        
-        # Domain-Type 조합별 요약
-        combination_summary = df.groupby(['Domain', 'Type']).agg({
-            'File_ID': 'nunique'
-        }).rename(columns={'File_ID': 'File_Count'})
-        combination_summary['QnA_Count'] = df.groupby(['Domain', 'Type']).size()
-        combination_summary.to_excel(writer, sheet_name='Domain_Type_조합')
-        
-        # 파일별 요약
-        file_summary = df.groupby('File_ID').agg({
-            'Domain': 'nunique',
-            'Type': 'nunique',
-            'QnA_Reason': 'count'
-        }).rename(columns={
-            'Domain': 'Domain_Count', 
-            'Type': 'Type_Count',
-            'QnA_Reason': 'QnA_Count'
-        })
-        file_summary.to_excel(writer, sheet_name='파일별_요약')
-    
-    print(f"\n💾 상세 보고서가 저장되었습니다: {output_file}")
 
 def main():
     """메인 함수"""
@@ -372,13 +330,11 @@ def main():
         sys.path.insert(0, project_root)
         from pipeline.config import ONEDRIVE_PATH, PROJECT_ROOT_PATH
         base_path = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data')
-        txt_output_file = os.path.join(PROJECT_ROOT_PATH, 'qna_statistics_report.txt')
-        excel_output_file = os.path.join(PROJECT_ROOT_PATH, 'qna_statistics_report.xlsx')
+        txt_output_file = os.path.join(PROJECT_ROOT_PATH, 'STATS_qna.md')
     except ImportError:
         # fallback: pipeline이 없는 경우 기본값 사용
         base_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/workbook_data"
-        txt_output_file = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/qna_statistics_report.txt"
-        excel_output_file = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/qna_statistics_report.xlsx"
+        txt_output_file = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/STATS_qna.md"
     
     print("🔍 workbook_data 하위의 extracted_qna.json 파일들을 찾는 중...")
     files = find_extracted_qna_files(base_path)
@@ -395,15 +351,8 @@ def main():
     # 통계 출력
     print_statistics(stats)
     
-    # txt 상세 보고서 저장
+    # 마크다운 상세 보고서 저장
     save_txt_report(stats, txt_output_file)
-    
-    # Excel 상세 보고서 저장
-    save_detailed_report(stats, excel_output_file)
-    
-    # print(f"\n🎉 분석이 완료되었습니다!")
-    # print(f"📄 txt 보고서: {txt_output_file}")
-    # print(f"📊 Excel 보고서: {excel_output_file}")
 
 if __name__ == "__main__":
     main()
