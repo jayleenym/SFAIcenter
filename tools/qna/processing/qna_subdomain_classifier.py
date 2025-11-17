@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 # llm_query 모듈 import
 sys.path.insert(0, tools_dir)
 from core.llm_query import LLMQuery
+from core.exam_config import ExamConfig
 
 class QnASubdomainClassifier:
     def __init__(self, config_path: str = None, mode: str = 'multiple', onedrive_path: str = None):
@@ -71,21 +72,25 @@ class QnASubdomainClassifier:
         logger.info(f"출력 디렉토리: {self.output_dir}")
         
     def load_domain_subdomain(self) -> Dict[str, List[str]]:
-        """도메인-서브도메인 매핑 로드"""
-        domain_subdomain_path = os.path.join(self.onedrive_path, 'evaluation/eval_data/domain_subdomain.json')
-        
-        if not os.path.exists(domain_subdomain_path):
-            # 프로젝트 내 경로도 시도 (전역 project_root 사용)
-            eval_dir = os.path.join(project_root, 'evaluation_yejin')
-            if not os.path.exists(eval_dir):
-                eval_dir = os.path.join(project_root, 'evaluation')
-            domain_subdomain_path = os.path.join(eval_dir, 'eval_data', 'domain_subdomain.json')
-        
-        if not os.path.exists(domain_subdomain_path):
-            raise FileNotFoundError(f"도메인-서브도메인 매핑 파일을 찾을 수 없습니다: {domain_subdomain_path}")
-        
-        with open(domain_subdomain_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        """도메인-서브도메인 매핑 로드 (exam_config.json 사용)"""
+        try:
+            exam_config = ExamConfig(onedrive_path=self.onedrive_path)
+            domain_subdomain = exam_config.get_domain_subdomain()
+            logger.info("exam_config.json에서 도메인-서브도메인 매핑 로드 완료")
+            return domain_subdomain
+        except FileNotFoundError:
+            # fallback: 기존 방식으로 시도 (하위 호환성)
+            logger.warning("exam_config.json을 찾을 수 없어 기존 domain_subdomain.json을 시도합니다.")
+            domain_subdomain_path = os.path.join(self.onedrive_path, 'evaluation/eval_data/_old/domain_subdomain.json')
+            
+            if not os.path.exists(domain_subdomain_path):
+                raise FileNotFoundError(f"도메인-서브도메인 매핑 파일을 찾을 수 없습니다: {domain_subdomain_path}")
+            
+            with open(domain_subdomain_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"도메인-서브도메인 매핑 로드 실패: {e}")
+            raise
     
     def load_multiple_choice_data(self, data_path: str) -> List[Dict[str, Any]]:
         """문제 데이터 로드"""

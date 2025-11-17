@@ -9,6 +9,8 @@ import json
 import random
 from typing import Dict, Any
 from ..base import PipelineBase
+# base.py에서 이미 sys.path에 tools_dir이 추가되어 있음
+from core.exam_config import ExamConfig
 
 
 class Step5CreateExam(PipelineBase):
@@ -18,7 +20,7 @@ class Step5CreateExam(PipelineBase):
         """
         5단계: 시험문제 만들기
         - 1st/2nd/3rd/4th/5th 총 5세트의 시험문제를 만듬
-        - exam_statistics.json 파일 참고하여 갯수 지정
+        - exam_config.json 파일 참고하여 갯수 지정
         """
         self.logger.info(f"=== 5단계: 시험문제 만들기 ({num_sets}세트) ===")
         
@@ -31,19 +33,14 @@ class Step5CreateExam(PipelineBase):
             5: '5th'
         }
         
-        # exam_statistics.json 파일 경로
-        stats_file = os.path.join(
-            self.onedrive_path,
-            'evaluation/eval_data/exam_statistics.json'
-        )
-        
-        if not os.path.exists(stats_file):
-            self.logger.error(f"exam_statistics.json 파일을 찾을 수 없습니다: {stats_file}")
-            return {'success': False, 'error': f'통계 파일 없음: {stats_file}'}
-        
-        # 통계 파일 로드
-        with open(stats_file, 'r', encoding='utf-8') as f:
-            stats = json.load(f)
+        # exam_config.json에서 통계 정보 로드
+        try:
+            exam_config = ExamConfig(onedrive_path=self.onedrive_path)
+            stats = exam_config.get_exam_statistics()
+            self.logger.info("exam_config.json에서 통계 정보 로드 완료")
+        except Exception as e:
+            self.logger.error(f"exam_config.json 파일 로드 실패: {e}")
+            return {'success': False, 'error': f'설정 파일 로드 실패: {e}'}
         
         # 전체 데이터 파일
         all_data_file = os.path.join(
