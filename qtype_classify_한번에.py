@@ -32,7 +32,7 @@ elif qtype == 'multiple-re':
     with open(os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/2_subdomain/multiple.json'), 'r', encoding='utf-8') as f:
         questions = json.load(f)
 else:
-    with open(os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/1_filter/{qtype}.json'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(ONEDRIVE_PATH, f'evaluation/eval_data/1_filter/{qtype}.json'), 'r', encoding='utf-8') as f:
         questions = json.load(f)
 
 print("총 문제 수: ", len(questions))
@@ -48,8 +48,11 @@ for domain in domain_subdomain.keys():
     for i, subdomain_item in enumerate(subdomain_list):
         subdomain_name = subdomain_item.split('(')[0].strip()
         # domain_list.append(subdomain_name)
-        subdomain_ex = subdomain_item.split('(')[1].split(')')[0].strip()
-        prompt_domain += f'{i+1}. {subdomain_name}\n   - {subdomain_ex}\n'
+        if '(' in subdomain_item and ')' in subdomain_item:
+            subdomain_ex = subdomain_item.split('(')[1].split(')')[0].strip()
+            prompt_domain += f'{i+1}. {subdomain_name}\n   - {subdomain_ex}\n'
+        else:
+            prompt_domain += f'{i+1}. {subdomain_name}\n'
 
 system_prompt = f"""
 당신은 금융 시험 문제를 세부 주제별로 정확히 분류하는 전문가입니다.  
@@ -223,19 +226,27 @@ for i in tqdm(range(0, len(questions), batch_size)):
     # API 호출
     try:
         response = call_api(system_prompt, user_prompt, 'x-ai/grok-4-fast')
+        if response is None:
+            raise Exception("API 응답이 None입니다")
     except Exception as e:
         print(f"배치 {batch_num} API 호출 실패: {e}")
-        fail_response.append(response)    
+        if response is not None:
+            fail_response.append(response)
         # 실패한 경우 기본값으로 설정
         for qna in batch:
+            qna['domain'] = "API호출실패"
             qna['subdomain'] = "API호출실패"
             qna['classification_reason'] = "API 호출에 실패했습니다"
+            qna['is_calculation'] = "API호출실패"
         all_updated_questions.extend(batch)
         continue
 
     # 응답 파싱
     try:
         classifications = parse_api_response(response)
+        # parse_api_response가 실패하면 문자열을 반환하므로 체크
+        if not isinstance(classifications, list):
+            raise Exception(f"파싱 결과가 리스트가 아닙니다: {type(classifications)}")
     except Exception as e:
         print(f"배치 {batch_num} 응답 파싱 실패: {e}")
         fail_response.append(response)
@@ -254,7 +265,15 @@ for i in tqdm(range(0, len(questions), batch_size)):
         all_updated_questions.extend(updated_batch)
         fail_question.extend(fail_batch)
     except Exception as e:
+        print(f"배치 {batch_num} 업데이트 실패: {e}")
         fail_response.append(response)
+        # 업데이트 실패한 경우 기본값으로 설정
+        for qna in batch:
+            qna['domain'] = "업데이트실패"
+            qna['subdomain'] = "업데이트실패"
+            qna['classification_reason'] = f"업데이트 중 오류 발생: {e}"
+            qna['is_calculation'] = "업데이트실패"
+        all_updated_questions.extend(batch)
     
     # API 호출 간격 조절
     time.sleep(1.2)
@@ -267,8 +286,9 @@ for i in tqdm(range(0, len(questions), batch_size)):
             filename = f"{qtype}_subdomain_classified_ALL.json"
         filepath = os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/2_subdomain')
         
+        # 업데이트된 모든 질문들을 저장 (현재까지 처리된 것들)
         with open(os.path.join(filepath, filename), 'w', encoding='utf-8') as f:
-            json.dump(questions, f, ensure_ascii=False, indent=2)
+            json.dump(all_updated_questions, f, ensure_ascii=False, indent=2)
         
         if qtype == 'multiple-fail' or qtype == 'multiple-re':
             with open(os.path.join(filepath, f"{qtype}_fail_response.json"), 'w', encoding='utf-8') as f:
