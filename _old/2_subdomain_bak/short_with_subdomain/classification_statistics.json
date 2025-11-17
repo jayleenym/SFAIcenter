@@ -1,0 +1,74 @@
+{
+  "경제": {
+    "total_questions": 306,
+    "subdomain_distribution": {
+      "미분류": 306
+    }
+  },
+  "내부통제": {
+    "total_questions": 678,
+    "subdomain_distribution": {
+      "미분류": 678
+    }
+  },
+  "경영": {
+    "total_questions": 206,
+    "subdomain_distribution": {
+      "미분류": 206
+    }
+  },
+  "자산운용": {
+    "total_questions": 1285,
+    "subdomain_distribution": {
+      "미분류": 1285
+    }
+  },
+  "세무": {
+    "total_questions": 182,
+    "subdomain_distribution": {
+      "미분류": 182
+    }
+  },
+  "보험계약": {
+    "total_questions": 121,
+    "subdomain_distribution": {
+      "미분류": 121
+    }
+  },
+  "보상처리": {
+    "total_questions": 24,
+    "subdomain_distribution": {
+      "미분류": 24
+    }
+  },
+  "회계": {
+    "total_questions": 102,
+    "subdomain_distribution": {
+      "미분류": 102
+    }
+  },
+  "통계": {
+    "total_questions": 24,
+    "subdomain_distribution": {
+      "미분류": 24
+    }
+  },
+  "리스크관리": {
+    "total_questions": 292,
+    "subdomain_distribution": {
+      "미분류": 292
+    }
+  },
+  "영업": {
+    "total_questions": 65,
+    "subdomain_distribution": {
+      "미분류": 65
+    }
+  },
+  "노무": {
+    "total_questions": 5,
+    "subdomain_distribution": {
+      "미분류": 5
+    }
+  }
+}

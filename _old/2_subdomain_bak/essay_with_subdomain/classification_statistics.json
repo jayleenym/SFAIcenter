@@ -1,0 +1,44 @@
+{
+  "회계": {
+    "total_questions": 657,
+    "subdomain_distribution": {
+      "미분류": 657
+    }
+  },
+  "자산운용": {
+    "total_questions": 9,
+    "subdomain_distribution": {
+      "미분류": 9
+    }
+  },
+  "경제": {
+    "total_questions": 35,
+    "subdomain_distribution": {
+      "미분류": 35
+    }
+  },
+  "내부통제": {
+    "total_questions": 12,
+    "subdomain_distribution": {
+      "미분류": 12
+    }
+  },
+  "리스크관리": {
+    "total_questions": 25,
+    "subdomain_distribution": {
+      "미분류": 25
+    }
+  },
+  "경영": {
+    "total_questions": 64,
+    "subdomain_distribution": {
+      "미분류": 64
+    }
+  },
+  "세무": {
+    "total_questions": 3,
+    "subdomain_distribution": {
+      "미분류": 3
+    }
+  }
+}
