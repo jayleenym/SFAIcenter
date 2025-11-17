@@ -1,0 +1,21 @@
+[
+  {
+    "model_name": "/srv4-data/trained_model/fft/27b-orpo-cpt251002+it-pt251016/27b-orpo-cpt251002+it-pt251016-checkpoint-2800",
+    "batch_id": 766,
+    "question_id": "SS0209_q_0401_0002",
+    "question": "다음 중 경영진단의 거시환경분석(PEST)의 구성요소로 옳지 않은 것은?",
+    "options": {
+      "opt1": "정치적 환경요인",
+      "opt2": "사회문화적 환경요인",
+      "opt3": "경제적 환경요인",
+      "opt4": "예술적 환경요인",
+      "opt5": "기술적 환경요인"
+    },
+    "correct_answer": [
+      4
+    ],
+    "model_raw_output": "SS0209_q_0401_0002 4",
+    "parsed_result": NaN,
+    "timestamp": "2025-11-13T10:42:51.991424"
+  }
+]

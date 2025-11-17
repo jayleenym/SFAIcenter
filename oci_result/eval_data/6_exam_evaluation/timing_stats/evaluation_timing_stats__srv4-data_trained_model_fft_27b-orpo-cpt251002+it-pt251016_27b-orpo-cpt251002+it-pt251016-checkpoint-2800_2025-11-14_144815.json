@@ -1,0 +1,21 @@
+{
+  "evaluation_info": {
+    "start_time": "2025-11-14 14:44:45",
+    "end_time": "2025-11-14 14:48:15",
+    "start_time_iso": "2025-11-14T14:44:45.883949",
+    "end_time_iso": "2025-11-14T14:48:15.708100",
+    "elapsed_time_seconds": 209.82415223121643,
+    "elapsed_time_minutes": 3.497069203853607,
+    "elapsed_time_hours": 0.05828448673089345,
+    "model_name": "/srv4-data/trained_model/fft/27b-orpo-cpt251002+it-pt251016/27b-orpo-cpt251002+it-pt251016-checkpoint-2800"
+  },
+  "model_statistics": {
+    "average_response_time_seconds": 0.20819982719421387,
+    "total_response_time_seconds": 208.19982719421387,
+    "total_response_time_minutes": 3.4699971199035646,
+    "call_count": 1000,
+    "min_response_time_seconds": 0.20473527908325195,
+    "max_response_time_seconds": 0.23353886604309082,
+    "std_response_time_seconds": 0.0032823950843173825
+  }
+}

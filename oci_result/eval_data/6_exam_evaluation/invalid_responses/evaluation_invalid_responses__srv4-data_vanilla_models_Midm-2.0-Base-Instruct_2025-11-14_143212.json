@@ -1,0 +1,40 @@
+[
+  {
+    "model_name": "/srv4-data/vanilla_models/Midm-2.0-Base-Instruct",
+    "batch_id": 441,
+    "question_id": "SS0421_q_0513_0002",
+    "question": "제조간접비(공통비)의 배부기준을 정할 때 고려해야 되는 요소로서 다음 중 가장 합리적이고, 우선적으로 적용되어야 하는 요소는?",
+    "options": {
+      "opt1": "목적적합성",
+      "opt2": "신뢰성",
+      "opt3": "인과관계",
+      "opt4": "예측가능성",
+      "opt5": ""
+    },
+    "correct_answer": [
+      3
+    ],
+    "model_raw_output": "SS0421_q_0512\\t3",
+    "parsed_result": NaN,
+    "timestamp": "2025-11-14T14:31:36.508095"
+  },
+  {
+    "model_name": "/srv4-data/vanilla_models/Midm-2.0-Base-Instruct",
+    "batch_id": 904,
+    "question_id": "SS0087_q_0474_0001",
+    "question": "농업재해보험 손해평가요령상 적과전 종합위험방식 상품(사과, 배, 단감, 떫은감)의 ｢6월 1일~ 적과전｣ 생육시기에 해당되는 재해가 아닌 것은? (단, 적과종료 이전 특정위험 5종 한정보장 특약 가입건에 한함)",
+    "options": {
+      "opt1": "일소",
+      "opt2": "화재",
+      "opt3": "지진",
+      "opt4": "강풍",
+      "opt5": ""
+    },
+    "correct_answer": [
+      1
+    ],
+    "model_raw_output": "SS0087_q_0476_0001\\t2",
+    "parsed_result": NaN,
+    "timestamp": "2025-11-14T14:32:09.046820"
+  }
+]

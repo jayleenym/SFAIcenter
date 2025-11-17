@@ -1,0 +1,21 @@
+[
+  {
+    "model_name": "/srv1-data/auto_merged_models/27b-l4096-bs2-acc4-lr1e5-wr0.005-v2/checkpoint-6000-merged",
+    "batch_id": 156,
+    "question_id": "SS0260_q_0154_0001",
+    "question": "적기시정조치와 관련하여 다음 ( ) 안에 적합한 단어는?\n순자본비율이 ( ) 미만인 경우 경영개선권고 사유에 해당한다.\n출제포인트\n순자본비율이 100% 미만인 경우 경영개선권고 사유에 해당한다.",
+    "options": {
+      "opt1": "100%",
+      "opt2": "120%",
+      "opt3": "150%",
+      "opt4": "200%",
+      "opt5": ""
+    },
+    "correct_answer": [
+      1
+    ],
+    "model_raw_output": "SS0260_q_0154_0001<TAB>1",
+    "parsed_result": NaN,
+    "timestamp": "2025-11-13T10:34:23.458501"
+  }
+]
