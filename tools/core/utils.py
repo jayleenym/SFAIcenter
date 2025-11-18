@@ -71,8 +71,17 @@ class FileManager:
     
     def get_json_file_list(self, cycle: int, data_path: str = None) -> List[str]:
         """지정된 사이클의 JSON 파일 리스트 반환"""
-        base_path = data_path if data_path else self.final_data_path
-        target_path = os.path.join(base_path, self.cycle_path[cycle])
+        if data_path:
+            # data_path가 주어졌을 때, 이미 cycle_path가 포함되어 있는지 확인
+            # 예: data_path가 ".../1C/Lv2" 형태면 그대로 사용
+            if self.cycle_path[cycle] in data_path:
+                target_path = data_path
+            else:
+                # cycle_path가 없으면 추가
+                target_path = os.path.join(data_path, self.cycle_path[cycle])
+        else:
+            # data_path가 없으면 기본 경로 사용
+            target_path = os.path.join(self.final_data_path, self.cycle_path[cycle])
         
         json_files = []
         for root, _, files in os.walk(target_path):

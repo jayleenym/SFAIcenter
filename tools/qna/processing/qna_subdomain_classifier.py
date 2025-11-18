@@ -231,16 +231,53 @@ class QnASubdomainClassifier:
 
     def process_questions(self, questions: List[Dict[str, Any]], 
                          batch_size: int = 10, model: str = "x-ai/grok-4-fast") -> Tuple[List[Dict[str, Any]], List, List[Dict[str, Any]]]:
-        """문제들을 배치 단위로 처리"""
+        """문제들을 배치 단위로 처리 (이미 분류된 항목은 건너뜀)"""
         logger.info(f"처리 시작 - 총 {len(questions)}개 문제")
+        
+        # 기존 파일에서 이미 분류된 항목 키 추출 (한 번만 로드)
+        existing_file_path = self._get_output_filepath()
+        existing_keys = set()
+        if os.path.exists(existing_file_path):
+            try:
+                with open(existing_file_path, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+                    if isinstance(existing_data, list):
+                        for item in existing_data:
+                            file_id = item.get('file_id', '')
+                            tag = item.get('tag', '')
+                            domain = item.get('domain', '').strip()
+                            subdomain = item.get('subdomain', '').strip()
+                            # 이미 분류되어 있고 실패 상태가 아닌 경우
+                            if (domain and subdomain and 
+                                domain not in ['', '분류실패', 'API호출실패', '파싱실패'] and
+                                subdomain not in ['', '분류실패', 'API호출실패', '파싱실패']):
+                                existing_keys.add((file_id, tag))
+                        logger.info(f"기존 파일에서 이미 분류된 항목: {len(existing_keys)}개")
+            except Exception as e:
+                logger.warning(f"기존 파일 로드 실패: {e}")
+        
+        # 새로운 항목만 필터링 (기존 파일에 없는 항목)
+        needs_classification = []
+        for qna in questions:
+            file_id = qna.get('file_id', '')
+            tag = qna.get('tag', '')
+            key = (file_id, tag)
+            if key not in existing_keys:
+                needs_classification.append(qna)
+        
+        logger.info(f"입력: {len(questions)}개, 이미 분류됨: {len(existing_keys)}개, 분류 필요: {len(needs_classification)}개")
         
         all_updated_questions = []
         fail_response = []
         fail_question = []
         
-        # 배치 단위로 처리
-        for i in tqdm(range(0, len(questions), batch_size), desc="처리 중"):
-            batch = questions[i:i + batch_size]
+        # 분류가 필요한 항목만 배치 단위로 처리
+        if not needs_classification:
+            logger.info("모든 항목이 이미 분류되어 있습니다. API 호출을 건너뜁니다.")
+            return all_updated_questions, fail_response, fail_question
+        
+        for i in tqdm(range(0, len(needs_classification), batch_size), desc="처리 중"):
+            batch = needs_classification[i:i + batch_size]
             batch_num = i // batch_size + 1
             
             logger.info(f"배치 {batch_num} 처리 중... ({len(batch)}개 문제)")
@@ -314,29 +351,111 @@ class QnASubdomainClassifier:
             # API 호출 간격 조절
             time.sleep(1.2)
             
-            # 중간 결과 저장
+            # 중간 결과 저장 (새로운 항목만 추가)
             if batch_num:  # 중간 저장
-                self._save_results(all_updated_questions, fail_response, fail_question)
+                self._append_results(all_updated_questions, fail_response, fail_question)
         
         # 전체 문제수 검증
-        if len(all_updated_questions) != len(questions):
-            logger.warning(f"문제수 불일치: 원본 {len(questions)}개, 처리된 {len(all_updated_questions)}개")
+        total_processed = len(all_updated_questions)
+        if total_processed != len(questions):
+            logger.warning(f"문제수 불일치: 원본 {len(questions)}개, 처리된 {total_processed}개")
         
-        logger.info(f"처리 완료 - {len(all_updated_questions)}개 문제")
+        logger.info(f"처리 완료 - 새로 분류: {len(needs_classification)}개")
         return all_updated_questions, fail_response, fail_question
     
-    def _save_results(self, questions: List[Dict[str, Any]], 
-                     fail_response: List, fail_question: List[Dict[str, Any]]):
-        """결과 저장"""
+    def _get_output_filepath(self) -> str:
+        """출력 파일 경로 반환"""
         if self.mode == 'multiple-fail':
             filename = f"{self.mode}_response.json"
         else:
             filename = f"{self.mode}_subdomain_classified_ALL.json"
+        return os.path.join(self.output_dir, filename)
+    
+    def _append_results(self, new_questions: List[Dict[str, Any]], 
+                       fail_response: List, fail_question: List[Dict[str, Any]]):
+        """새로운 결과를 기존 파일에 추가 (중복 체크)"""
+        filepath = self._get_output_filepath()
         
-        filepath = os.path.join(self.output_dir, filename)
+        # 기존 파일 로드
+        existing_questions = []
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+                    if isinstance(existing_data, list):
+                        existing_questions = existing_data
+            except Exception as e:
+                logger.warning(f"기존 파일 로드 실패: {e}")
+                existing_questions = []
         
+        # 중복 제거: file_id와 tag 기준
+        existing_keys = set()
+        for item in existing_questions:
+            file_id = item.get('file_id', '')
+            tag = item.get('tag', '')
+            existing_keys.add((file_id, tag))
+        
+        # 새 항목 중 중복이 아닌 것만 추가
+        new_count = 0
+        for item in new_questions:
+            file_id = item.get('file_id', '')
+            tag = item.get('tag', '')
+            key = (file_id, tag)
+            if key not in existing_keys:
+                existing_questions.append(item)
+                existing_keys.add(key)
+                new_count += 1
+        
+        # 저장
         with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(questions, f, ensure_ascii=False, indent=2)
+            json.dump(existing_questions, f, ensure_ascii=False, indent=2)
+        
+        if new_count > 0:
+            logger.info(f"새 항목 {new_count}개 추가 (기존 {len(existing_questions) - new_count}개 + 새 {new_count}개 = 총 {len(existing_questions)}개)")
+    
+    def _save_results(self, questions: List[Dict[str, Any]], 
+                     fail_response: List, fail_question: List[Dict[str, Any]]):
+        """최종 결과 저장 (처리 완료 후 호출)"""
+        filepath = self._get_output_filepath()
+        
+        # 기존 파일 로드
+        existing_questions = []
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+                    if isinstance(existing_data, list):
+                        existing_questions = existing_data
+            except Exception as e:
+                logger.warning(f"기존 파일 로드 실패: {e}")
+                existing_questions = []
+        
+        # 중복 제거: file_id와 tag 기준
+        existing_keys = set()
+        for item in existing_questions:
+            file_id = item.get('file_id', '')
+            tag = item.get('tag', '')
+            existing_keys.add((file_id, tag))
+        
+        # 새 항목 중 중복이 아닌 것만 추가
+        new_count = 0
+        for item in questions:
+            file_id = item.get('file_id', '')
+            tag = item.get('tag', '')
+            key = (file_id, tag)
+            if key not in existing_keys:
+                existing_questions.append(item)
+                existing_keys.add(key)
+                new_count += 1
+        
+        # 저장
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(existing_questions, f, ensure_ascii=False, indent=2)
+        
+        if new_count > 0:
+            logger.info(f"최종 저장: 새 항목 {new_count}개 추가 (기존 {len(existing_questions) - new_count}개 + 새 {new_count}개 = 총 {len(existing_questions)}개)")
+        else:
+            logger.info(f"최종 저장: 기존 {len(existing_questions)}개 유지 (새 항목 없음)")
         
         if self.mode == 'multiple-fail' or self.mode == 'multiple-re':
             with open(os.path.join(self.output_dir, f"{self.mode}_fail_response.json"), 'w', encoding='utf-8') as f:

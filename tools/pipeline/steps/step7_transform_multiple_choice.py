@@ -127,6 +127,7 @@ class Step7TransformMultipleChoice(PipelineBase):
         # wrong -> right 변형
         if transform_wrong_to_right:
             wrong_questions = [q for q in classified_questions if q.get('answer_type') == 'wrong']
+            wrong_questions = self._remove_duplicates(wrong_questions, 'wrong')
             if wrong_questions:
                 self.logger.info("2단계-1: wrong -> right 변형 시작")
                 self._setup_step_logging('wrong_to_right')
@@ -142,6 +143,7 @@ class Step7TransformMultipleChoice(PipelineBase):
         # right -> wrong 변형
         if transform_right_to_wrong:
             right_questions = [q for q in classified_questions if q.get('answer_type') == 'right']
+            right_questions = self._remove_duplicates(right_questions, 'right')
             if right_questions:
                 self.logger.info("2단계-2: right -> wrong 변형 시작")
                 self._setup_step_logging('right_to_wrong')
@@ -157,6 +159,7 @@ class Step7TransformMultipleChoice(PipelineBase):
         # abcd 변형
         if transform_abcd:
             abcd_questions = [q for q in classified_questions if q.get('answer_type') == 'abcd']
+            abcd_questions = self._remove_duplicates(abcd_questions, 'abcd')
             if abcd_questions:
                 self.logger.info("2단계-3: abcd 변형 시작")
                 self._setup_step_logging('abcd')
@@ -316,6 +319,31 @@ class Step7TransformMultipleChoice(PipelineBase):
         
         return classified_questions
     
+    def _remove_duplicates(self, questions: List[Dict[str, Any]], 
+                          question_type: str) -> List[Dict[str, Any]]:
+        """입력 데이터에서 중복 제거 (question_id 기준: file_id + tag 조합)"""
+        if not questions:
+            return questions
+        
+        seen_ids = set()
+        unique_questions = []
+        duplicate_count = 0
+        
+        for q in questions:
+            question_id = q.get('file_id', '') + '_' + q.get('tag', '')
+            if question_id in seen_ids:
+                duplicate_count += 1
+                self.logger.warning(f"중복된 question_id 발견 (입력 데이터, {question_type}): {question_id}")
+            else:
+                seen_ids.add(question_id)
+                unique_questions.append(q)
+        
+        if duplicate_count > 0:
+            self.logger.warning(f"입력 데이터에서 {duplicate_count}개의 중복 항목 제거됨 ({question_type})")
+            self.logger.info(f"중복 제거 후 {question_type} 문제 수: {len(unique_questions)} (원본: {len(questions)})")
+        
+        return unique_questions
+    
     def _sample_questions_by_answer_count(self, questions: List[Dict[str, Any]], 
                                          seed: int) -> Dict[int, List[Dict[str, Any]]]:
         """정답 개수별로 문제 샘플링 (옵션 개수에 따라 4지선다/5지선다로 분류 후 공평하게 배치)"""
@@ -457,16 +485,49 @@ class Step7TransformMultipleChoice(PipelineBase):
         
         return all_results
     
+    def _get_processed_question_ids(self, result_file: str) -> set:
+        """이미 처리된 question_id 목록을 반환"""
+        processed_ids = set()
+        if os.path.exists(result_file):
+            try:
+                with open(result_file, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+                    if isinstance(existing_data, list):
+                        for item in existing_data:
+                            if isinstance(item, dict) and 'question_id' in item:
+                                processed_ids.add(item['question_id'])
+                    elif isinstance(existing_data, dict) and 'question_id' in existing_data:
+                        processed_ids.add(existing_data['question_id'])
+            except Exception as e:
+                self.logger.warning(f"기존 결과 파일 읽기 실패 ({result_file}): {e}")
+        return processed_ids
+    
     def _transform_batch(self, questions: List[Dict[str, Any]], 
                         target_answer_count: int, model: str,
                         output_dir: str, prompt_creator: Callable) -> Dict[str, Any]:
         """배치 변형 처리 (공통 로직)"""
+        # 이미 처리된 문제 확인
+        result_file = os.path.join(output_dir, str(target_answer_count), 'result.json')
+        processed_ids = self._get_processed_question_ids(result_file)
+        
+        if processed_ids:
+            self.logger.info(f"    [{target_answer_count}개 그룹] 이미 처리된 문제 수: {len(processed_ids)}개")
+        
         parsed_responses = []
         not_parsed_responses = []
         no_responses = []
+        skipped = []
         
         for idx, p in enumerate(questions, 1):
             question_id = p.get('file_id', '') + '_' + p.get('tag', '')
+            
+            # 이미 처리된 문제인지 확인
+            if question_id in processed_ids:
+                skipped.append(question_id)
+                if idx % 10 == 0 or idx == len(questions):
+                    self._safe_log_info(f"    [{target_answer_count}개 그룹] {idx}/{len(questions)} - 문제 ID: {question_id} (이미 처리됨, 건너뜀)")
+                continue
+            
             # 로깅 빈도 줄이기: 10개마다 또는 마지막 문제일 때만 로그
             if idx % 10 == 0 or idx == len(questions):
                 self._safe_log_info(f"    [{target_answer_count}개 그룹] {idx}/{len(questions)} - 문제 ID: {question_id}")
@@ -482,16 +543,22 @@ class Step7TransformMultipleChoice(PipelineBase):
             
             if result['success']:
                 parsed_responses.append(result['response'])
+                # 처리된 ID에 추가 (다음 반복에서 중복 체크용)
+                processed_ids.add(question_id)
             elif result['parse_failed']:
                 not_parsed_responses.append((p, result.get('raw_response')))
             else:
                 no_responses.append(p)
         
+        if skipped:
+            self.logger.info(f"    [{target_answer_count}개 그룹] 건너뛴 문제 수: {len(skipped)}개")
+        
         return {
             'total': len(questions),
             'success': len(parsed_responses),
             'parse_failed': len(not_parsed_responses),
-            'api_failed': len(no_responses)
+            'api_failed': len(no_responses),
+            'skipped': len(skipped)
         }
     
     def _call_api_and_save(self, system_prompt: str, user_prompt: str, 
@@ -559,7 +626,7 @@ class Step7TransformMultipleChoice(PipelineBase):
             return None
     
     def _save_result(self, result: Dict[str, Any], file_path: str):
-        """결과 저장"""
+        """결과 저장 (중복 체크 포함)"""
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
         existing_results = []
@@ -573,6 +640,18 @@ class Step7TransformMultipleChoice(PipelineBase):
                         existing_results = [existing_data]
             except:
                 existing_results = []
+        
+        # 중복 체크: question_id 기준으로 기존 항목 확인
+        result_question_id = result.get('question_id')
+        if result_question_id:
+            # 기존에 같은 question_id가 있는지 확인
+            existing_ids = {item.get('question_id') for item in existing_results if isinstance(item, dict) and 'question_id' in item}
+            
+            if result_question_id in existing_ids:
+                # 중복 발견: 기존 항목을 새 항목으로 교체 (최신 결과 유지)
+                existing_results = [item for item in existing_results 
+                                  if not (isinstance(item, dict) and item.get('question_id') == result_question_id)]
+                self.logger.warning(f"    중복된 question_id 발견: {result_question_id} (기존 항목 교체)")
         
         existing_results.append(result)
         
@@ -756,12 +835,28 @@ class Step7TransformMultipleChoice(PipelineBase):
 - 보기 수가 9개를 초과할 경우, ①~⑨ 이후에는 ⑩, ⑪… 또는 일반 숫자 10), 11)로 일관되게 표기하는 규칙을 사전에 정해 두세요.
 - 원문에 보기가 명시적 라벨 없이 줄글로만 제시되면 변환을 중단하고 에러를 출력하도록 별도 규칙을 두는 것이 안전합니다."""
         
+        # 이미 처리된 문제 확인
+        result_file = os.path.join(output_dir, 'result.json')
+        processed_ids = self._get_processed_question_ids(result_file)
+        
+        if processed_ids:
+            self.logger.info(f"  이미 처리된 문제 수: {len(processed_ids)}개")
+        
         parsed_responses = []
         not_parsed_responses = []
         no_responses = []
+        skipped = []
         
         for idx, p in enumerate(questions, 1):
             question_id = p.get('file_id', '') + '_' + p.get('tag', '')
+            
+            # 이미 처리된 문제인지 확인
+            if question_id in processed_ids:
+                skipped.append(question_id)
+                if idx % 10 == 0 or idx == len(questions):
+                    self._safe_log_info(f"  {idx}/{len(questions)} - 문제 ID: {question_id} (이미 처리됨, 건너뜀)")
+                continue
+            
             # 로깅 빈도 줄이기: 10개마다 또는 마지막 문제일 때만 로그
             if idx % 10 == 0 or idx == len(questions):
                 self._safe_log_info(f"  {idx}/{len(questions)} - 문제 ID: {question_id}")
@@ -783,14 +878,20 @@ class Step7TransformMultipleChoice(PipelineBase):
             
             if result['success']:
                 parsed_responses.append(result['response'])
+                # 처리된 ID에 추가 (다음 반복에서 중복 체크용)
+                processed_ids.add(question_id)
             elif result.get('parse_failed'):
                 not_parsed_responses.append((p, result.get('raw_response')))
             else:
                 no_responses.append(p)
         
+        if skipped:
+            self.logger.info(f"  건너뛴 문제 수: {len(skipped)}개")
+        
         return {
             'total': len(questions),
             'success': len(parsed_responses),
             'parse_failed': len(not_parsed_responses),
-            'api_failed': len(no_responses)
+            'api_failed': len(no_responses),
+            'skipped': len(skipped)
         }

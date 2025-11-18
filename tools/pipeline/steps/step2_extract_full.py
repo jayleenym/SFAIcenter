@@ -32,11 +32,12 @@ class Step2ExtractFull(PipelineBase):
         
         try:
             if levels is None:
-                levels = ['Lv3', 'Lv3_4', 'Lv5']
+                levels = ['Lv2', 'Lv3_4', 'Lv5']
             
             data_path = self.file_manager.final_data_path
             cycle_path = os.path.join(data_path, self.file_manager.cycle_path[cycle])
             
+            # cycle이 있을 때는 항상 cycle_path를 포함해서 저장
             output_base = os.path.join(
                 self.onedrive_path,
                 f'evaluation/workbook_data/{self.file_manager.cycle_path[cycle]}'
@@ -74,9 +75,17 @@ class Step2ExtractFull(PipelineBase):
                                 # 태그 대치
                                 qna_item = tag_processor.replace_tags_in_qna_data(qna_item, additional_tag_data)
                         
-                        # 저장
+                        # 저장 (덮어쓰기)
                         qna_output_path = file_output_path.replace('.json', '_extracted_qna.json')
+                        
+                        # 내용이 비어있으면 저장하지 않음
+                        if not result['extracted_qna']:
+                            self.logger.warning(f"추출된 Q&A가 없어 파일을 저장하지 않습니다: {qna_output_path}")
+                            continue
+                        
+                        # 중복 체크 없이 덮어쓰기
                         self.json_handler.save(result['extracted_qna'], qna_output_path)
+                        self.logger.info(f"추출된 Q&A {len(result['extracted_qna'])}개 저장: {qna_output_path}")
                         
                         total_extracted += len(result['extracted_qna'])
                         processed_files += 1

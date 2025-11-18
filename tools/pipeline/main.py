@@ -43,6 +43,7 @@ class Pipeline(PipelineBase):
         self.step7 = Step7TransformMultipleChoice(base_path, config_path, onedrive_path, project_root_path)
     
     def run_full_pipeline(self, cycle: int = None, steps: List[str] = None,
+                         levels: List[str] = None,
                          qna_type: str = 'multiple', model: str = 'x-ai/grok-4-fast',
                          num_sets: int = 5, eval_models: List[str] = None,
                          eval_batch_size: int = 10, eval_use_ox_support: bool = True,
@@ -108,7 +109,7 @@ class Pipeline(PipelineBase):
                 if cycle is None:
                     results['extract_full'] = {'success': False, 'error': 'cycle 필요'}
                 else:
-                    results['extract_full'] = self.step2.execute(cycle)
+                    results['extract_full'] = self.step2.execute(cycle, levels=levels)
             
             if 'classify' in steps:
                 if cycle is None:

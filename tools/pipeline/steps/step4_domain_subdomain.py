@@ -7,6 +7,7 @@
 import os
 import sys
 import logging
+import shutil
 from typing import Dict, Any
 from ..base import PipelineBase
 from ..config import PROJECT_ROOT_PATH, SFAICENTER_PATH
@@ -52,10 +53,18 @@ class Step4DomainSubdomain(PipelineBase):
                 self.logger.error("QnASubdomainClassifier를 import할 수 없습니다.")
                 return {'success': False, 'error': 'QnASubdomainClassifier import 실패'}
             
+            # qna_type을 파일명으로 변환 (Step 3에서 저장하는 파일명과 일치)
+            file_name_map = {
+                'multiple': 'multiple-choice',
+                'short': 'short-answer',
+                'essay': 'essay'
+            }
+            file_name = file_name_map.get(qna_type, qna_type)
+            
             # 입력 파일 경로
             input_file = os.path.join(
                 self.onedrive_path,
-                f'evaluation/eval_data/1_filter_with_tags/{qna_type}.json'
+                f'evaluation/eval_data/1_filter_with_tags/{file_name}.json'
             )
             
             if not os.path.exists(input_file):
@@ -68,7 +77,14 @@ class Step4DomainSubdomain(PipelineBase):
                 f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
             )
             
+            # 전체 결과 파일 경로
+            all_results_file = os.path.join(
+                self.onedrive_path,
+                f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
+            )
+            
             # 기존 파일이 있으면 먼저 채워넣기
+            existing_results_data = []
             if os.path.exists(existing_file) and load_json_file and create_lookup_dict and fill_multiple_choice_data:
                 self.logger.info(f"기존 분류 파일 발견: {existing_file}")
                 self.logger.info("기존 데이터로 빈칸 채우기 중...")
@@ -80,30 +96,87 @@ class Step4DomainSubdomain(PipelineBase):
                     updated_data, stats = fill_multiple_choice_data(multiple_choice_data, lookup_dict)
                     
                     # 업데이트된 데이터 저장
-                    output_file = os.path.join(
-                        self.onedrive_path,
-                        f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
-                    )
-                    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-                    self.json_handler.save(updated_data, output_file)
+                    os.makedirs(os.path.dirname(all_results_file), exist_ok=True)
+                    self.json_handler.save(updated_data, all_results_file)
                     
                     self.logger.info(f"기존 데이터로 채워넣기 완료: {stats}")
+                    existing_results_data = updated_data
                 except Exception as e:
                     self.logger.error(f"기존 데이터 채우기 오류: {e}")
             
-            # QnASubdomainClassifier로 분류
+            # 기존 파일이 있으면 백업
+            if os.path.exists(all_results_file) and not existing_results_data:
+                try:
+                    existing_results_data = self.json_handler.load(all_results_file)
+                    if not isinstance(existing_results_data, list):
+                        existing_results_data = []
+                    # 백업 파일 생성
+                    backup_file = all_results_file + '.bak'
+                    shutil.copy2(all_results_file, backup_file)
+                    self.logger.info(f"기존 파일 백업: {len(existing_results_data)}개 항목 → {backup_file}")
+                except Exception as e:
+                    self.logger.warning(f"기존 파일 백업 실패: {e}")
+            
+            # 입력 데이터 로드
+            input_data = self.json_handler.load(input_file)
+            if not isinstance(input_data, list):
+                input_data = []
+            
+            # 이미 분류된 항목 필터링 (기존 파일에서)
+            already_classified_keys = set()
+            if existing_results_data:
+                for item in existing_results_data:
+                    file_id = item.get('file_id', '')
+                    tag = item.get('tag', '')
+                    domain = item.get('domain', '').strip()
+                    subdomain = item.get('subdomain', '').strip()
+                    # 이미 분류되어 있고 실패 상태가 아닌 경우
+                    if (domain and subdomain and 
+                        domain not in ['', '분류실패', 'API호출실패', '파싱실패'] and
+                        subdomain not in ['', '분류실패', 'API호출실패', '파싱실패']):
+                        already_classified_keys.add((file_id, tag))
+            
+            # 분류가 필요한 항목만 필터링
+            needs_classification = []
+            for item in input_data:
+                file_id = item.get('file_id', '')
+                tag = item.get('tag', '')
+                key = (file_id, tag)
+                if key not in already_classified_keys:
+                    needs_classification.append(item)
+            
+            self.logger.info(f"입력 데이터: {len(input_data)}개, 이미 분류됨: {len(already_classified_keys)}개, 분류 필요: {len(needs_classification)}개")
+            
+            # 분류가 필요한 항목이 없으면 종료
+            if not needs_classification:
+                self.logger.info("모든 항목이 이미 분류되어 있습니다. API 호출을 건너뜁니다.")
+                if existing_results_data:
+                    self.logger.info(f"기존 분류 파일 유지: {len(existing_results_data)}개 항목")
+                    return {
+                        'success': True,
+                        'results': existing_results_data,
+                        'message': '모든 항목이 이미 분류되어 있습니다.'
+                    }
+            
+            # QnASubdomainClassifier로 분류 (필터링된 항목만)
             classifier = QnASubdomainClassifier(config_path=None, mode=qna_type, onedrive_path=self.onedrive_path)
             results = classifier.process_all_questions(
-                data_path=input_file,
+                questions=needs_classification,  # 필터링된 항목만 전달
                 model=model,
                 batch_size=10
             )
             
-            # 전체 결과 파일 로드
-            all_results_file = os.path.join(
-                self.onedrive_path,
-                f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
-            )
+            # QnASubdomainClassifier._save_results()가 이미 병합을 수행하므로
+            # 여기서는 최종 결과를 확인만 함
+            if os.path.exists(all_results_file):
+                try:
+                    final_results_data = self.json_handler.load(all_results_file)
+                    if isinstance(final_results_data, list):
+                        self.logger.info(f"최종 결과 확인: {len(final_results_data)}개 항목 (QnASubdomainClassifier가 병합 완료)")
+                    else:
+                        self.logger.warning(f"최종 결과가 리스트 형식이 아닙니다: {type(final_results_data)}")
+                except Exception as e:
+                    self.logger.error(f"최종 결과 확인 오류: {e}")
             
             if os.path.exists(all_results_file):
                 all_results_data = self.json_handler.load(all_results_file)
@@ -189,6 +262,63 @@ class Step4DomainSubdomain(PipelineBase):
                         self.logger.error(f"실패한 항목 재처리 오류: {e}")
                 else:
                     self.logger.info("실패한 항목이 없습니다.")
+            
+            # Lv2, Lv3_4만 처리한 경우 multiple_classification_Lv234.json으로도 저장
+            if qna_type == 'multiple':
+                lv2_path = os.path.join(self.onedrive_path, 'evaluation/workbook_data/Lv2')
+                lv3_4_path = os.path.join(self.onedrive_path, 'evaluation/workbook_data/Lv3_4')
+                if os.path.exists(lv2_path) or os.path.exists(lv3_4_path):
+                    all_results_file = os.path.join(
+                        self.onedrive_path,
+                        f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
+                    )
+                    if os.path.exists(all_results_file):
+                        all_results_data = self.json_handler.load(all_results_file)
+                        # multiple_classification_Lv234.json으로도 저장 (기존 파일이 있으면 병합)
+                        output_file_lv234 = os.path.join(
+                            self.onedrive_path,
+                            'evaluation/eval_data/2_subdomain/multiple_classification_Lv234.json'
+                        )
+                        
+                        # 기존 파일이 있으면 병합
+                        existing_lv234_data = []
+                        if os.path.exists(output_file_lv234):
+                            try:
+                                existing_lv234_data = self.json_handler.load(output_file_lv234)
+                                if not isinstance(existing_lv234_data, list):
+                                    existing_lv234_data = []
+                                self.logger.info(f"기존 multiple_classification_Lv234.json 발견: {len(existing_lv234_data)}개 항목 로드")
+                            except Exception as e:
+                                self.logger.warning(f"기존 multiple_classification_Lv234.json 로드 실패: {e}")
+                                existing_lv234_data = []
+                        
+                        if existing_lv234_data:
+                            # 중복 제거: file_id와 tag 기준
+                            existing_keys = set()
+                            for item in existing_lv234_data:
+                                file_id = item.get('file_id', '')
+                                tag = item.get('tag', '')
+                                existing_keys.add((file_id, tag))
+                            
+                            # 새 항목 중 중복이 아닌 것만 추가
+                            merged_lv234_data = existing_lv234_data.copy()
+                            new_count = 0
+                            for item in all_results_data:
+                                file_id = item.get('file_id', '')
+                                tag = item.get('tag', '')
+                                key = (file_id, tag)
+                                if key not in existing_keys:
+                                    merged_lv234_data.append(item)
+                                    existing_keys.add(key)
+                                    new_count += 1
+                            
+                            # 병합된 결과 저장
+                            self.json_handler.save(merged_lv234_data, output_file_lv234)
+                            self.logger.info(f"multiple_classification_Lv234.json 병합: 기존 {len(existing_lv234_data)}개 + 새 {new_count}개 = 총 {len(merged_lv234_data)}개")
+                        else:
+                            # 새로 저장
+                            self.json_handler.save(all_results_data, output_file_lv234)
+                            self.logger.info(f"multiple_classification_Lv234.json으로 저장: {len(all_results_data)}개 항목")
             
             self.logger.info("Domain/Subdomain 분류 완료")
             return {
