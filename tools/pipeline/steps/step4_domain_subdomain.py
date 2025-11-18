@@ -193,73 +193,8 @@ class Step4DomainSubdomain(PipelineBase):
                 
                 if failed_items:
                     self.logger.info(f"실패한 항목 발견: {len(failed_items)}개")
-                    
-                    # 실패한 항목들을 별도 파일로 저장
-                    failed_file = os.path.join(
-                        self.onedrive_path,
-                        f'evaluation/eval_data/2_subdomain/{qna_type}_failed_items.json'
-                    )
-                    os.makedirs(os.path.dirname(failed_file), exist_ok=True)
-                    self.json_handler.save(failed_items, failed_file)
-                    self.logger.info(f"실패한 항목 저장: {failed_file}")
-                    
-                    # 실패한 항목들을 재처리
-                    self.logger.info("실패한 항목 재처리 시작...")
-                    try:
-                        temp_failed_file = os.path.join(
-                            self.onedrive_path,
-                            f'evaluation/eval_data/2_subdomain/{qna_type}_failed_items_temp.json'
-                        )
-                        self.json_handler.save(failed_items, temp_failed_file)
-                        
-                        # 재처리 실행
-                        retry_results = classifier.process_all_questions(
-                            data_path=temp_failed_file,
-                            model=model,
-                            batch_size=10
-                        )
-                        
-                        # 재처리 결과는 이미 저장되었으므로 직접 사용
-                        retry_results_data = retry_results
-                        
-                        # 재처리 결과를 원본 데이터에 병합
-                        retry_dict = {}
-                        for item in retry_results_data:
-                            key = (item.get('file_id', ''), item.get('tag', ''))
-                            retry_dict[key] = item
-                        
-                        updated_count = 0
-                        for item in all_results_data:
-                            key = (item.get('file_id', ''), item.get('tag', ''))
-                            if key in retry_dict:
-                                retry_item = retry_dict[key]
-                                if (retry_item.get('domain', '') and 
-                                    retry_item.get('domain', '') not in ['분류실패', 'API호출실패', '파싱실패'] and
-                                    retry_item.get('subdomain', '') and 
-                                    retry_item.get('subdomain', '') not in ['분류실패', 'API호출실패', '파싱실패']):
-                                    item['domain'] = retry_item.get('domain', item.get('domain', ''))
-                                    item['subdomain'] = retry_item.get('subdomain', item.get('subdomain', ''))
-                                    item['classification_reason'] = retry_item.get('classification_reason', item.get('classification_reason', ''))
-                                    item['is_calculation'] = retry_item.get('is_calculation', item.get('is_calculation', False))
-                                    updated_count += 1
-                        
-                        self.logger.info(f"재처리 결과 병합: {updated_count}개 항목 업데이트")
-                        
-                        # 업데이트된 전체 결과 저장
-                        final_output_file = os.path.join(
-                            self.onedrive_path,
-                            f'evaluation/eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json'
-                        )
-                        os.makedirs(os.path.dirname(final_output_file), exist_ok=True)
-                        self.json_handler.save(all_results_data, final_output_file)
-                        self.logger.info(f"업데이트된 전체 결과 저장: {final_output_file}")
-                        
-                        # 임시 파일 삭제
-                        if os.path.exists(temp_failed_file):
-                            os.remove(temp_failed_file)
-                        
-                    except Exception as e:
-                        self.logger.error(f"실패한 항목 재처리 오류: {e}")
+                    self.logger.info("재처리는 qna_subdomain_classifier에서 자동으로 수행됩니다. (1차 처리 후 자동 재시도)")
+                    self.logger.info(f"2번 실패한 항목은 {qna_type}_failed.json 파일에 저장됩니다.")
                 else:
                     self.logger.info("실패한 항목이 없습니다.")
             
