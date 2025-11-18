@@ -7,6 +7,7 @@ LLM 쿼리 클래스
 import os
 import json
 import re
+import logging
 import configparser
 from openai import OpenAI
 from transformers import AutoTokenizer
@@ -29,6 +30,10 @@ class LLMQuery:
         # API 키 결정: api_key 파라미터가 있으면 사용, 없으면 config에서 key 사용
         if api_key is None:
             api_key = self.config.get("OPENROUTER", "key")
+        
+        # HTTP 요청 로그 비활성화 (httpx, httpcore 로거 레벨 조정)
+        logging.getLogger("httpx").setLevel(logging.WARNING)
+        logging.getLogger("httpcore").setLevel(logging.WARNING)
         
         # OpenRouter 클라이언트 초기화
         self.client = OpenAI(
