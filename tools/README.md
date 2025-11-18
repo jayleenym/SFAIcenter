@@ -93,9 +93,9 @@ tools/
 **steps/** - 각 단계별 모듈
 - `Step0Preprocessing`: 텍스트 전처리 (문장내 엔터 제거, 빈 챕터정보 채우기, 선지 텍스트 정규화)
 - `Step1ExtractBasic`: 기본 문제 추출 (Lv2, Lv3_4)
-- `Step2ExtractFull`: 전체 문제 추출 (Lv3, Lv3_4, Lv5) - 태그 대치 포함
-- `Step3Classify`: Q&A 타입별 분류 (multiple-choice/short-answer/essay/etc)
-- `Step4DomainSubdomain`: Domain/Subdomain 분류 (실패 항목 재처리 포함)
+- `Step2ExtractFull`: 전체 문제 추출 (Lv2, Lv3, Lv3_4, Lv5) - 태그 대치 포함, 덮어쓰기 저장
+- `Step3Classify`: Q&A 타입별 분류 (multiple-choice/short-answer/essay/etc), 기존 파일 병합 지원
+- `Step4DomainSubdomain`: Domain/Subdomain 분류 (실패 항목 재처리 포함, 기존 파일 병합 지원)
 - `Step5CreateExam`: 시험문제 만들기 (exam_config.json 참고)
 - `Step6Evaluate`: 시험지 평가 (모델별 답변 평가, 배치 처리, 시험지 경로 설정 가능)
 - `Step7TransformMultipleChoice`: 객관식 문제 변형 (right/wrong/abcd 분류 및 변형)
@@ -240,6 +240,12 @@ python tools/main_pipeline.py --cycle 1
 # 특정 단계만 실행
 python tools/main_pipeline.py --cycle 1 --steps preprocess extract_basic extract_full
 
+# 2단계: Lv2, Lv3_4만 처리 (evaluation/workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
+python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full
+
+# 2단계 + 3단계 + 4단계: Lv2, Lv3_4 처리 후 분류 및 domain/subdomain 채우기
+python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full classify fill_domain --qna_type multiple --model x-ai/grok-4-fast
+
 # 4단계: Domain/Subdomain 분류
 python tools/main_pipeline.py --steps fill_domain --qna_type multiple --model x-ai/grok-4-fast
 
@@ -274,6 +280,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 | `--cycle` | 사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 필요 | None |
 | `--steps` | 실행할 단계 목록 (공백으로 구분) | None (전체 실행) |
 | | | 가능한 값: `preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice` |
+| `--levels` | 처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4) | None (기본값: Lv2, Lv3_4, Lv5) |
 | `--base_path` | 기본 데이터 경로 | None (ONEDRIVE_PATH 사용) |
 | `--config_path` | LLM 설정 파일 경로 | None (PROJECT_ROOT_PATH/llm_config.ini 사용) |
 | `--onedrive_path` | OneDrive 경로 | None (자동 감지) |
@@ -281,6 +288,16 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 | `--debug` | 디버그 로그 활성화 | False |
 
 #### 단계별 옵션
+
+**2단계 (전체 문제 추출)**
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--levels` | 처리할 레벨 목록 (공백으로 구분, 예: Lv2 Lv3_4) | None (기본값: Lv2, Lv3_4, Lv5) |
+
+**참고:**
+- `--cycle`과 `--levels`를 함께 사용하면 `evaluation/workbook_data/{cycle_path}/{level}/` 경로에 저장됩니다 (예: `--cycle 1 --levels Lv2 Lv3_4` → `workbook_data/1C/Lv2/`, `workbook_data/1C/Lv3_4/`).
+- 기존 파일이 있으면 덮어쓰기됩니다 (중복 체크 없음).
+- 내용이 비어있으면 파일을 저장하지 않습니다.
 
 **4단계 (Domain/Subdomain 분류)**
 | 옵션 | 설명 | 기본값 |
@@ -341,6 +358,12 @@ python tools/main_pipeline.py --cycle 1
 # 특정 단계만 실행
 python tools/main_pipeline.py --cycle 1 --steps preprocess extract_basic
 
+# 2단계만 실행 (Lv2, Lv3_4만 처리, workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
+python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full
+
+# 2단계 + 3단계 + 4단계: Lv2, Lv3_4 처리 후 분류 및 domain/subdomain 채우기 (multiple_classification_Lv234.json 생성)
+python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full classify fill_domain --qna_type multiple --model x-ai/grok-4-fast
+
 # 4단계만 실행 (객관식 문제, 특정 모델 사용)
 python tools/main_pipeline.py --steps fill_domain --qna_type multiple --model openai/gpt-5
 
@@ -398,6 +421,15 @@ results = pipeline.run_full_pipeline(
     steps=['preprocess', 'extract_basic', 'extract_full', 'classify']
 )
 
+# Lv2, Lv3_4만 처리
+results = pipeline.run_full_pipeline(
+    cycle=1,
+    levels=['Lv2', 'Lv3_4'],
+    steps=['extract_full', 'classify', 'fill_domain'],
+    qna_type='multiple',
+    model='x-ai/grok-4-fast'
+)
+
 # 6단계만 실행 (시험지 경로 지정)
 results = pipeline.run_full_pipeline(
     steps=['evaluate_exams'],
@@ -418,6 +450,7 @@ results = pipeline.run_full_pipeline(
 
 # 개별 단계 실행
 result = pipeline.step0.execute(cycle=1)
+result = pipeline.step2.execute(cycle=1, levels=['Lv2', 'Lv3_4'])  # Lv2, Lv3_4만 처리 (workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
 result = pipeline.step4.execute(qna_type='multiple', model='x-ai/grok-4-fast')
 result = pipeline.step5.execute(num_sets=5)
 result = pipeline.step6.execute(exam_dir="/path/to/exam/directory")  # 시험지 경로 지정
@@ -555,6 +588,18 @@ read_file
 - 각 클래스는 독립적으로 사용 가능하지만, 일부 클래스는 다른 클래스에 의존할 수 있습니다.
 - `LLMQuery`는 LLM 관련 기능을 제공하므로 여러 모듈에서 공통으로 사용됩니다.
 - `PipelineBase`는 모든 단계 클래스의 기본 클래스입니다.
+
+### 파일 저장 방식
+- **Step 2 (전체 문제 추출)**: 기존 `_extracted_qna.json` 파일이 있으면 덮어쓰기합니다 (중복 체크 없음). 내용이 비어있으면 파일을 저장하지 않습니다.
+- **Step 3 (타입별 분류)**: 기존 분류 파일(`multiple-choice.json` 등)이 있으면 자동으로 병합합니다. `file_id`와 `tag` 기준으로 중복을 제거하고 새 항목만 추가합니다.
+- **Step 4 (Domain/Subdomain 분류)**: 
+  - 기존 파일이 있으면 `.bak` 파일로 백업한 후 새 결과와 병합합니다.
+  - `multiple_classification_Lv234.json` 저장 시에도 기존 파일이 있으면 병합합니다.
+  - 모든 병합은 `file_id`와 `tag` 기준으로 중복을 제거합니다.
+
+### 특수 경로 처리
+- **2단계 (전체 문제 추출)**: `--cycle`과 `--levels`를 함께 사용하면 `evaluation/workbook_data/{cycle_path}/{level}/` 경로에 저장됩니다 (예: `--cycle 1 --levels Lv2 Lv3_4` → `workbook_data/1C/Lv2/`, `workbook_data/1C/Lv3_4/`).
+- **multiple_classification_Lv234.json**: Step 4에서 `qna_type=multiple`이고 Lv2 또는 Lv3_4 경로가 존재하면 자동으로 `evaluation/eval_data/2_subdomain/multiple_classification_Lv234.json`에도 저장합니다.
 
 ### 실패 항목 재처리
 - 4단계(Domain/Subdomain 분류)에서 실패한 항목은 자동으로 감지되어 재처리됩니다.

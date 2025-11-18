@@ -43,6 +43,9 @@ def main():
                        help='OneDrive 경로 (None이면 자동 감지 또는 환경 변수 사용)')
     parser.add_argument('--project_root_path', type=str, default=None,
                        help='프로젝트 루트 경로 (None이면 자동 감지 또는 환경 변수 사용)')
+    parser.add_argument('--levels', nargs='+',
+                       default=None,
+                       help='처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4)')
     parser.add_argument('--qna_type', type=str, default='multiple',
                        choices=['multiple', 'short', 'essay'],
                        help='QnA 타입 (4단계에서 사용)')
@@ -107,6 +110,7 @@ def main():
     results = pipeline.run_full_pipeline(
         cycle=args.cycle,
         steps=args.steps,
+        levels=args.levels,
         qna_type=args.qna_type,
         model=args.model,
         num_sets=args.num_sets,
