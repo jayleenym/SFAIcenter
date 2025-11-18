@@ -119,7 +119,7 @@ class Step6Evaluate(PipelineBase):
             if exam_dir is None:
                 exam_dir = os.path.join(
                     self.onedrive_path,
-                    'evaluation/eval_data/4_multiple_exam'
+                    'evaluation', 'eval_data', '4_multiple_exam'
                 )
             else:
                 # 상대 경로인 경우 onedrive_path 기준으로 변환
@@ -133,7 +133,7 @@ class Step6Evaluate(PipelineBase):
             # 출력 디렉토리
             output_dir = os.path.join(
                 self.onedrive_path,
-                'evaluation/eval_data/6_exam_evaluation'
+                'evaluation', 'eval_data', '6_exam_evaluation'
             )
             os.makedirs(output_dir, exist_ok=True)
             

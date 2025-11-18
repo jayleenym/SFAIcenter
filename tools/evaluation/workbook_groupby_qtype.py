@@ -29,12 +29,18 @@ try:
     sys.path.insert(0, project_root)
     from pipeline.config import ONEDRIVE_PATH
 except ImportError:
-    # fallback: pipeline이 없는 경우 기본값 사용
-    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
+    import platform
+    system = platform.system()
+    home_dir = os.path.expanduser("~")
+    if system == "Windows":
+        ONEDRIVE_PATH = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+    else:
+        ONEDRIVE_PATH = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
 
 
-EXTRACTED_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data')
-EVAL_DATA_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data')
+EXTRACTED_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data')
+EVAL_DATA_DIR = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data')
 # BRONZE_LAYER_0_DIR = os.path.join(EVAL_DATA_DIR, '0_grpby')
 BRONZE_LAYER_1_DIR = os.path.join(EVAL_DATA_DIR, '1_filter_with_tags')
 BRONZE_LAYER_2_DIR = os.path.join(EVAL_DATA_DIR, '2_subdomain')

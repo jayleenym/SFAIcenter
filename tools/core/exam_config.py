@@ -22,24 +22,27 @@ class ExamConfig:
         if config_path is None:
             # OneDrive 경로가 제공된 경우 우선 사용
             if onedrive_path:
-                config_path = os.path.join(onedrive_path, 'evaluation/eval_data/exam_config.json')
+                config_path = os.path.join(onedrive_path, 'evaluation', 'eval_data', 'exam_config.json')
             
             # 기본 경로 찾기
             if config_path is None or not os.path.exists(config_path):
                 current_dir = os.path.dirname(os.path.abspath(__file__))
                 project_root = os.path.dirname(os.path.dirname(current_dir))
-                project_config_path = os.path.join(project_root, 'evaluation/eval_data/exam_config.json')
+                project_config_path = os.path.join(project_root, 'evaluation', 'eval_data', 'exam_config.json')
                 
                 if os.path.exists(project_config_path):
                     config_path = project_config_path
                 else:
                     # OneDrive 경로도 시도
                     if onedrive_path is None:
-                        onedrive_path = os.path.join(
-                            os.path.expanduser("~"), 
-                            "Library/CloudStorage/OneDrive-개인/데이터L/selectstar"
-                        )
-                    config_path = os.path.join(onedrive_path, 'evaluation/eval_data/exam_config.json')
+                        import platform
+                        system = platform.system()
+                        home_dir = os.path.expanduser("~")
+                        if system == "Windows":
+                            onedrive_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+                        else:
+                            onedrive_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+                    config_path = os.path.join(onedrive_path, 'evaluation', 'eval_data', 'exam_config.json')
         
         if not os.path.exists(config_path):
             raise FileNotFoundError(f"exam_config.json 파일을 찾을 수 없습니다: {config_path}")

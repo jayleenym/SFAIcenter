@@ -4,6 +4,7 @@ Script to find multiple-choice questions with null or empty options and save to 
 """
 
 import json, re
+import os
 import glob
 from collections import defaultdict
 
@@ -133,7 +134,7 @@ def main(file_path: str=None):
             project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
             sys.path.insert(0, project_root)
             from pipeline.config import ONEDRIVE_PATH
-            pattern = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data/*/Lv5/*_extracted_qna.json')
+            pattern = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', '*', 'Lv5', '*_extracted_qna.json')
         except ImportError:
             # fallback: pipeline이 없는 경우 기본값 사용
             pattern = "evaluation/workbook_data/*/Lv5/*_extracted_qna.json"
@@ -156,12 +157,32 @@ def main(file_path: str=None):
                 invalid_type_stats[case['invalid_type']] += 1
     
     # Save detailed results to JSON file
-    output_file = f"evaluation/eval_data/invalid_options/invalid_options_detailed_{file_path.split('/')[-1]}.json"
+    # 파일명 추출 (플랫폼 독립적)
+    if json_files:
+        last_file = json_files[-1] if isinstance(json_files, list) else json_files
+        file_basename = os.path.basename(last_file).replace('.json', '')
+    else:
+        file_basename = 'all_files'
+    
+    # ONEDRIVE_PATH 기반 경로 사용
+    try:
+        import sys
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+        sys.path.insert(0, project_root)
+        from pipeline.config import ONEDRIVE_PATH
+        output_base = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', 'invalid_options')
+    except ImportError:
+        # fallback: 현재 디렉토리 기준
+        output_base = os.path.join('evaluation', 'eval_data', 'invalid_options')
+    
+    os.makedirs(output_base, exist_ok=True)
+    output_file = os.path.join(output_base, f'invalid_options_detailed_{file_basename}.json')
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(all_invalid_cases, f, ensure_ascii=False, indent=2)
     
     # Save summary to text file
-    summary_file = f"evaluation/eval_data/invalid_options/invalid_options_summary_{file_path.split('/')[-1]}.txt"
+    summary_file = os.path.join(output_base, f'invalid_options_summary_{file_basename}.txt')
     with open(summary_file, 'w', encoding='utf-8') as f:
         f.write("MULTIPLE-CHOICE QUESTIONS WITH INVALID OPTIONS - SUMMARY REPORT\n")
         f.write("=" * 80 + "\n\n")
@@ -223,9 +244,15 @@ if __name__ == "__main__":
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
         sys.path.insert(0, project_root)
         from pipeline.config import ONEDRIVE_PATH
-        file_path = os.path.join(ONEDRIVE_PATH, 'evaluation/eval_data/2_subdomain/multiple_subdomain_classified_ALL.json')
+        file_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '2_subdomain', 'multiple_subdomain_classified_ALL.json')
     except ImportError:
-        # fallback: pipeline이 없는 경우 기본값 사용
-        file_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/eval_data/2_subdomain/multiple_subdomain_classified_ALL.json"
+        # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
+        import platform
+        system = platform.system()
+        home_dir = os.path.expanduser("~")
+        if system == "Windows":
+            file_path = os.path.join(home_dir, "Desktop", "SFAIcenter", "evaluation", "eval_data", "2_subdomain", "multiple_subdomain_classified_ALL.json")
+        else:
+            file_path = os.path.join(home_dir, "Desktop", "Desktop_AICenter✨", "SFAIcenter", "evaluation", "eval_data", "2_subdomain", "multiple_subdomain_classified_ALL.json")
     
     main(file_path=file_path)

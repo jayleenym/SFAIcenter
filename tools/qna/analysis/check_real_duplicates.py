@@ -300,10 +300,16 @@ try:
     sys.path.insert(0, project_root)
     from pipeline.config import ONEDRIVE_PATH
 except ImportError:
-    # fallback: pipeline이 없는 경우 기본값 사용
-    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
+    import platform
+    system = platform.system()
+    home_dir = os.path.expanduser("~")
+    if system == "Windows":
+        ONEDRIVE_PATH = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+    else:
+        ONEDRIVE_PATH = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
 
-    directory_path = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5')
+    directory_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C', 'Lv5')
     
     if not os.path.exists(directory_path):
         print(f"❌ 디렉토리가 존재하지 않습니다: {directory_path}")

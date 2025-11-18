@@ -329,12 +329,19 @@ def main():
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
         sys.path.insert(0, project_root)
         from pipeline.config import ONEDRIVE_PATH, PROJECT_ROOT_PATH
-        base_path = os.path.join(ONEDRIVE_PATH, 'evaluation/workbook_data')
+        base_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data')
         txt_output_file = os.path.join(PROJECT_ROOT_PATH, 'STATS_qna.md')
     except ImportError:
-        # fallback: pipeline이 없는 경우 기본값 사용
-        base_path = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/evaluation/workbook_data"
-        txt_output_file = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/STATS_qna.md"
+        # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
+        import platform
+        system = platform.system()
+        home_dir = os.path.expanduser("~")
+        if system == "Windows":
+            base_path = os.path.join(home_dir, "Desktop", "SFAIcenter", "evaluation", "workbook_data")
+            txt_output_file = os.path.join(home_dir, "Desktop", "SFAIcenter", "STATS_qna.md")
+        else:
+            base_path = os.path.join(home_dir, "Desktop", "Desktop_AICenter✨", "SFAIcenter", "evaluation", "workbook_data")
+            txt_output_file = os.path.join(home_dir, "Desktop", "Desktop_AICenter✨", "SFAIcenter", "STATS_qna.md")
     
     print("🔍 workbook_data 하위의 extracted_qna.json 파일들을 찾는 중...")
     files = find_extracted_qna_files(base_path)

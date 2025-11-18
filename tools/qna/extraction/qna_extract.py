@@ -13,8 +13,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 try:
     from pipeline.config import ONEDRIVE_PATH
 except ImportError:
-    # fallback: pipeline이 없는 경우 기본값 사용
-    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
+    import platform
+    system = platform.system()
+    home_dir = os.path.expanduser("~")
+    if system == "Windows":
+        ONEDRIVE_PATH = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+    else:
+        ONEDRIVE_PATH = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
 
 # tools/core/utils.py에서 FileManager import
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -86,8 +92,8 @@ def main(cycle: int):
         cycle: 사이클 번호 (1, 2, 3)
     """
     # 경로 처리 개선: replace() 대신 os.path.join() 사용
-    origin_data_dir = os.path.join(ONEDRIVE_PATH, 'data/FINAL')
-    data_dir = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C')
+    origin_data_dir = os.path.join(ONEDRIVE_PATH, 'data', 'FINAL')
+    data_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C')
     
     print(f"원본 데이터 경로: {origin_data_dir}")
     print(f"작업 데이터 경로: {data_dir}")

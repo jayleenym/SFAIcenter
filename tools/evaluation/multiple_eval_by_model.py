@@ -43,7 +43,13 @@ except ImportError:
     # fallback: pipeline이 없는 경우 현재 스크립트 기준으로 설정
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    onedrive_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    import platform
+    system = platform.system()
+    home_dir = os.path.expanduser("~")
+    if system == "Windows":
+        onedrive_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+    else:
+        onedrive_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
     sfaicenter_path = project_root  # fallback
 
 log_dir = os.path.join(sfaicenter_path, 'logs')
@@ -573,7 +579,13 @@ def run_eval_pipeline(
                         from pipeline.config import ONEDRIVE_PATH
                         base_path = ONEDRIVE_PATH
                     except ImportError:
-                        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+                        import platform
+                        system = platform.system()
+                        home_dir = os.path.expanduser("~")
+                        if system == "Windows":
+                            base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+                        else:
+                            base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
                     
                     output_dir = os.path.join(base_path, 'evaluation', 'eval_data', '6_exam_evaluation', 'model_output')
                     os.makedirs(output_dir, exist_ok=True)
@@ -823,7 +835,13 @@ def save_timing_statistics(
         from pipeline.config import ONEDRIVE_PATH
         base_path = ONEDRIVE_PATH
     except ImportError:
-        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+        import platform
+        system = platform.system()
+        home_dir = os.path.expanduser("~")
+        if system == "Windows":
+            base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+        else:
+            base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
     
     timestamp = overall_end_datetime.strftime("%Y-%m-%d_%H%M%S")
     log_dir = os.path.join(base_path, 'evaluation',  'eval_data', '6_exam_evaluation', 'timing_stats')
@@ -919,7 +937,13 @@ def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str =
         from pipeline.config import ONEDRIVE_PATH
         base_path = ONEDRIVE_PATH
     except ImportError:
-        base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+        import platform
+        system = platform.system()
+        home_dir = os.path.expanduser("~")
+        if system == "Windows":
+            base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+        else:
+            base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
     
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     invalid_dir = os.path.join(base_path, 'evaluation', 'eval_data', '6_exam_evaluation', 'invalid_responses')
@@ -1219,9 +1243,15 @@ def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd
     # ONEDRIVE_PATH 기반 경로 사용
     try:
         from pipeline.config import ONEDRIVE_PATH
-        default_base_path = os.path.join(ONEDRIVE_PATH, 'evaluation/result/')
+        default_base_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'result')
     except ImportError:
-        default_base_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar/evaluation/result/")
+        import platform
+        system = platform.system()
+        home_dir = os.path.expanduser("~")
+        if system == "Windows":
+            default_base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar", "evaluation", "result")
+        else:
+            default_base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar", "evaluation", "result")
     
     if filename is None:
         timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")

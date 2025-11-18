@@ -6,6 +6,54 @@
 
 import os
 import subprocess
+import platform
+
+def _find_onedrive_path():
+    """플랫폼별 OneDrive 경로를 자동으로 찾는 함수"""
+    system = platform.system()
+    home_dir = os.path.expanduser("~")
+    
+    # 가능한 OneDrive 경로들
+    possible_paths = []
+    
+    if system == "Windows":
+        # Windows OneDrive 경로들
+        possible_paths = [
+            os.path.join(home_dir, "OneDrive", "데이터L", "selectstar"),
+            os.path.join(home_dir, "OneDrive - 개인", "데이터L", "selectstar"),
+            os.path.join(home_dir, "OneDrive", "개인", "데이터L", "selectstar"),
+            # 환경 변수에서 OneDrive 경로 찾기
+            os.path.join(os.environ.get("OneDrive", ""), "데이터L", "selectstar") if "OneDrive" in os.environ else None,
+            os.path.join(os.environ.get("OneDriveConsumer", ""), "데이터L", "selectstar") if "OneDriveConsumer" in os.environ else None,
+        ]
+    elif system == "Darwin":  # macOS
+        # macOS OneDrive 경로
+        possible_paths = [
+            os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar"),
+            os.path.join(home_dir, "Library", "CloudStorage", "OneDrive", "데이터L", "selectstar"),
+        ]
+    else:  # Linux or others
+        possible_paths = [
+            os.path.join(home_dir, "OneDrive", "데이터L", "selectstar"),
+        ]
+    
+    # 가능한 경로들 중 존재하는 첫 번째 경로 반환
+    for path in possible_paths:
+        if path and os.path.exists(path):
+            return path
+    
+    # 경로를 찾지 못한 경우, 플랫폼별 기본 경로 반환 (존재 여부와 관계없이)
+    if system == "Windows":
+        # Windows 기본 경로
+        return os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+    else:
+        # macOS 기본 경로
+        return os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+
+# 외부에서 사용할 수 있도록 함수 export
+def get_default_onedrive_path():
+    """플랫폼별 기본 OneDrive 경로 반환 (외부 모듈에서 사용)"""
+    return _find_onedrive_path()
 
 def _find_sfaicenter_path():
     """SFAICenter 디렉토리를 찾는 함수 (find 명령어 사용)"""
@@ -64,11 +112,8 @@ def _find_sfaicenter_path():
     # 찾지 못한 경우 프로젝트 루트 반환 (fallback)
     return project_root
 
-# ONEDRIVE_PATH: OneDrive 데이터 경로 (기본값: 자동 감지)
-ONEDRIVE_PATH = os.path.join(
-    os.path.expanduser("~"),
-    "Library/CloudStorage/OneDrive-개인/데이터L/selectstar"
-)
+# ONEDRIVE_PATH: OneDrive 데이터 경로 (플랫폼별 자동 감지)
+ONEDRIVE_PATH = _find_onedrive_path()
 
 # PROJECT_ROOT_PATH: 프로젝트 루트 경로 (기본값: 자동 감지)
 current_dir = os.path.dirname(os.path.abspath(__file__))

@@ -101,7 +101,7 @@ class Step7TransformMultipleChoice(PipelineBase):
                 # 기본 경로에서 answer_type_classified.json 읽기
                 default_classified_path = os.path.join(
                     self.onedrive_path,
-                    'evaluation/eval_data/7_multiple_rw/answer_type_classified.json'
+                    'evaluation', 'eval_data', '7_multiple_rw', 'answer_type_classified.json'
                 )
                 if os.path.exists(default_classified_path):
                     classified_data_path = default_classified_path
@@ -231,7 +231,7 @@ class Step7TransformMultipleChoice(PipelineBase):
             # 기본 경로에서 로드 시도
             default_path = os.path.join(
                 self.onedrive_path,
-                'evaluation/eval_data/4_multiple_exam'
+                'evaluation', 'eval_data', '4_multiple_exam'
             )
             # 1st~5th 디렉토리에서 모든 파일 로드
             questions = []
@@ -310,7 +310,7 @@ class Step7TransformMultipleChoice(PipelineBase):
             self.logger.info(f"  {answer_type}: {count}")
         
         # 분류 결과 저장
-        output_dir = os.path.join(self.onedrive_path, 'evaluation/eval_data/7_multiple_rw')
+        output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw')
         os.makedirs(output_dir, exist_ok=True)
         
         classified_file = os.path.join(output_dir, 'answer_type_classified.json')
@@ -446,7 +446,7 @@ class Step7TransformMultipleChoice(PipelineBase):
         """wrong -> right 변형"""
         sampling_result = self._sample_questions_by_answer_count(questions, seed)
         
-        output_dir = os.path.join(self.onedrive_path, 'evaluation/eval_data/7_multiple_rw/pick_wrong')
+        output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw', 'pick_wrong')
         os.makedirs(output_dir, exist_ok=True)
         
         all_results = {}
@@ -468,7 +468,7 @@ class Step7TransformMultipleChoice(PipelineBase):
         """right -> wrong 변형"""
         sampling_result = self._sample_questions_by_answer_count(questions, seed)
         
-        output_dir = os.path.join(self.onedrive_path, 'evaluation/eval_data/7_multiple_rw/pick_right')
+        output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw', 'pick_right')
         os.makedirs(output_dir, exist_ok=True)
         
         all_results = {}
@@ -804,7 +804,7 @@ class Step7TransformMultipleChoice(PipelineBase):
     def _transform_abcd(self, questions: List[Dict[str, Any]], 
                         model: str) -> Dict[str, Any]:
         """abcd 변형 (단일정답형 -> 복수정답형)"""
-        output_dir = os.path.join(self.onedrive_path, 'evaluation/eval_data/7_multiple_rw/pick_abcd')
+        output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw', 'pick_abcd')
         os.makedirs(output_dir, exist_ok=True)
         
         system_prompt = """당신은 25년 경력의 문제 출제 전문가입니다.

@@ -30,7 +30,7 @@ def main():
     """메인 함수"""
     parser = argparse.ArgumentParser(description='전체 파이프라인 실행')
     parser.add_argument('--cycle', type=int, default=None, choices=[1, 2, 3],
-                       help='사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 필요')
+                       help='사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리)')
     parser.add_argument('--steps', nargs='+',
                        choices=['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice'],
                        default=None,

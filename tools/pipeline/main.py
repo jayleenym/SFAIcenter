@@ -106,16 +106,12 @@ class Pipeline(PipelineBase):
                     results['extract_basic'] = self.step1.execute(cycle)
             
             if 'extract_full' in steps:
-                if cycle is None:
-                    results['extract_full'] = {'success': False, 'error': 'cycle 필요'}
-                else:
-                    results['extract_full'] = self.step2.execute(cycle, levels=levels)
+                # cycle이 None이어도 가능 (모든 사이클 자동 처리)
+                results['extract_full'] = self.step2.execute(cycle, levels=levels)
             
             if 'classify' in steps:
-                if cycle is None:
-                    results['classify'] = {'success': False, 'error': 'cycle 필요'}
-                else:
-                    results['classify'] = self.step3.execute(cycle)
+                # cycle이 None이어도 가능 (모든 사이클 자동 처리)
+                results['classify'] = self.step3.execute(cycle)
             
             if 'fill_domain' in steps:
                 results['fill_domain'] = self.step4.execute(qna_type=qna_type, model=model)

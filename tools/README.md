@@ -9,6 +9,8 @@
 - **모듈화**: 비슷한 기능들을 통합하여 코드 중복 제거
 - **확장성**: 새로운 기능 추가가 용이한 구조
 - **단계별 분리**: 각 파이프라인 단계를 독립적인 모듈로 분리하여 유지보수성 향상
+- **플랫폼 독립적 경로**: Windows와 macOS에서 자동으로 올바른 경로를 감지하고 사용
+- **경로 자동화**: 하드코딩된 경로를 제거하고 플랫폼별 자동 감지 기능 추가
 
 ## 📁 폴더 구조
 
@@ -76,9 +78,11 @@ tools/
 ### 🔄 pipeline/ - 파이프라인 모듈
 
 **config.py** - 경로 설정
-- `ONEDRIVE_PATH`: OneDrive 데이터 경로 설정
-- `PROJECT_ROOT_PATH`: 프로젝트 루트 경로 설정
-- 환경 변수로 오버라이드 가능
+- `ONEDRIVE_PATH`: OneDrive 데이터 경로 설정 (플랫폼별 자동 감지)
+- `PROJECT_ROOT_PATH`: 프로젝트 루트 경로 설정 (자동 감지)
+- `SFAICENTER_PATH`: SFAICenter 디렉토리 경로 (자동 감지)
+- `_find_onedrive_path()`: 플랫폼별 OneDrive 경로 자동 감지 함수
+- 환경 변수로 오버라이드 가능 (`ONEDRIVE_PATH`, `PROJECT_ROOT_PATH`, `SFAICENTER_PATH`)
 
 **base.py** - 파이프라인 기본 클래스
 - `PipelineBase`: 모든 파이프라인 단계의 기본 클래스
@@ -94,7 +98,11 @@ tools/
 - `Step0Preprocessing`: 텍스트 전처리 (문장내 엔터 제거, 빈 챕터정보 채우기, 선지 텍스트 정규화)
 - `Step1ExtractBasic`: 기본 문제 추출 (Lv2, Lv3_4)
 - `Step2ExtractFull`: 전체 문제 추출 (Lv2, Lv3, Lv3_4, Lv5) - 태그 대치 포함, 덮어쓰기 저장
+  - `cycle` 파라미터가 `None`이면 `final_data_path`에서 모든 사이클의 원본 파일을 자동으로 찾아서 처리
+  - 특정 사이클만 처리하려면 `cycle=1, 2, 3` 중 하나 지정
 - `Step3Classify`: Q&A 타입별 분류 (multiple-choice/short-answer/essay/etc), 기존 파일 병합 지원
+  - `cycle` 파라미터가 `None`이면 `workbook_data` 전체에서 모든 사이클의 파일을 자동으로 찾아서 처리
+  - 특정 사이클만 처리하려면 `cycle=1, 2, 3` 중 하나 지정
 - `Step4DomainSubdomain`: Domain/Subdomain 분류 (실패 항목 재처리 포함, 기존 파일 병합 지원)
 - `Step5CreateExam`: 시험문제 만들기 (exam_config.json 참고)
 - `Step6Evaluate`: 시험지 평가 (모델별 답변 평가, 배치 처리, 시험지 경로 설정 가능)
@@ -203,7 +211,11 @@ data_processing/json_cleaner.py → 빈 페이지 제거
 ```
 pipeline/steps/step1_extract_basic.py → 기본 문제 추출
 pipeline/steps/step2_extract_full.py → 전체 문제 추출 (태그 대치)
+  - cycle=None이면 final_data_path에서 모든 사이클의 원본 파일을 자동으로 찾아서 처리
+  - 특정 사이클만 처리하려면 cycle=1, 2, 3 중 하나 지정
 pipeline/steps/step3_classify.py → Q&A 타입별 분류
+  - cycle=None이면 모든 사이클의 파일을 자동으로 찾아서 처리
+  - 결과는 타입별 파일(multiple-choice.json, short-answer.json 등)에 병합 저장
 ```
 
 #### 3. Domain/Subdomain 분류
@@ -243,6 +255,18 @@ python tools/main_pipeline.py --cycle 1 --steps preprocess extract_basic extract
 # 2단계: Lv2, Lv3_4만 처리 (evaluation/workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
 python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full
 
+# 2단계만 실행 (모든 사이클 자동 처리)
+python tools/main_pipeline.py --steps extract_full
+
+# 2단계만 실행 (특정 사이클만 처리)
+python tools/main_pipeline.py --cycle 1 --steps extract_full
+
+# 3단계만 실행 (모든 사이클 자동 처리)
+python tools/main_pipeline.py --steps classify
+
+# 3단계만 실행 (특정 사이클만 처리)
+python tools/main_pipeline.py --cycle 1 --steps classify
+
 # 2단계 + 3단계 + 4단계: Lv2, Lv3_4 처리 후 분류 및 domain/subdomain 채우기
 python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full classify fill_domain --qna_type multiple --model x-ai/grok-4-fast
 
@@ -277,7 +301,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 
 | 옵션 | 설명 | 기본값 |
 |------|------|--------|
-| `--cycle` | 사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 필요 | None |
+| `--cycle` | 사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리) | None |
 | `--steps` | 실행할 단계 목록 (공백으로 구분) | None (전체 실행) |
 | | | 가능한 값: `preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice` |
 | `--levels` | 처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4) | None (기본값: Lv2, Lv3_4, Lv5) |
@@ -358,8 +382,23 @@ python tools/main_pipeline.py --cycle 1
 # 특정 단계만 실행
 python tools/main_pipeline.py --cycle 1 --steps preprocess extract_basic
 
+# 2단계만 실행 (모든 사이클 자동 처리)
+python tools/main_pipeline.py --steps extract_full
+
+# 2단계만 실행 (특정 사이클만 처리)
+python tools/main_pipeline.py --cycle 1 --steps extract_full
+
 # 2단계만 실행 (Lv2, Lv3_4만 처리, workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
 python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full
+
+# 3단계만 실행 (모든 사이클 자동 처리)
+python tools/main_pipeline.py --steps classify
+
+# 3단계만 실행 (특정 사이클만 처리)
+python tools/main_pipeline.py --cycle 1 --steps classify
+
+# 2단계 + 3단계 + 4단계: 모든 사이클 자동 처리 후 분류 및 domain/subdomain 채우기
+python tools/main_pipeline.py --steps extract_full classify fill_domain --qna_type multiple --model x-ai/grok-4-fast
 
 # 2단계 + 3단계 + 4단계: Lv2, Lv3_4 처리 후 분류 및 domain/subdomain 채우기 (multiple_classification_Lv234.json 생성)
 python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full classify fill_domain --qna_type multiple --model x-ai/grok-4-fast
@@ -421,6 +460,18 @@ results = pipeline.run_full_pipeline(
     steps=['preprocess', 'extract_basic', 'extract_full', 'classify']
 )
 
+# 2단계만 실행 (모든 사이클 자동 처리)
+result = pipeline.step2.execute(cycle=None, levels=['Lv2', 'Lv3_4'])
+
+# 2단계만 실행 (특정 사이클만 처리)
+result = pipeline.step2.execute(cycle=1, levels=['Lv2', 'Lv3_4'])
+
+# 3단계만 실행 (모든 사이클 자동 처리)
+result = pipeline.step3.execute(cycle=None)
+
+# 3단계만 실행 (특정 사이클만 처리)
+result = pipeline.step3.execute(cycle=1)
+
 # Lv2, Lv3_4만 처리
 results = pipeline.run_full_pipeline(
     cycle=1,
@@ -451,6 +502,8 @@ results = pipeline.run_full_pipeline(
 # 개별 단계 실행
 result = pipeline.step0.execute(cycle=1)
 result = pipeline.step2.execute(cycle=1, levels=['Lv2', 'Lv3_4'])  # Lv2, Lv3_4만 처리 (workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
+result = pipeline.step3.execute(cycle=None)  # 모든 사이클 자동 처리
+result = pipeline.step3.execute(cycle=1)  # 특정 사이클만 처리
 result = pipeline.step4.execute(qna_type='multiple', model='x-ai/grok-4-fast')
 result = pipeline.step5.execute(num_sets=5)
 result = pipeline.step6.execute(exam_dir="/path/to/exam/directory")  # 시험지 경로 지정
@@ -580,9 +633,44 @@ read_file
 - **확장성**: 새로운 단계를 추가하려면 `pipeline/steps/`에 새 파일을 추가하면 됩니다.
 
 ### 경로 설정
-- 경로 설정은 `pipeline/config.py`에서 중앙 관리됩니다.
-- `ONEDRIVE_PATH`와 `PROJECT_ROOT_PATH`만 수정하면 모든 경로가 자동으로 설정됩니다.
-- 환경 변수로 오버라이드 가능: `export ONEDRIVE_PATH=/path/to/onedrive`
+
+경로 설정은 `pipeline/config.py`에서 중앙 관리되며, **플랫폼별 자동 감지 기능**을 지원합니다.
+
+#### 플랫폼별 OneDrive 경로 자동 감지
+
+시스템이 자동으로 플랫폼을 감지하여 올바른 OneDrive 경로를 찾습니다:
+
+- **Windows**: 
+  - `C:\Users\<username>\OneDrive\데이터L\selectstar`
+  - `C:\Users\<username>\OneDrive - 개인\데이터L\selectstar`
+  - 환경 변수 `OneDrive` 또는 `OneDriveConsumer`에서 경로 확인
+  
+- **macOS**: 
+  - `~/Library/CloudStorage/OneDrive-개인/데이터L/selectstar`
+  - `~/Library/CloudStorage/OneDrive/데이터L/selectstar`
+
+- **Linux**: 
+  - `~/OneDrive/데이터L/selectstar`
+
+#### 경로 설정 방법
+
+1. **자동 감지 (권장)**: 별도 설정 없이 자동으로 올바른 경로를 찾습니다.
+2. **환경 변수로 오버라이드**: 
+   ```bash
+   # Windows (PowerShell)
+   $env:ONEDRIVE_PATH="C:\Users\Jin\OneDrive\데이터L\selectstar"
+   
+   # macOS/Linux
+   export ONEDRIVE_PATH="/path/to/onedrive/데이터L/selectstar"
+   ```
+3. **코드에서 직접 설정**: `pipeline/config.py`의 `_find_onedrive_path()` 함수를 수정
+
+#### 경로 관련 개선사항
+
+- ✅ **플랫폼 독립적 경로**: 모든 경로가 `os.path.join()`을 사용하여 플랫폼 독립적으로 동작합니다.
+- ✅ **슬래시 경로 제거**: 하드코딩된 슬래시(`/`) 경로를 모두 `os.path.join()` 인수로 분리했습니다.
+- ✅ **자동 플랫폼 감지**: Windows와 macOS에서 자동으로 올바른 OneDrive 경로를 찾습니다.
+- ✅ **환경 변수 지원**: 환경 변수로 경로를 오버라이드할 수 있습니다.
 
 ### 의존성
 - 각 클래스는 독립적으로 사용 가능하지만, 일부 클래스는 다른 클래스에 의존할 수 있습니다.

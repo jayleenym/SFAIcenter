@@ -50,7 +50,13 @@ class AnswerTypeClassifier:
         
         # OneDrive 경로 설정
         if onedrive_path is None:
-            onedrive_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+            import platform
+            system = platform.system()
+            home_dir = os.path.expanduser("~")
+            if system == "Windows":
+                onedrive_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+            else:
+                onedrive_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
         
         self.onedrive_path = onedrive_path
         
@@ -58,7 +64,7 @@ class AnswerTypeClassifier:
         self.system_prompt = self.create_system_prompt()
         
         # 결과 저장 디렉토리
-        self.output_dir = os.path.join(self.onedrive_path, 'evaluation/eval_data/7_multiple_rw')
+        self.output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw')
         os.makedirs(self.output_dir, exist_ok=True)
         logger.info(f"출력 디렉토리: {self.output_dir}")
     

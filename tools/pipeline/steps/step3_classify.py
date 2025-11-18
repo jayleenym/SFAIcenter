@@ -6,7 +6,7 @@
 
 import os
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from ..base import PipelineBase
 from ..config import SFAICENTER_PATH
 from qna.qna_processor import QnATypeClassifier
@@ -20,35 +20,47 @@ class Step3Classify(PipelineBase):
         super().__init__(base_path, config_path, onedrive_path, project_root_path)
         self._step_log_handler = None
     
-    def execute(self, cycle: int) -> Dict[str, Any]:
+    def execute(self, cycle: Optional[int] = None) -> Dict[str, Any]:
         """
         3단계: qna_type별 분류
         - multiple/short/essay/etc로 분류 및 필터링
+        
+        Args:
+            cycle: 사이클 번호 (None이면 모든 사이클의 파일을 자동으로 찾아서 처리)
         """
-        self.logger.info(f"=== 3단계: Q&A 타입별 분류 (Cycle {cycle}) ===")
+        if cycle is None:
+            self.logger.info("=== 3단계: Q&A 타입별 분류 (모든 사이클) ===")
+        else:
+            self.logger.info(f"=== 3단계: Q&A 타입별 분류 (Cycle {cycle}) ===")
         
         # 로깅 설정
         self._setup_step_logging('classify')
         
         try:
-            # Lv2, Lv3_4만 있는 경우를 확인
-            workbook_base = os.path.join(self.onedrive_path, 'evaluation/workbook_data')
-            lv2_path = os.path.join(workbook_base, 'Lv2')
-            lv3_4_path = os.path.join(workbook_base, 'Lv3_4')
+            workbook_base = os.path.join(self.onedrive_path, 'evaluation', 'workbook_data')
             
-            # Lv2, Lv3_4가 직접 있는 경우 (cycle_path 없이)
-            if os.path.exists(lv2_path) or os.path.exists(lv3_4_path):
+            # cycle이 None이면 workbook_data 전체에서 모든 파일 찾기
+            if cycle is None:
                 extracted_dir = workbook_base
+                self.logger.info(f"모든 사이클의 파일을 찾습니다: {extracted_dir}")
             else:
-                # 기존 방식 (cycle_path 포함)
-                extracted_dir = os.path.join(
-                    self.onedrive_path,
-                    f'evaluation/workbook_data/{self.file_manager.cycle_path[cycle]}'
-                )
+                # Lv2, Lv3_4만 있는 경우를 확인
+                lv2_path = os.path.join(workbook_base, 'Lv2')
+                lv3_4_path = os.path.join(workbook_base, 'Lv3_4')
+                
+                # Lv2, Lv3_4가 직접 있는 경우 (cycle_path 없이)
+                if os.path.exists(lv2_path) or os.path.exists(lv3_4_path):
+                    extracted_dir = workbook_base
+                else:
+                    # 기존 방식 (cycle_path 포함)
+                    extracted_dir = os.path.join(
+                        self.onedrive_path,
+                        'evaluation', 'workbook_data', self.file_manager.cycle_path[cycle]
+                    )
             
             output_dir = os.path.join(
                 self.onedrive_path,
-                f'evaluation/eval_data/1_filter_with_tags'
+                'evaluation', 'eval_data', '1_filter_with_tags'
             )
             os.makedirs(output_dir, exist_ok=True)
             
@@ -77,6 +89,33 @@ class Step3Classify(PipelineBase):
                     for qna_item in qna_data:
                         qna_type = qna_item.get('qna_type', 'etc')
                         
+                        # workbook_groupby_qtype.py와 동일한 필터링 로직 적용
+                        qna_data_desc = qna_item.get('qna_data', {}).get('description', {})
+                        options = qna_data_desc.get('options', [])
+                        answer = qna_data_desc.get('answer', '')
+                        
+                        # 각 타입별 필터링 조건 확인
+                        should_include = False
+                        if qna_type == "multiple-choice":
+                            # 객관식: OX 문제 제외, 선지가 3개 이상인 경우
+                            if (options is not None) and (len(options) > 2):
+                                should_include = True
+                        elif qna_type == "short-answer":
+                            # 단답형: 답변이 있고, 답변이 삭제되지 않은 경우
+                            if (answer is not None) and (answer != "삭제"):
+                                should_include = True
+                        elif qna_type == "essay":
+                            # 서술형: 답변이 있는 경우
+                            if answer is not None:
+                                should_include = True
+                        elif qna_type == "etc":
+                            # etc 타입은 모두 포함
+                            should_include = True
+                        
+                        # 조건을 만족하지 않으면 건너뛰기
+                        if not should_include:
+                            continue
+                        
                         # 포맷화된 데이터 생성
                         formatted_item = {
                             'file_id': qna_item.get('file_id'),
@@ -88,10 +127,10 @@ class Step3Classify(PipelineBase):
                             'chapter': qna_item.get('chapter'),
                             'page': qna_item.get('page'),
                             'qna_type': qna_type,
-                            'question': qna_item.get('qna_data', {}).get('description', {}).get('question', ''),
-                            'options': qna_item.get('qna_data', {}).get('description', {}).get('options', []),
-                            'answer': qna_item.get('qna_data', {}).get('description', {}).get('answer', ''),
-                            'explanation': qna_item.get('qna_data', {}).get('description', {}).get('explanation', '')
+                            'question': qna_data_desc.get('question', ''),
+                            'options': options,
+                            'answer': answer,
+                            'explanation': qna_data_desc.get('explanation', '')
                         }
                         
                         if qna_type in classified_data:

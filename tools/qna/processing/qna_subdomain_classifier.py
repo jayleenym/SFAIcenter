@@ -57,7 +57,13 @@ class QnASubdomainClassifier:
         
         # OneDrive 경로 설정
         if onedrive_path is None:
-            onedrive_path = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+            import platform
+            system = platform.system()
+            home_dir = os.path.expanduser("~")
+            if system == "Windows":
+                onedrive_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+            else:
+                onedrive_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
         
         self.onedrive_path = onedrive_path
         
@@ -68,7 +74,7 @@ class QnASubdomainClassifier:
         self.system_prompt = self.create_system_prompt()
         
         # 결과 저장 디렉토리
-        self.output_dir = os.path.join(self.onedrive_path, 'evaluation/eval_data/2_subdomain')
+        self.output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '2_subdomain')
         os.makedirs(self.output_dir, exist_ok=True)
         logger.info(f"출력 디렉토리: {self.output_dir}")
         
@@ -82,7 +88,7 @@ class QnASubdomainClassifier:
         except FileNotFoundError:
             # fallback: 기존 방식으로 시도 (하위 호환성)
             logger.warning("exam_config.json을 찾을 수 없어 기존 domain_subdomain.json을 시도합니다.")
-            domain_subdomain_path = os.path.join(self.onedrive_path, 'evaluation/eval_data/_old/domain_subdomain.json')
+            domain_subdomain_path = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '_old', 'domain_subdomain.json')
             
             if not os.path.exists(domain_subdomain_path):
                 raise FileNotFoundError(f"도메인-서브도메인 매핑 파일을 찾을 수 없습니다: {domain_subdomain_path}")
@@ -519,13 +525,13 @@ class QnASubdomainClassifier:
             if data_path is None:
                 # 기본 경로 설정
                 if self.mode == 'short-fail':
-                    data_path = os.path.join(self.onedrive_path, 'evaluation/eval_data/2_subdomain/short_subdomain_classified_ALL_fail_response.json')
+                    data_path = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '2_subdomain', 'short_subdomain_classified_ALL_fail_response.json')
                 elif self.mode == 'multiple-fail':
-                    data_path = os.path.join(self.onedrive_path, 'evaluation/eval_data/2_subdomain/multiple_re_run.json')
+                    data_path = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '2_subdomain', 'multiple_re_run.json')
                 elif self.mode == 'multiple-re':
-                    data_path = os.path.join(self.onedrive_path, 'evaluation/eval_data/2_subdomain/multiple.json')
+                    data_path = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '2_subdomain', 'multiple.json')
                 else:
-                    data_path = os.path.join(self.onedrive_path, f'evaluation/eval_data/1_filter/{self.mode}.json')
+                    data_path = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '1_filter', f'{self.mode}.json')
             
             questions = self.load_multiple_choice_data(data_path)
         

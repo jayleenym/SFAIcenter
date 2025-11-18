@@ -56,7 +56,7 @@ class Step5CreateExam(PipelineBase):
             # 전체 데이터 파일
             all_data_file = os.path.join(
                 self.onedrive_path,
-                'evaluation/eval_data/2_subdomain/multiple_subdomain_classified_ALL.json'
+                'evaluation', 'eval_data', '2_subdomain', 'multiple_subdomain_classified_ALL.json'
             )
             
             if not os.path.exists(all_data_file):
@@ -75,7 +75,7 @@ class Step5CreateExam(PipelineBase):
             # 출력 디렉토리
             exam_dir = os.path.join(
                 self.onedrive_path,
-                'evaluation/eval_data/4_multiple_exam'
+                'evaluation', 'eval_data', '4_multiple_exam'
             )
             os.makedirs(exam_dir, exist_ok=True)
             
@@ -164,7 +164,7 @@ class Step5CreateExam(PipelineBase):
             self.logger.info(f"사용되지 않은 나머지 문제: {len(remaining_data)}개")
             remaining_file = os.path.join(
                 self.onedrive_path,
-                'evaluation/eval_data/2_subdomain/multiple_remaining.json'
+                'evaluation', 'eval_data', '4_multiple_exam', 'multiple_remaining.json'
             )
             os.makedirs(os.path.dirname(remaining_file), exist_ok=True)
             with open(remaining_file, 'w', encoding='utf-8') as f:

@@ -21,8 +21,14 @@ try:
     sys.path.insert(0, project_root)
     from pipeline.config import ONEDRIVE_PATH
 except ImportError:
-    # fallback: pipeline이 없는 경우 기본값 사용
-    ONEDRIVE_PATH = os.path.join(os.path.expanduser("~"), "Library/CloudStorage/OneDrive-개인/데이터L/selectstar")
+    # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
+    import platform
+    system = platform.system()
+    home_dir = os.path.expanduser("~")
+    if system == "Windows":
+        ONEDRIVE_PATH = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+    else:
+        ONEDRIVE_PATH = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
 
 
 def load_json_file(file_path: str) -> Dict[str, Any]:
@@ -209,9 +215,9 @@ def process_additional_tags(cycle: str, file_id: str) -> bool:
     """additional_tag_data를 처리하는 메인 함수. 성공시 True, 실패시 False 반환"""
     
     # 파일 경로 설정
-    extracted_qna_path = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5/{file_id}_extracted_qna.json')
-    source_path = os.path.join(ONEDRIVE_PATH, f'data/FINAL/{cycle}C/Lv5/{file_id}/{file_id}.json')
-    backup_dir = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5/_backup')
+    extracted_qna_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C', 'Lv5', f'{file_id}_extracted_qna.json')
+    source_path = os.path.join(ONEDRIVE_PATH, 'data', 'FINAL', f'{cycle}C', 'Lv5', file_id, f'{file_id}.json')
+    backup_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C', 'Lv5', '_backup')
     backup_path = os.path.join(backup_dir, f'{file_id}_extracted_qna.json.bak')
     
     # 백업 디렉토리 생성 (존재하지 않는 경우)
@@ -268,7 +274,7 @@ def process_additional_tags(cycle: str, file_id: str) -> bool:
 
 def find_all_extracted_qna_files(cycle: str) -> List[str]:
     """지정된 경로의 모든 extracted_qna 파일을 찾습니다."""
-    extracted_dir = os.path.join(ONEDRIVE_PATH, f'evaluation/workbook_data/{cycle}C/Lv5')
+    extracted_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C', 'Lv5')
     
     if not os.path.exists(extracted_dir):
         print(f"디렉토리가 존재하지 않습니다: {extracted_dir}")

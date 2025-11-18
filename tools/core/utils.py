@@ -31,11 +31,17 @@ class FileManager:
                 from pipeline.config import ONEDRIVE_PATH
                 self.base_path = ONEDRIVE_PATH
             except ImportError:
-                # fallback: pipeline이 없는 경우 기본값 사용
-                self.base_path = os.path.join(
-                    os.path.expanduser("~"), 
-                    "Library/CloudStorage/OneDrive-개인/데이터L/selectstar"
-                )
+                # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
+                import platform
+                system = platform.system()
+                home_dir = os.path.expanduser("~")
+                
+                if system == "Windows":
+                    # Windows OneDrive 경로
+                    self.base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+                else:
+                    # macOS 기본 경로
+                    self.base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
         else:
             self.base_path = base_path
         
