@@ -32,7 +32,8 @@ tools/
 │       ├── step4_domain_subdomain.py   # 4단계: Domain/Subdomain 분류
 │       ├── step5_create_exam.py        # 5단계: 시험문제 만들기
 │       ├── step6_evaluate.py           # 6단계: 시험지 평가
-│       └── step7_transform_multiple_choice.py  # 7단계: 객관식 문제 변형
+│       ├── step7_transform_multiple_choice.py  # 7단계: 객관식 문제 변형
+│       └── step8_create_transformed_exam.py    # 8단계: 변형 문제를 포함한 시험지 생성
 │
 ├── core/                    # 핵심 유틸리티 및 공통 기능
 │   ├── utils.py            # FileManager, TextProcessor, JSONHandler 클래스
@@ -107,6 +108,7 @@ tools/
 - `Step5CreateExam`: 시험문제 만들기 (exam_config.json 참고)
 - `Step6Evaluate`: 시험지 평가 (모델별 답변 평가, 배치 처리, 시험지 경로 설정 가능)
 - `Step7TransformMultipleChoice`: 객관식 문제 변형 (right/wrong/abcd 분류 및 변형)
+- `Step8CreateTransformedExam`: 변형 문제를 포함한 시험지 생성 (1st~5th 세트 처리, 변형 문제와 원본 문제 결합)
 
 ### 🔧 core/ - 핵심 유틸리티
 
@@ -196,7 +198,8 @@ main_pipeline.py → 전체 프로세스 실행
 ├── Step 4: Domain/Subdomain 분류 (실패 항목 재처리)
 ├── Step 5: 시험문제 만들기
 ├── Step 6: 시험지 평가
-└── Step 7: 객관식 문제 변형 (right/wrong/abcd 분류 및 변형)
+├── Step 7: 객관식 문제 변형 (right/wrong/abcd 분류 및 변형)
+└── Step 8: 변형 문제를 포함한 시험지 생성 (1st~5th 세트 처리)
 ```
 
 ### 개별 단계 실행
@@ -239,6 +242,17 @@ pipeline/steps/step7_transform_multiple_choice.py → 객관식 문제 변형
   ├── wrong -> right 변형
   ├── right -> wrong 변형
   └── abcd 변형 (단일정답형 -> 복수정답형)
+```
+
+#### 6. 변형 문제를 포함한 시험지 생성
+```
+pipeline/steps/step8_create_transformed_exam.py → 변형 문제를 포함한 시험지 생성
+  ├── 4_multiple_exam의 각 세트(1st~5th) 시험지 로드
+  ├── pick_right, pick_wrong, pick_abcd의 변형 문제 매칭
+  ├── 변형된 문제로 question, options, answer 교체
+  ├── 원본 explanation을 original_explanation으로 저장
+  ├── 변형된 explanation을 explanation으로 저장
+  └── 변형되지 않은 문제는 별도 파일(_missing.json)로 저장
 ```
 
 ## 🎯 사용 방법
@@ -303,7 +317,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 |------|------|--------|
 | `--cycle` | 사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리) | None |
 | `--steps` | 실행할 단계 목록 (공백으로 구분) | None (전체 실행) |
-| | | 가능한 값: `preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice` |
+| | | 가능한 값: `preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice`, `create_transformed_exam` |
 | `--levels` | 처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4) | None (기본값: Lv2, Lv3_4, Lv5) |
 | `--base_path` | 기본 데이터 경로 | None (ONEDRIVE_PATH 사용) |
 | `--config_path` | LLM 설정 파일 경로 | None (PROJECT_ROOT_PATH/llm_config.ini 사용) |
@@ -357,6 +371,11 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 | `--transform_right_to_wrong` | right -> wrong 변형 수행 여부 | False |
 | `--transform_abcd` | abcd 변형 수행 여부 | False |
 
+**8단계 (변형 문제를 포함한 시험지 생성)**
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--create_transformed_exam_sets` | 변형 시험지 생성할 세트 번호 리스트 (공백으로 구분, 예: 1 2 3) | None (1~5 모두 처리) |
+
 **참고:**
 - `--transform_classify`가 False이고 `--transform_classified_data_path`가 None이면 기본 경로(`evaluation/eval_data/7_multiple_rw/answer_type_classified.json`)를 자동으로 사용합니다.
 - 변형 옵션(`--transform_wrong_to_right`, `--transform_right_to_wrong`, `--transform_abcd`)은 기본값이 False이므로, 원하는 변형을 명시적으로 활성화해야 합니다.
@@ -372,6 +391,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 - `create_exam`: 5단계 - 시험문제 만들기
 - `evaluate_exams`: 6단계 - 시험지 평가
 - `transform_multiple_choice`: 7단계 - 객관식 문제 변형
+- `create_transformed_exam`: 8단계 - 변형 문제를 포함한 시험지 생성
 
 #### 사용 예제
 
@@ -438,6 +458,12 @@ python tools/main_pipeline.py --steps transform_multiple_choice --transform_clas
 
 # 7단계만 실행 (여러 변형 수행)
 python tools/main_pipeline.py --steps transform_multiple_choice --transform_wrong_to_right --transform_right_to_wrong --transform_abcd
+
+# 8단계만 실행 (1st~5th 모두 처리)
+python tools/main_pipeline.py --steps create_transformed_exam
+
+# 8단계만 실행 (특정 세트만 처리: 1, 2, 3세트)
+python tools/main_pipeline.py --steps create_transformed_exam --create_transformed_exam_sets 1 2 3
 
 # 디버그 모드로 실행
 python tools/main_pipeline.py --cycle 1 --debug
@@ -524,6 +550,12 @@ result = pipeline.step7.execute(
     transform_model='openai/o3',
     transform_wrong_to_right=True
 )  # 7단계: 객관식 문제 변형 (분류 포함)
+
+# 8단계만 실행 (1st~5th 모두 처리)
+result = pipeline.step8.execute()
+
+# 8단계만 실행 (특정 세트만 처리: 1, 2, 3세트)
+result = pipeline.step8.execute(sets=[1, 2, 3])
 ```
 
 ### 개별 클래스 사용
@@ -708,4 +740,15 @@ read_file
   - `--transform_classified_data_path`가 None이면 기본 경로(`evaluation/eval_data/7_multiple_rw/answer_type_classified.json`)를 자동으로 사용합니다.
 - 분류 단계와 변형 단계에서 서로 다른 모델을 사용할 수 있습니다 (기본값: `openai/gpt-5`로 분류, `openai/o3`로 변형).
 - 변형 옵션: `wrong -> right`, `right -> wrong`, `abcd` 변형을 개별적으로 활성화/비활성화할 수 있습니다 (기본값: 모두 False).
+
+**8단계 (변형 문제를 포함한 시험지 생성)**
+- 8단계는 4_multiple_exam의 각 세트(1st~5th) 시험지에서 변형된 문제를 찾아 새로운 시험지를 생성합니다.
+- `pick_right`, `pick_wrong`, `pick_abcd`의 result.json 파일에서 변형된 문제를 로드합니다.
+- 변형 규칙:
+  - 기존 시험지의 `question`, `options`, `answer`를 변형된 문제의 것으로 교체
+  - 기존 시험지의 `explanation`을 `original_explanation`으로 키 이름 변경
+  - 변형된 문제의 `explanation`을 `explanation` 키에 저장
+- 변형되지 않은 문제는 `{시험지명}_missing.json` 파일로 별도 저장됩니다.
+- 결과는 `evaluation/eval_data/8_multiple_exam_+/{세트명}/` 폴더에 저장됩니다.
+- `--create_transformed_exam_sets` 옵션으로 특정 세트만 처리할 수 있습니다 (None이면 1~5 모두 처리).
 

@@ -11,10 +11,11 @@ from .steps import (
     Step1ExtractBasic,
     Step2ExtractFull,
     Step3Classify,
-    Step4DomainSubdomain,
+    Step4FillDomain,
     Step5CreateExam,
     Step6Evaluate,
-    Step7TransformMultipleChoice
+    Step7TransformMultipleChoice,
+    Step8CreateTransformedExam
 )
 
 
@@ -37,14 +38,15 @@ class Pipeline(PipelineBase):
         self.step1 = Step1ExtractBasic(base_path, config_path, onedrive_path, project_root_path)
         self.step2 = Step2ExtractFull(base_path, config_path, onedrive_path, project_root_path)
         self.step3 = Step3Classify(base_path, config_path, onedrive_path, project_root_path)
-        self.step4 = Step4DomainSubdomain(base_path, config_path, onedrive_path, project_root_path)
+        self.step4 = Step4FillDomain(base_path, config_path, onedrive_path, project_root_path)
         self.step5 = Step5CreateExam(base_path, config_path, onedrive_path, project_root_path)
         self.step6 = Step6Evaluate(base_path, config_path, onedrive_path, project_root_path)
         self.step7 = Step7TransformMultipleChoice(base_path, config_path, onedrive_path, project_root_path)
+        self.step8 = Step8CreateTransformedExam(base_path, config_path, onedrive_path, project_root_path)
     
     def run_full_pipeline(self, cycle: int = None, steps: List[str] = None,
                          levels: List[str] = None,
-                         qna_type: str = 'multiple', model: str = 'x-ai/grok-4-fast',
+                         qna_type: str = None, model: str = 'x-ai/grok-4-fast',
                          num_sets: int = 5, eval_models: List[str] = None,
                          eval_batch_size: int = 10, eval_use_ox_support: bool = True,
                          eval_use_server_mode: bool = False,
@@ -55,15 +57,16 @@ class Pipeline(PipelineBase):
                          transform_classify_model: str = 'openai/gpt-5', transform_classify_batch_size: int = 10,
                          transform_model: str = 'openai/o3', transform_wrong_to_right: bool = True,
                          transform_right_to_wrong: bool = True, transform_abcd: bool = True,
-                         transform_seed: int = 42) -> Dict[str, Any]:
+                         transform_seed: int = 42,
+                         create_transformed_exam_sets: List[int] = None) -> Dict[str, Any]:
         """
         전체 파이프라인 실행
         
         Args:
             cycle: 사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 사용
             steps: 실행할 단계 리스트 (None이면 전체 실행)
-                가능한 값: 'preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice'
-            qna_type: QnA 타입 (4단계에서 사용)
+                가능한 값: 'preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam'
+            qna_type: QnA 타입 (4단계에서 사용, None이면 모든 타입 처리: 'multiple', 'short', 'essay')
             model: 사용할 모델 (4단계에서 사용)
             num_sets: 시험 세트 개수 (5단계에서 사용)
             eval_models: 평가할 모델 목록 (6단계에서 사용)
@@ -83,12 +86,13 @@ class Pipeline(PipelineBase):
             transform_right_to_wrong: right -> wrong 변형 수행 여부 (7단계에서 사용)
             transform_abcd: abcd 변형 수행 여부 (7단계에서 사용)
             transform_seed: 랜덤 시드 (7단계에서 사용)
+            create_transformed_exam_sets: 변형 시험지 생성할 세트 번호 리스트 (8단계에서 사용, None이면 1~5 모두 처리)
         
         Returns:
             실행 결과
         """
         if steps is None:
-            steps = ['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice']
+            steps = ['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam']
         
         results = {}
         
@@ -114,7 +118,15 @@ class Pipeline(PipelineBase):
                 results['classify'] = self.step3.execute(cycle)
             
             if 'fill_domain' in steps:
-                results['fill_domain'] = self.step4.execute(qna_type=qna_type, model=model)
+                # qna_type이 None이면 모든 타입 처리
+                if qna_type is None:
+                    qna_types = ['multiple', 'short', 'essay']
+                    for qtype in qna_types:
+                        self.logger.info(f"fill_domain 처리 시작: {qtype}")
+                        result = self.step4.execute(qna_type=qtype, model=model)
+                        results[f'fill_domain_{qtype}'] = result
+                else:
+                    results['fill_domain'] = self.step4.execute(qna_type=qna_type, model=model)
             
             if 'create_exam' in steps:
                 results['create_exam'] = self.step5.execute(num_sets=num_sets)
@@ -142,6 +154,11 @@ class Pipeline(PipelineBase):
                     transform_right_to_wrong=transform_right_to_wrong,
                     transform_abcd=transform_abcd,
                     seed=transform_seed
+                )
+            
+            if 'create_transformed_exam' in steps:
+                results['create_transformed_exam'] = self.step8.execute(
+                    sets=create_transformed_exam_sets
                 )
             
             results['success'] = True

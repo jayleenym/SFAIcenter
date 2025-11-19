@@ -12,6 +12,7 @@
 5. 시험문제 만들기 - 5세트의 시험문제를 exam_config.json 참고하여 만들기
 6. 시험지 평가 - 만들어진 시험지(1st/2nd/3rd/4th/5th) 모델별 답변 평가 (10문제씩 배치화하여 호출)
 7. 객관식 문제 변형 - AnswerTypeClassifier로 문제 분류 (right/wrong/abcd) 및 변형
+8. 변형 문제를 포함한 시험지 생성 - 변형된 문제를 원본 시험지에 적용하여 새로운 시험지 생성
 """
 
 import os
@@ -32,7 +33,7 @@ def main():
     parser.add_argument('--cycle', type=int, default=None, choices=[1, 2, 3],
                        help='사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리)')
     parser.add_argument('--steps', nargs='+',
-                       choices=['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice'],
+                       choices=['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam'],
                        default=None,
                        help='실행할 단계 (기본값: 전체 실행)')
     parser.add_argument('--base_path', type=str, default=None, 
@@ -86,6 +87,9 @@ def main():
                        help='right -> wrong 변형 수행 (7단계에서 사용)')
     parser.add_argument('--transform_abcd', action='store_true', default=False,
                        help='abcd 변형 수행 (7단계에서 사용)')
+    parser.add_argument('--create_transformed_exam_sets', type=int, nargs='+', default=None,
+                       choices=[1, 2, 3, 4, 5],
+                       help='변형 시험지 생성할 세트 번호 (8단계에서 사용, 예: --create_transformed_exam_sets 1 또는 --create_transformed_exam_sets 1 2 3, None이면 모든 세트 처리)')
     parser.add_argument('--debug', action='store_true',
                        help='디버그 로그 활성화')
     
@@ -128,7 +132,8 @@ def main():
         transform_model=args.transform_model,
         transform_wrong_to_right=args.transform_wrong_to_right,
         transform_right_to_wrong=args.transform_right_to_wrong,
-        transform_abcd=args.transform_abcd
+        transform_abcd=args.transform_abcd,
+        create_transformed_exam_sets=args.create_transformed_exam_sets
     )
     
     # 결과 확인 (에러 시에만 종료)
