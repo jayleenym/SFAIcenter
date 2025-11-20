@@ -41,20 +41,10 @@ def load_exam_questions(exam_dir, exam_set_name):
     return exam_questions
 
 def main():
-    # 경로 설정 - 현재 스크립트 위치 기준으로 evaluation_yejin 경로 사용
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    base_path = os.path.join(script_dir, 'evaluation_yejin')
     
-    # evaluation_yejin이 없으면 ONEDRIVE_PATH 사용 시도
-    if not os.path.exists(base_path):
-        base_path = os.path.join(ONEDRIVE_PATH, 'evaluation')
-        print(f"evaluation_yejin을 찾을 수 없어 ONEDRIVE_PATH 사용: {base_path}")
-    else:
-        print(f"evaluation_yejin 경로 사용: {base_path}")
-    
-    essay_file = os.path.join(base_path, 'eval_data', '9_multiple_to_essay', 'essay_w_keyword.json')
-    exam_dir = os.path.join(base_path, 'eval_data', '4_multiple_exam')
-    output_dir = os.path.join(base_path, 'eval_data', '9_multiple_to_essay')
+    essay_file = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', 'essay_w_keyword.json')
+    exam_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '4_multiple_exam')
+    output_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay')
     
     # 출력 디렉토리 생성
     os.makedirs(output_dir, exist_ok=True)

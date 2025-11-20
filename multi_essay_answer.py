@@ -1,36 +1,116 @@
-from tools.pipeline.config import ONEDRIVE_PATH
-import os, json
+from tools.pipeline.config import ONEDRIVE_PATH, PROJECT_ROOT_PATH
+import os, json, argparse, random, configparser
 from tqdm import tqdm
 from tools.core.llm_query import LLMQuery
 
-llm = LLMQuery(api_key = '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')
+def get_api_key():
+    """llm_config.ini에서 API 키 읽기"""
+    config_path = os.path.join(PROJECT_ROOT_PATH, 'llm_config.ini')
+    if os.path.exists(config_path):
+        try:
+            config = configparser.ConfigParser()
+            config.read(config_path, encoding='utf-8')
+            if config.has_option("OPENROUTER", "key_evaluate"):
+                return config.get("OPENROUTER", "key_evaluate")
+            elif config.has_option("OPENROUTER", "key_essay"):
+                return config.get("OPENROUTER", "key_essay")
+            elif config.has_option("OPENROUTER", "key"):
+                return config.get("OPENROUTER", "key")
+        except Exception as e:
+            print(f"경고: 설정 파일에서 API 키를 읽는 중 오류 발생: {e}")
+    return None
 
-with open(os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', 'essay_w_keyword.json'), 'r', encoding='utf-8') as f:
-    full_explanation = json.load(f)
-
-eval_model_list = ['google/gemini-2.5-pro', 'openai/gpt-5', 'anthropic/claude-sonnet-4.5', 'anthropic/claude-3.7-sonnet', 'google/gemini-2.5-flash', 'openai/gpt-4.1']
-
-number = input("평가 모델 번호 입력(1: google/gemini-2.5-pro, 2: openai/gpt-5, 3: anthropic/claude-sonnet-4.5, 4: anthropic/claude-3.7-sonnet, 5: google/gemini-2.5-flash, 6: openai/gpt-4.1): ")
-model = eval_model_list[int(number) - 1]
-
-
-eval_model_answer = []
-print(f"평가 모델: {model}")
-for q in tqdm(full_explanation):
-    user_prompt = f"""
+def process_essay_questions(model, round_number, round_folder, selected_questions, api_key=None):
+    """특정 모델과 회차에 대해 서술형 문제를 처리하는 함수"""
+    llm = LLMQuery(api_key=api_key)
+    
+    eval_model_answer = []
+    print(f"\n평가 모델: {model}, 회차: {round_number} ({round_folder}), 선택된 문제 수: {len(selected_questions)}")
+    
+    for q in tqdm(selected_questions, desc=f"{model} - {round_folder}"):
+        user_prompt = f"""
 서술형 질문: {q['essay_question']}
 키워드: {q['essay_keyword']}
 """
-    answer = llm.query_openrouter("주어진 키워드를 모두 사용하여 서술형 문제에 대한 답변을 작성해주세요.", user_prompt, model_name = model)
+        answer = llm.query_openrouter("주어진 키워드를 모두 사용하여 서술형 문제에 대한 답변을 작성해주세요.", user_prompt, model_name = model)
+        
+        answers = {
+            'file_id': q['file_id'],
+            'tag': q['tag'],
+            'question': q['essay_question'],
+            'keyword': q['essay_keyword'],
+            'answer': answer
+        }
+        eval_model_answer.append(answers)
     
-    answers = {
-        'file_id': q['file_id'],
-        'tag': q['tag'],
-        'question': q['essay_question'],
-        'keyword': q['essay_keyword'],
-        'answer': answer
-    }
-    eval_model_answer.append(answers)
+    # 모델 이름에서 슬래시를 언더스코어로 변경하여 파일명에 사용
+    model_name_for_file = model.replace('/', '_')
+    output_filename = f'{model_name_for_file}_answer.json'
+    
+    # 저장 경로: 9_multiple_to_essay/{round_folder}/
+    output_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', round_folder)
+    os.makedirs(output_dir, exist_ok=True)
+    
+    output_path = os.path.join(output_dir, output_filename)
+    
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(eval_model_answer, f, ensure_ascii=False, indent=4)
+    
+    print(f"결과가 {output_path}에 저장되었습니다.")
 
-with open(os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', f'{model}_answer.json'), 'w', encoding='utf-8') as f:
-    json.dump(eval_model_answer, f, ensure_ascii=False, indent=4)
+def main():
+    parser = argparse.ArgumentParser(description='서술형 문제 답변 생성')
+    parser.add_argument('--models', type=str, required=True, help='모델 이름 (예: google/gemini-2.5-pro)')
+    parser.add_argument('--sets', type=str, nargs='+', help='회차 리스트 (예: 1 2 3 또는 생략 시 전체 회차)')
+    
+    args = parser.parse_args()
+    
+    # API 키 읽기
+    api_key = get_api_key()
+    if api_key is None:
+        print("경고: llm_config.ini에서 API 키를 찾을 수 없습니다. API 키 없이 진행합니다.")
+    
+    model = args.models
+    
+    # 회차에 따른 폴더명 매핑
+    round_folders = {'1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th'}
+    
+    # --sets가 없으면 전체 회차(1, 2, 3, 4, 5) 실행
+    if args.sets is None:
+        sets_to_process = ['1', '2', '3', '4', '5']
+    else:
+        sets_to_process = args.sets
+        # 유효성 검사
+        for s in sets_to_process:
+            if s not in round_folders:
+                print(f"오류: 회차 {s}는 유효하지 않습니다. 회차는 1, 2, 3, 4, 5 중 하나여야 합니다.")
+                return
+    
+    # 각 회차별로 순차적으로 처리
+    for round_number in sets_to_process:
+        round_folder = round_folders[round_number]
+        
+        # 각 회차별 파일에서 데이터 로드
+        input_file = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', f'essay_w_keyword_{round_folder}.json')
+        
+        if not os.path.exists(input_file):
+            print(f"경고: 파일을 찾을 수 없습니다: {input_file}")
+            continue
+        
+        print(f"\n[{round_folder}] 파일 로드 중: {input_file}")
+        with open(input_file, 'r', encoding='utf-8') as f:
+            full_explanation = json.load(f)
+        
+        print(f"[{round_folder}] 전체 문제 수: {len(full_explanation)}")
+        
+        # seed 고정하여 랜덤으로 150문제 추출 (각 회차마다 독립적으로)
+        random.seed(42)
+        selected_questions = random.sample(full_explanation, min(150, len(full_explanation)))
+        
+        print(f"[{round_folder}] 선택된 문제 수: {len(selected_questions)}")
+        
+        # 해당 회차 처리 및 저장
+        process_essay_questions(model, round_number, round_folder, selected_questions, api_key)
+
+if __name__ == '__main__':
+    main()
