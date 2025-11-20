@@ -230,7 +230,16 @@ class Step8CreateTransformedExam(PipelineBase):
                         data = []
                     self.logger.info(f"{transform_type}/{set_num}: {len(data)}개 문제 로드")
                     for item in data:
+                        # question_id가 있으면 사용, 없으면 file_id와 tag로 생성
+                        # pick_right와 pick_wrong 모두 file_id와 tag 구조로 통일됨
                         question_id = item.get('question_id', '')
+                        if not question_id:
+                            # file_id와 tag로 question_id 생성
+                            file_id = item.get('file_id', '')
+                            tag = item.get('tag', '')
+                            if file_id and tag:
+                                question_id = self._create_question_id(file_id, tag)
+                        
                         if question_id:
                             # 세트 정보 추가
                             item_with_meta = item.copy()
