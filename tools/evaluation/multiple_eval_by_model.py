@@ -52,21 +52,14 @@ except ImportError:
         onedrive_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
     sfaicenter_path = project_root  # fallback
 
-log_dir = os.path.join(sfaicenter_path, 'logs')
-log_file = os.path.join(log_dir, 'multiple_eval_by_model.log')
-
-# logs 디렉토리가 없으면 생성
-os.makedirs(log_dir, exist_ok=True)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(log_file, encoding='utf-8')
-    ]
+# 중앙화된 로깅 유틸리티 사용
+from core.logger import setup_logger
+logger = setup_logger(
+    name=__name__,
+    log_file='multiple_eval_by_model.log',
+    use_console=True,
+    use_file=True
 )
-logger = logging.getLogger(__name__)
 
 # -----------------------------
 # 유틸: 텍스트 정규화
@@ -92,10 +85,27 @@ def is_ox_question(question: str, options: list) -> bool:
         return "O" in option_text or "X" in option_text
     return False
 
-def parse_answer_set(ans: str, question: str = "", options: list = None) -> Set[int]:
-    """정답 파싱 함수 - O, X 문제도 처리"""
+def parse_answer_set(ans, question: str = "", options: list = None) -> Set[int]:
+    """정답 파싱 함수 - O, X 문제도 처리, 리스트 답안도 처리 (변형 시험지용)"""
     if not ans:
         return set()
+    
+    # 리스트 답안 처리 (변형 시험지의 경우: ["①", "③"] 형식)
+    if isinstance(ans, list):
+        result_set = set()
+        for item in ans:
+            if not item:
+                continue
+            s = str(item).strip()
+            # ①~⑤ 를 1~5로 치환
+            for k, v in CIRCLED_MAP.items():
+                s = s.replace(k, v)
+            # 1~5 숫자 추출
+            nums = re.findall(r"[1-5]", s)
+            result_set.update(int(n) for n in nums)
+        return result_set
+    
+    # 문자열 답안 처리 (기존 로직)
     s = str(ans).strip()
     
     # O, X 문제 처리
@@ -114,7 +124,7 @@ def parse_answer_set(ans: str, question: str = "", options: list = None) -> Set[
 # JSON → df_all 변환
 # -----------------------------
 
-def json_to_df_all(json_list: List[dict], use_ox_support: bool = False) -> pd.DataFrame:
+def json_to_df_all(json_list: List[dict], use_ox_support: bool = False, transformed: bool = False) -> pd.DataFrame:
     """
     JSON → df_all 변환 함수
     컬럼: subject, domain, subdomain, book_id, tag, id, question, opt1..opt5, answer_set [, is_ox_question]
@@ -122,6 +132,7 @@ def json_to_df_all(json_list: List[dict], use_ox_support: bool = False) -> pd.Da
     Args:
         json_list: JSON 데이터 리스트
         use_ox_support: O, X 문제 지원 여부 (기본값: False)
+        transformed: 변형 시험지 여부 (기본값: False, True면 answer가 리스트일 수 있음)
     
     Note:
         중복 제거는 하지 않습니다. ID만 고유하게 만듭니다.
@@ -138,6 +149,7 @@ def json_to_df_all(json_list: List[dict], use_ox_support: bool = False) -> pd.Da
         domain = item.get("domain", "")
         subdomain = item.get("subdomain", "")
         
+        # 변형 시험지의 경우 answer가 리스트일 수 있음 (parse_answer_set에서 처리)
         ans_set = parse_answer_set(answer, q, opts)
         
         # O, X 문제인지 판단 (ox 모드가 켜진 경우에만)
@@ -232,9 +244,25 @@ SYSTEM_PROMPT = """당신은 금융전문가이자 객관식 문제 풀이 전�
 - 출력 줄 수는 입력 문제 개수와 동일해야 합니다.
 """
 
-def build_user_prompt(batch_df: pd.DataFrame) -> str:
+SYSTEM_PROMPT_TRANSFORMED = """당신은 금융전문가이자 객관식 문제 풀이 전문가입니다.
+여러 금융 객관식 문제에 대해, 각 문제는 "모두 고르시오" 유형입니다. 정답이 되는 모든 번호를 선택합니다.
+
+규칙
+- 각 문제는 고유 ID와 함께 제시됩니다.
+- 출력은 반드시 한 줄당 "ID<TAB>번호1,번호2,..." 형식으로만 합니다. (예: SS0000_q_0377_0001<TAB>1,3 또는 SS0000_q_0377_0001<TAB>1 3)
+- 여러 정답이 있는 경우 쉼표(,) 또는 공백으로 구분하여 모두 선택합니다. (예: 1,3 또는 1 3)
+- 정답이 하나인 경우에도 동일한 형식을 사용합니다. (예: 3 또는 3)
+- 다른 글자, 마크다운, 이유, 기호는 절대 출력하지 않습니다.
+- 모든 문제는 보기(1~5) 중 하나 이상을 선택합니다.
+- 출력 줄 수는 입력 문제 개수와 동일해야 합니다.
+"""
+
+def build_user_prompt(batch_df: pd.DataFrame, transformed: bool = False) -> str:
     lines = []
-    lines.append("다음은 금융 객관식 문제들입니다. 각 문제에 대해 정답 번호만 고르세요.\n")
+    if transformed:
+        lines.append("다음은 금융 객관식 문제들입니다. 각 문제는 '모두 고르시오' 유형입니다. 정답이 되는 모든 번호를 선택하세요.\n")
+    else:
+        lines.append("다음은 금융 객관식 문제들입니다. 각 문제에 대해 정답 번호만 고르세요.\n")
     lines.append("문제들")
     for _, r in batch_df.iterrows():
         lines.append(f"ID: {r['id']}")
@@ -246,7 +274,10 @@ def build_user_prompt(batch_df: pd.DataFrame) -> str:
         lines.append(f"5) {r['opt5']}\n")
     lines.append("출력 형식(중요)")
     for _, r in batch_df.iterrows():
-        lines.append(f"{r['id']}\\t{{번호}}")
+        if transformed:
+            lines.append(f"{r['id']}\\t{{번호1,번호2,...}}  (예: 1,3 또는 1 3)")
+        else:
+            lines.append(f"{r['id']}\\t{{번호}}")
     return "\n".join(lines)
 
 # -----------------------------
@@ -419,14 +450,21 @@ def call_llm(model_name: str, system_prompt: str, user_prompt: str, use_server_m
 # 모델 출력 파싱 
 # -----------------------------
 
-def parse_model_output(raw: str, expected_ids: List[str]) -> Dict[str, float]:
+def parse_model_output(raw: str, expected_ids: List[str], transformed: bool = False) -> Dict[str, Any]:
     """
-    모델 원시 출력(raw)을 {id: answer(1~5)}로 변환.
+    모델 원시 출력(raw)을 파싱.
+    - 기본 모드: {id: answer(1~5)} - 단일 답안
+    - 변형 모드: {id: Set[int]} - 여러 답안 (모두 고르시오)
     - 'ID\\t번호' 포맷 기준
     - 잘못된 줄/누락 줄은 NaN 처리
     """
     id_set = set(expected_ids)
-    out: Dict[str, float] = {k: np.nan for k in expected_ids}
+    if transformed:
+        # 변형 모드: Set[int] 반환
+        out: Dict[str, Set[int]] = {k: set() for k in expected_ids}
+    else:
+        # 기본 모드: float 반환 (단일 답안)
+        out: Dict[str, float] = {k: np.nan for k in expected_ids}
     
     if not raw or not raw.strip():
         logger.warning("모델 출력이 비어있습니다.")
@@ -463,16 +501,32 @@ def parse_model_output(raw: str, expected_ids: List[str]) -> Dict[str, float]:
         if _id not in id_set:
             logger.debug(f"줄 {i+1}: ID '{_id}'가 예상 목록에 없음, 스킵")
             continue
-            
-        # 첫 번째 1~5 추출 (중괄호 포함: {4}, {5} 등도 인식)
-        # 중괄호로 둘러싸인 숫자 또는 일반 숫자 모두 인식
-        m = re.search(r"\{?([1-5])\}?", right)
-        if m:
-            answer = float(m.group(1))
-            out[_id] = answer
-            logger.debug(f"줄 {i+1}: ID '{_id}' -> 답변 {answer}")
+        
+        if transformed:
+            # 변형 모드: 여러 답안 파싱 (예: "1,3" 또는 "1 3" 또는 "1, 3")
+            # 쉼표 또는 공백으로 구분된 모든 숫자 추출
+            # ①~⑤ 를 1~5로 치환
+            answer_str = right
+            for k, v in CIRCLED_MAP.items():
+                answer_str = answer_str.replace(k, v)
+            # 쉼표, 공백, 슬래시 등으로 구분된 모든 1~5 숫자 추출
+            nums = re.findall(r"[1-5]", answer_str)
+            if nums:
+                answer_set = set(int(n) for n in nums)
+                out[_id] = answer_set
+                logger.debug(f"줄 {i+1}: ID '{_id}' -> 답변 {answer_set}")
+            else:
+                logger.debug(f"줄 {i+1}: ID '{_id}'의 답변에서 1~5 숫자를 찾을 수 없음")
         else:
-            logger.debug(f"줄 {i+1}: ID '{_id}'의 답변에서 1~5 숫자를 찾을 수 없음")
+            # 기본 모드: 첫 번째 1~5 추출 (중괄호 포함: {4}, {5} 등도 인식)
+            # 중괄호로 둘러싸인 숫자 또는 일반 숫자 모두 인식
+            m = re.search(r"\{?([1-5])\}?", right)
+            if m:
+                answer = float(m.group(1))
+                out[_id] = answer
+                logger.debug(f"줄 {i+1}: ID '{_id}' -> 답변 {answer}")
+            else:
+                logger.debug(f"줄 {i+1}: ID '{_id}'의 답변에서 1~5 숫자를 찾을 수 없음")
     
     return out
 
@@ -489,6 +543,8 @@ def run_eval_pipeline(
     use_server_mode: bool = False,
     use_ox_support: bool = True,
     api_key: str = None,
+    output_base_dir: str = None,
+    transformed: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     평가 파이프라인
@@ -502,6 +558,8 @@ def run_eval_pipeline(
         use_server_mode: vLLM 서버 모드 사용 여부
         use_ox_support: O, X 문제 지원 여부
         api_key: API 키 (None이면 기본 key 사용, key_evaluate 등 다른 키 사용 가능)
+        output_base_dir: 출력 기본 디렉토리 (None이면 기본 경로 사용: 6_exam_evaluation)
+        transformed: 변형 시험지 여부 (기본값: False, True면 answer가 리스트일 수 있음)
     
     반환:
       df_all      : 전체 원장 (정규화 선지 + answer_set + is_ox_question)
@@ -509,7 +567,7 @@ def run_eval_pipeline(
       pred_wide   : id 기준 모델별 예측 와이드
       acc_by_model: 모델별 정확도 (복수정답 지원: 예측 ∈ answer_set 이면 정답)
     """
-    logger.info(f"평가 파이프라인 시작 - 샘플수: {sample_size}, 배치크기: {batch_size}, 모델수: {len(models)}, O/X 지원: {use_ox_support}")
+    logger.info(f"평가 파이프라인 시작 - 샘플수: {sample_size}, 배치크기: {batch_size}, 모델수: {len(models)}, O/X 지원: {use_ox_support}, 변형 모드: {transformed}")
     
     # 전체 실행 시간 추적 시작
     overall_start_time = time.time()
@@ -518,7 +576,7 @@ def run_eval_pipeline(
     # (1) JSON → df_all
     logger.info("1단계: JSON 데이터를 DataFrame으로 변환 중...")
     # 중복 제거는 하지 않음 (모든 문제 유지)
-    df_all = json_to_df_all(json_list, use_ox_support=use_ox_support)
+    df_all = json_to_df_all(json_list, use_ox_support=use_ox_support, transformed=transformed)
     df_all = df_all.sort_values(by=['book_id', 'tag'], ascending=False).reset_index(drop=True)
     logger.info(f"전체 데이터: {len(df_all)}개 문제")
     
@@ -557,13 +615,13 @@ def run_eval_pipeline(
     # 모델별 응답 시간 추적
     model_response_times = {model: [] for model in models}
 
-    # SYSTEM_PROMPT를 로컬 변수로 복사 (전역 변수 수정 방지)
-    local_system_prompt = SYSTEM_PROMPT
+    # SYSTEM_PROMPT를 transformed에 따라 선택
+    local_system_prompt = SYSTEM_PROMPT_TRANSFORMED if transformed else SYSTEM_PROMPT
     
     # 전체 진행상황 표시
     with tqdm(total=total_calls, desc="모델 호출 진행", unit="call") as pbar:
         for bidx, bdf in enumerate(batches, 1):
-            user_prompt = build_user_prompt(bdf)
+            user_prompt = build_user_prompt(bdf, transformed=transformed)
             ids = bdf["id"].tolist()
             
             for model in models:
@@ -574,20 +632,24 @@ def run_eval_pipeline(
                     raw, response_time = call_llm(model, local_system_prompt, user_prompt, use_server_mode=use_server_mode, api_key=api_key)
                     # 모델별 응답 시간 기록
                     model_response_times[model].append(response_time)
-                    # 모든 모델 응답을 backlog로 저장 - ONEDRIVE_PATH/evaluation/6_exam_evaluation/model_output/에 저장
-                    try:
-                        from pipeline.config import ONEDRIVE_PATH
-                        base_path = ONEDRIVE_PATH
-                    except ImportError:
-                        import platform
-                        system = platform.system()
-                        home_dir = os.path.expanduser("~")
-                        if system == "Windows":
-                            base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
-                        else:
-                            base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
-                    
-                    output_dir = os.path.join(base_path, 'evaluation', 'eval_data', '6_exam_evaluation', 'model_output')
+                    # 모든 모델 응답을 backlog로 저장
+                    if output_base_dir:
+                        # output_base_dir이 제공된 경우 사용
+                        output_dir = os.path.join(output_base_dir, 'model_output')
+                    else:
+                        # 기본 경로 사용
+                        try:
+                            from pipeline.config import ONEDRIVE_PATH
+                            base_path = ONEDRIVE_PATH
+                        except ImportError:
+                            import platform
+                            system = platform.system()
+                            home_dir = os.path.expanduser("~")
+                            if system == "Windows":
+                                base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+                            else:
+                                base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+                        output_dir = os.path.join(base_path, 'evaluation', 'eval_data', '6_exam_evaluation', 'model_output')
                     os.makedirs(output_dir, exist_ok=True)
                     output_file = os.path.join(output_dir, f"model_output_{model.replace('/', '_')}.txt")
                     with open(output_file, "a", encoding="utf-8") as f:
@@ -597,10 +659,15 @@ def run_eval_pipeline(
                         f.write(f"{'='*80}\n")
                         f.write(raw)
                         f.write(f"\n{'='*80}\n\n")
-                    parsed = parse_model_output(raw, ids)
+                    parsed = parse_model_output(raw, ids, transformed=transformed)
                     
                     # 파싱 결과 검증
-                    valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
+                    if transformed:
+                        # 변형 모드: Set[int] 반환, 빈 집합이면 무효
+                        valid_predictions = sum(1 for v in parsed.values() if isinstance(v, set) and len(v) > 0)
+                    else:
+                        # 기본 모드: float 반환, NaN이 아니면 유효
+                        valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
                     
                     # 무효 예측이 있는 경우에만 로그 출력
                     if valid_predictions < len(ids):
@@ -611,7 +678,15 @@ def run_eval_pipeline(
                         
                         # 무효 예측 응답 저장 (모델명, 문제, 답변 포함)
                         for _id in ids:
-                            if np.isnan(parsed[_id]):
+                            is_invalid = False
+                            if transformed:
+                                # 변형 모드: Set[int]가 빈 집합이면 무효
+                                is_invalid = not (isinstance(parsed[_id], set) and len(parsed[_id]) > 0)
+                            else:
+                                # 기본 모드: NaN이면 무효
+                                is_invalid = np.isnan(parsed[_id])
+                            
+                            if is_invalid:
                                 # 문제 정보 가져오기
                                 question_info = bdf[bdf['id'] == _id].iloc[0] if len(bdf[bdf['id'] == _id]) > 0 else None
                                 
@@ -629,7 +704,7 @@ def run_eval_pipeline(
                                     },
                                     "correct_answer": list(question_info['answer_set']) if question_info is not None else [],
                                     "model_raw_output": raw,
-                                    "parsed_result": parsed[_id],
+                                    "parsed_result": list(parsed[_id]) if isinstance(parsed[_id], set) else parsed[_id],
                                     "timestamp": dt.datetime.now().isoformat()
                                 }
                                 invalid_responses.append(invalid_response)
@@ -641,9 +716,12 @@ def run_eval_pipeline(
                     
                 except Exception as e:
                     logger.error(f"배치 {bidx} - {model} 처리 중 오류: {str(e)}")
-                    # 오류 발생 시 NaN으로 채움
+                    # 오류 발생 시 기본값으로 채움
                     for _id in ids:
-                        rows.append({"id": _id, "model_name": model, "answer": np.nan})
+                        if transformed:
+                            rows.append({"id": _id, "model_name": model, "answer": set()})
+                        else:
+                            rows.append({"id": _id, "model_name": model, "answer": np.nan})
                     pbar.update(1)
 
     logger.info("5단계: 결과 데이터 정리 중...")
@@ -658,13 +736,28 @@ def run_eval_pipeline(
     logger.info("6단계: 정확도 계산 중...")
     key = df_sample[["id", "answer_set"]].copy()
     
-    def _is_correct(pred: float, s: Set[int]) -> float:
-        if np.isnan(pred) or not s:
+    def _is_correct(pred, s: Set[int], is_transformed: bool = False) -> float:
+        """정확도 계산 함수
+        - 기본 모드: pred가 float이고 s에 포함되면 정답
+        - 변형 모드: pred가 Set[int]이고 모든 답안이 s에 포함되고, pred와 s가 동일하면 정답
+        """
+        if not s:
             return np.nan
-        return float(int(pred) in s)
+        
+        if is_transformed:
+            # 변형 모드: pred는 Set[int]
+            if not isinstance(pred, set) or len(pred) == 0:
+                return np.nan
+            # 모델이 선택한 모든 답안이 정답 집합에 포함되고, 개수도 일치해야 정답
+            return float(pred == s)
+        else:
+            # 기본 모드: pred는 float
+            if np.isnan(pred):
+                return np.nan
+            return float(int(pred) in s)
 
     merged = pred_long.merge(key, on="id", how="left")
-    merged["correct"] = merged.apply(lambda r: _is_correct(r["answer"], r["answer_set"]), axis=1)
+    merged["correct"] = merged.apply(lambda r: _is_correct(r["answer"], r["answer_set"], is_transformed=transformed), axis=1)
 
     acc_by_model = (
         merged.groupby("model_name", dropna=False)["correct"]
@@ -698,7 +791,7 @@ def run_eval_pipeline(
     
     # 무효 예측 응답 저장
     if 'invalid_responses' in locals() and invalid_responses:
-        save_invalid_responses(invalid_responses, "evaluation")
+        save_invalid_responses(invalid_responses, "evaluation", output_base_dir=output_base_dir)
     
     # 전체 실행 시간 추적 종료
     overall_end_time = time.time()
@@ -757,7 +850,8 @@ def run_eval_pipeline(
             overall_elapsed_time,
             model_response_times,
             models,
-            "evaluation"
+            "evaluation",
+            output_base_dir=output_base_dir
         )
         logger.info(f"실행 시간 통계 파일 저장 완료: 총 {len(saved_files)}개 파일")
         for file_path in saved_files:
@@ -827,25 +921,30 @@ def save_timing_statistics(
     overall_elapsed_time: float,
     model_response_times: Dict[str, List[float]],
     models: List[str],
-    filename_prefix: str = "evaluation"
+    filename_prefix: str = "evaluation",
+    output_base_dir: str = None
 ):
     """실행 시간 통계를 별도 로그 파일로 저장 (JSON 및 텍스트 형식) - 모델별로 파일 생성"""
-    # ONEDRIVE_PATH/evaluation/6_exam_evaluation/timing_stats/에 저장
-    try:
-        from pipeline.config import ONEDRIVE_PATH
-        base_path = ONEDRIVE_PATH
-    except ImportError:
-        import platform
-        system = platform.system()
-        home_dir = os.path.expanduser("~")
-        if system == "Windows":
-            base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
-        else:
-            base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+    if output_base_dir:
+        # output_base_dir이 제공된 경우 사용
+        log_dir = os.path.join(output_base_dir, 'timing_stats')
+    else:
+        # 기본 경로 사용
+        try:
+            from pipeline.config import ONEDRIVE_PATH
+            base_path = ONEDRIVE_PATH
+        except ImportError:
+            import platform
+            system = platform.system()
+            home_dir = os.path.expanduser("~")
+            if system == "Windows":
+                base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+            else:
+                base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+        log_dir = os.path.join(base_path, 'evaluation',  'eval_data', '6_exam_evaluation', 'timing_stats')
+    os.makedirs(log_dir, exist_ok=True)
     
     timestamp = overall_end_datetime.strftime("%Y-%m-%d_%H%M%S")
-    log_dir = os.path.join(base_path, 'evaluation',  'eval_data', '6_exam_evaluation', 'timing_stats')
-    os.makedirs(log_dir, exist_ok=True)
     
     saved_files = []
     
@@ -926,28 +1025,32 @@ def save_timing_statistics(
     
     return saved_files
 
-def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str = "evaluation"):
+def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str = "evaluation", output_base_dir: str = None):
     """무효 예측 응답을 별도 파일로 저장 (모델명, 문제, 답변 포함) - 모델별로 파일 생성"""
     if not invalid_responses:
         logger.info("무효 예측이 없어 저장할 파일이 없습니다.")
         return
     
-    # ONEDRIVE_PATH/evaluation/6_exam_evaluation/invalid_responses/에 저장
-    try:
-        from pipeline.config import ONEDRIVE_PATH
-        base_path = ONEDRIVE_PATH
-    except ImportError:
-        import platform
-        system = platform.system()
-        home_dir = os.path.expanduser("~")
-        if system == "Windows":
-            base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
-        else:
-            base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+    if output_base_dir:
+        # output_base_dir이 제공된 경우 사용
+        invalid_dir = os.path.join(output_base_dir, 'invalid_responses')
+    else:
+        # 기본 경로 사용
+        try:
+            from pipeline.config import ONEDRIVE_PATH
+            base_path = ONEDRIVE_PATH
+        except ImportError:
+            import platform
+            system = platform.system()
+            home_dir = os.path.expanduser("~")
+            if system == "Windows":
+                base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
+            else:
+                base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+        invalid_dir = os.path.join(base_path, 'evaluation', 'eval_data', '6_exam_evaluation', 'invalid_responses')
+    os.makedirs(invalid_dir, exist_ok=True)
     
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    invalid_dir = os.path.join(base_path, 'evaluation', 'eval_data', '6_exam_evaluation', 'invalid_responses')
-    os.makedirs(invalid_dir, exist_ok=True)
     
     # 모델별로 무효 예측 분류
     model_invalid_responses = {}
@@ -1032,9 +1135,16 @@ def check_real_duplicates_in_data(json_list: List[dict]) -> Dict[str, Any]:
     for i, item in enumerate(json_list):
         # 최상위 구조 (exam 파일 구조)
         question = (item.get("question") or "").strip()
-        answer = (item.get("answer") or "").strip()
+        answer_raw = item.get("answer") or ""
         options = item.get("options", [])
         tag = item.get("tag", "")
+        
+        # answer가 리스트인 경우 처리 (변형된 시험지의 경우)
+        if isinstance(answer_raw, list):
+            # 리스트를 정렬하여 문자열로 변환 (중복 검사를 위해)
+            answer = '|'.join(sorted([str(a).strip() for a in answer_raw if a]))
+        else:
+            answer = str(answer_raw).strip()
         
         # 빈 문제는 스킵 (데이터 품질 문제)
         if not question:
@@ -1378,12 +1488,17 @@ def extract_subject_from_filename(filename: str) -> str:
     """파일명에서 subject 정보를 추출합니다.
     
     Args:
-        filename: 파일명 (예: "금융실무1_exam.json")
+        filename: 파일명 (예: "금융실무1_exam.json" 또는 "금융실무1_exam_transformed.json")
     
     Returns:
         str: 추출된 subject (예: "금융실무1")
     """
-    if '_exam.json' in filename:
+    if '_exam_transformed.json' in filename:
+        # 변형된 exam 파일인 경우 파일명에서 subject 추출
+        # 파일명 형식: "{exam_name}_exam_transformed.json" (예: "금융실무1_exam_transformed.json")
+        subject = filename.split("_exam_transformed.json")[0]
+        return subject
+    elif '_exam.json' in filename:
         # exam 파일인 경우 파일명에서 subject 추출
         # 파일명 형식: "{exam_name}_exam.json" (예: "금융실무1_exam.json")
         subject = filename.split("_exam.json")[0]

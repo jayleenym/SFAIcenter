@@ -3,7 +3,7 @@
 """
 8단계: 변형 문제를 포함한 시험지 생성
 - 4_multiple_exam의 각 세트(1st~5th) 시험지의 객관식들을 pick_right, pick_wrong, pick_abcd result.json 파일에서 찾아서
-- 각각 금융일반/금융심화/금융실무1/금융실무2.json 파일로 만들어서 8_multiple_exam_+에 저장
+- 각각 금융일반/금융심화/금융실무1/금융실무2_exam_transformed.json 파일로 만들어서 8_multiple_exam_+에 저장
 
 변형 규칙:
 1. 기존 시험지의 question, options, answer를 변형된 문제의 것으로 교체
@@ -16,6 +16,7 @@ import json
 import logging
 from typing import Dict, List, Any, Tuple
 from ..base import PipelineBase
+from core.logger import setup_step_logger
 
 
 class Step8CreateTransformedExam(PipelineBase):
@@ -135,7 +136,7 @@ class Step8CreateTransformedExam(PipelineBase):
                     self.logger.info(f"    변형되지 않은 문제 수: {len(missing_questions)}개")
                     
                     # 변형된 시험지 저장
-                    output_filename = f"{exam_name}.json"
+                    output_filename = f"{exam_name}_exam_transformed.json"
                     output_path = os.path.join(output_dir, output_filename)
                     self.json_handler.save(transformed_exam, output_path)
                     self.logger.info(f"    ✅ 저장 완료: {output_path}")
@@ -362,22 +363,17 @@ class Step8CreateTransformedExam(PipelineBase):
     
     def _setup_step_logging(self, step_name: str):
         """단계별 로그 파일 설정"""
-        log_dir = os.path.join(self.project_root_path, 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-        
-        log_file = os.path.join(log_dir, f'step8_{step_name}.log')
-        
-        # 파일 핸들러 추가
-        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
-        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        self.logger.addHandler(file_handler)
-        
+        step_logger, file_handler = setup_step_logger(
+            step_name=step_name,
+            step_number=8
+        )
         # 이전 핸들러 제거 (중복 방지)
         if self._step_log_handler:
             self.logger.removeHandler(self._step_log_handler)
         
+        # 기존 로거에 핸들러 추가
+        self.logger.addHandler(file_handler)
         self._step_log_handler = file_handler
-        self.logger.info(f"로그 파일 생성/추가: {log_file}")
     
     def _remove_step_logging(self):
         """단계별 로그 파일 핸들러 제거"""
