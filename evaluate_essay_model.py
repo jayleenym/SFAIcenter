@@ -466,7 +466,7 @@ def evaluate_single_model(model_name: str, question_file: str,
     # 모델 답변에 있는 문제들의 키 추출 (file_id, tag)
     answer_keys = set()
     answer_dict = {}
-    for ma in model_answers[:2]:
+    for ma in model_answers:
         key = (ma.get('file_id'), ma.get('tag'))
         answer_keys.add(key)
         answer_dict[key] = ma.get('answer', '')
