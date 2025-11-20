@@ -12,6 +12,7 @@ from typing import Dict, Any, List, Tuple
 from collections import defaultdict
 from ..base import PipelineBase
 from ..config import SFAICENTER_PATH
+from core.logger import setup_step_logger
 # base.py에서 이미 sys.path에 tools_dir이 추가되어 있음
 from core.exam_config import ExamConfig
 
@@ -266,21 +267,13 @@ class Step5CreateExam(PipelineBase):
     
     def _setup_step_logging(self, step_name: str):
         """단계별 로그 파일 핸들러 설정"""
-        log_dir = os.path.join(SFAICENTER_PATH, 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-        
-        log_file = os.path.join(log_dir, f'step5_{step_name}.log')
-        
-        # 파일 핸들러 생성 (append 모드)
-        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        
-        # 로거에 핸들러 추가
+        step_logger, file_handler = setup_step_logger(
+            step_name=step_name,
+            step_number=5
+        )
+        # 기존 로거에 핸들러 추가
         self.logger.addHandler(file_handler)
         self._step_log_handler = file_handler
-        
-        self.logger.info(f"로그 파일 생성/추가: {log_file}")
     
     def _remove_step_logging(self):
         """단계별 로그 파일 핸들러 제거"""

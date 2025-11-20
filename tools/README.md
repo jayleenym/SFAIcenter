@@ -305,6 +305,12 @@ python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/ex
 # 6단계: 시험지 평가 (상대 경로로 시험지 경로 지정)
 python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir evaluation/custom_exam_dir
 
+# 6단계: 변형 시험지 평가 (--transformed 플래그 사용)
+python tools/main_pipeline.py --steps evaluate_exams --transformed
+
+# 6단계: 변형 시험지 평가 (특정 세트만 평가)
+python tools/main_pipeline.py --steps evaluate_exams --transformed --eval_sets 1 2 3
+
 # 커스텀 경로 지정
 python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --project_root_path /path/to/project
 ```
@@ -357,6 +363,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 | `--eval_use_server_mode` | vLLM 서버 모드 사용 | False |
 | `--eval_exam_dir` | 시험지 디렉토리 경로 (단일 JSON 파일 또는 디렉토리) | None (기본 경로 사용) |
 | `--eval_sets` | 평가할 세트 번호 (1, 2, 3, 4, 5 중 선택, 공백으로 구분) | None (모든 세트 평가) |
+| `--transformed` | 변형 시험지 평가 모드 (True면 8_multiple_exam_+ 사용, False면 4_multiple_exam 사용) | False |
 
 **7단계 (객관식 문제 변형)**
 | 옵션 | 설명 | 기본값 |
@@ -446,6 +453,12 @@ python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/ex
 
 # 6단계만 실행 (vLLM 서버 모드 사용)
 python tools/main_pipeline.py --steps evaluate_exams --eval_use_server_mode
+
+# 6단계만 실행 (변형 시험지 평가 모드)
+python tools/main_pipeline.py --steps evaluate_exams --transformed
+
+# 6단계만 실행 (변형 시험지 평가, 특정 세트만 평가)
+python tools/main_pipeline.py --steps evaluate_exams --transformed --eval_sets 1 2 3
 
 # 7단계만 실행 (기본 경로의 answer_type_classified.json 사용)
 python tools/main_pipeline.py --steps transform_multiple_choice --transform_wrong_to_right
@@ -731,6 +744,33 @@ read_file
 - 6단계에서 OpenRouter API를 사용할 때는 `llm_config.ini`의 `key_evaluate`를 사용합니다.
 - `key_evaluate`가 설정 파일에 없으면 에러가 발생합니다.
 - vLLM 서버 모드(`--eval_use_server_mode`)를 사용할 때는 API 키가 필요 없습니다.
+
+### 6단계 (시험지 평가) 저장 경로 및 파일명
+
+**기본 모드 (`--transformed` 없음)**
+- 입력 디렉토리: `evaluation/eval_data/4_multiple_exam/`
+- 출력 디렉토리: `evaluation/eval_data/4_multiple_exam/exam_result/`
+- 저장 구조:
+  - Excel 파일: `exam_result/{set_name}/{set_name}_evaluation_{모델이름}.xlsx`
+    - 예: `exam_result/1st/1st_evaluation_gpt-5_gemini-2.5-pro.xlsx`
+  - `model_output`: `exam_result/model_output/`
+  - `timing_stats`: `exam_result/timing_stats/`
+  - `invalid_responses`: `exam_result/invalid_responses/`
+
+**변형 모드 (`--transformed` 있음)**
+- 입력 디렉토리: `evaluation/eval_data/8_multiple_exam_+/`
+- 출력 디렉토리: `evaluation/eval_data/8_multiple_exam_+/exam_+_result/`
+- 저장 구조:
+  - Excel 파일: `exam_+_result/{set_name}_evaluation_{모델이름}_transformed.xlsx`
+    - 예: `exam_+_result/1st_evaluation_gpt-5_gemini-2.5-pro_transformed.xlsx`
+  - `model_output`: `exam_+_result/model_output/`
+  - `timing_stats`: `exam_+_result/timing_stats/`
+  - `invalid_responses`: `exam_+_result/invalid_responses/`
+
+**참고:**
+- 기본 모드는 세트별로 폴더를 생성하여 저장합니다 (`exam_result/1st/`, `exam_result/2nd/`, ...).
+- 변형 모드는 `exam_+_result/` 폴더에 직접 파일을 저장합니다 (폴더 구조 없음).
+- 변형 모드의 파일명은 기본 모드와 동일하지만 `_transformed` 접미사가 추가됩니다.
 
 **7단계 (객관식 문제 변형)**
 - 7단계는 `AnswerTypeClassifier`를 사용하여 문제를 분류하고, LLM을 사용하여 문제를 변형합니다.

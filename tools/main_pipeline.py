@@ -68,6 +68,8 @@ def main():
     parser.add_argument('--eval_sets', type=int, nargs='+', default=None,
                        choices=[1, 2, 3, 4, 5],
                        help='평가할 세트 번호 (6단계에서 사용, 예: --eval_sets 1 또는 --eval_sets 1 2 3, None이면 모든 세트 평가)')
+    parser.add_argument('--transformed', action='store_true', default=False,
+                       help='변형 시험지 평가 모드 (6단계에서 사용, 기본값: False)')
     parser.add_argument('--transform_classified_data_path', type=str, default=None,
                        help='이미 분류된 데이터 파일 경로 (7단계에서 사용, --transform_classify가 없을 때 필수)')
     parser.add_argument('--transform_classify', action='store_true', default=False,
@@ -124,6 +126,7 @@ def main():
         eval_use_server_mode=args.eval_use_server_mode,
         eval_exam_dir=args.eval_exam_dir,
         eval_sets=args.eval_sets,
+        eval_transformed=args.transformed,
         transform_classified_data_path=args.transform_classified_data_path,
         transform_input_data_path=args.transform_input_data_path,
         transform_run_classify=args.transform_classify,

@@ -18,6 +18,7 @@ import logging
 from typing import List, Dict, Any, Optional, Tuple, Callable
 from ..base import PipelineBase
 from ..config import SFAICENTER_PATH
+from core.logger import setup_step_logger
 
 # AnswerTypeClassifier import
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -178,24 +179,18 @@ class Step7TransformMultipleChoice(PipelineBase):
     
     def _setup_step_logging(self, step_name: str):
         """단계별 로그 파일 핸들러 설정"""
-        log_dir = os.path.join(SFAICENTER_PATH, 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-        
-        log_file = os.path.join(log_dir, f'step7_{step_name}.log')
-        
         try:
-            # 파일 핸들러 생성 (append 모드, delay=True로 버퍼링 최적화)
-            file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8', delay=False)
-            file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-            
-            # 로거에 핸들러 추가
+            step_logger, file_handler = setup_step_logger(
+                step_name=step_name,
+                step_number=7
+            )
+            # 기존 로거에 핸들러 추가
             self.logger.addHandler(file_handler)
             
             # 핸들러 저장 (나중에 제거하기 위해)
+            if not hasattr(self, '_step_log_handlers'):
+                self._step_log_handlers = {}
             self._step_log_handlers[step_name] = file_handler
-            
-            self._safe_log_info(f"로그 파일 생성/추가: {log_file}")
         except Exception as e:
             self.logger.warning(f"로그 파일 핸들러 설정 실패: {e}")
     

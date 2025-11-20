@@ -51,6 +51,7 @@ class Pipeline(PipelineBase):
                          eval_batch_size: int = 10, eval_use_ox_support: bool = True,
                          eval_use_server_mode: bool = False,
                          eval_exam_dir: str = None, eval_sets: List[int] = None,
+                         eval_transformed: bool = False,
                          transform_input_data_path: str = None, transform_questions: List[Dict[str, Any]] = None,
                          transform_classified_data_path: str = None,
                          transform_run_classify: bool = False,
@@ -75,6 +76,7 @@ class Pipeline(PipelineBase):
             eval_use_server_mode: vLLM 서버 모드 사용 (6단계에서 사용)
             eval_exam_dir: 시험지 디렉토리 경로 (6단계에서 사용, None이면 기본 경로 사용)
             eval_sets: 평가할 세트 번호 리스트 (6단계에서 사용, None이면 모든 세트 평가)
+            eval_transformed: 변형 시험지 평가 모드 (6단계에서 사용, 기본값: False)
             transform_input_data_path: 변형 입력 데이터 파일 경로 (7단계에서 사용, run_classify가 True일 때)
             transform_questions: 변형 입력 문제 리스트 (7단계에서 사용, run_classify가 True일 때)
             transform_classified_data_path: 이미 분류된 데이터 파일 경로 (7단계에서 사용, run_classify가 False일 때 필수)
@@ -138,7 +140,8 @@ class Pipeline(PipelineBase):
                     use_ox_support=eval_use_ox_support,
                     use_server_mode=eval_use_server_mode,
                     exam_dir=eval_exam_dir,
-                    sets=eval_sets
+                    sets=eval_sets,
+                    transformed=eval_transformed
                 )
             
             if 'transform_multiple_choice' in steps:

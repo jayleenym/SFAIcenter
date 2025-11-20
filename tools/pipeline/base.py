@@ -18,6 +18,7 @@ sys.path.insert(0, PROJECT_ROOT_PATH)
 
 from core.utils import FileManager, TextProcessor, JSONHandler
 from core.llm_query import LLMQuery
+from core.logger import setup_logger
 from data_processing.json_cleaner import JSONCleaner
 
 # qna processing 및 evaluation 모듈 import (tools 폴더에서 우선 시도)
@@ -113,11 +114,10 @@ class PipelineBase:
     
     def _setup_logging(self):
         """로깅 설정 (step별 로그는 각 step에서 생성)"""
-        # 기본 로거만 설정 (파일 핸들러는 step별로 생성)
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[logging.StreamHandler()]
+        # 중앙화된 로깅 유틸리티 사용
+        self.logger = setup_logger(
+            name=__name__,
+            use_file=False,  # step별로 파일 핸들러 추가
+            use_console=True
         )
-        self.logger = logging.getLogger(__name__)
 

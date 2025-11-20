@@ -11,6 +11,7 @@ import logging
 from typing import List, Dict, Any
 from ..base import PipelineBase
 from ..config import PROJECT_ROOT_PATH, SFAICENTER_PATH
+from core.logger import setup_step_logger
 
 # evaluation 모듈 import (tools 폴더에서)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +42,8 @@ class Step6Evaluate(PipelineBase):
     
     def execute(self, models: List[str] = None, batch_size: int = 10, 
                 use_ox_support: bool = True, use_server_mode: bool = False,
-                exam_dir: str = None, sets: List[int] = None) -> Dict[str, Any]:
+                exam_dir: str = None, sets: List[int] = None, 
+                transformed: bool = False) -> Dict[str, Any]:
         """
         6단계: 시험지 평가
         - 만들어진 시험지(1st/2nd/3rd/4th/5th) 모델별 답변 평가
@@ -54,6 +56,7 @@ class Step6Evaluate(PipelineBase):
             use_server_mode: vLLM 서버 모드 사용
             exam_dir: 시험지 디렉토리 경로 (None이면 기본 경로 사용)
             sets: 평가할 세트 번호 리스트 (None이면 모든 세트 평가, 예: [1] 또는 [1, 2, 3])
+            transformed: 변형 시험지 평가 모드 (True면 8_multiple_exam_+ 사용, False면 4_multiple_exam 사용)
         """
         self.logger.info(f"=== 6단계: 시험지 평가 (배치 크기: {batch_size}) ===")
         
@@ -117,10 +120,16 @@ class Step6Evaluate(PipelineBase):
             
             # 시험지 디렉토리 (exam_dir가 지정되지 않으면 기본 경로 사용)
             if exam_dir is None:
-                exam_dir = os.path.join(
-                    self.onedrive_path,
-                    'evaluation', 'eval_data', '4_multiple_exam'
-                )
+                if transformed:
+                    exam_dir = os.path.join(
+                        self.onedrive_path,
+                        'evaluation', 'eval_data', '8_multiple_exam_+'
+                    )
+                else:
+                    exam_dir = os.path.join(
+                        self.onedrive_path,
+                        'evaluation', 'eval_data', '4_multiple_exam'
+                    )
             else:
                 # 상대 경로인 경우 onedrive_path 기준으로 변환
                 if not os.path.isabs(exam_dir):
@@ -130,11 +139,19 @@ class Step6Evaluate(PipelineBase):
                 self.logger.error(f"시험지 디렉토리/파일을 찾을 수 없습니다: {exam_dir}")
                 return {'success': False, 'error': f'시험지 디렉토리/파일 없음: {exam_dir}'}
             
-            # 출력 디렉토리
-            output_dir = os.path.join(
-                self.onedrive_path,
-                'evaluation', 'eval_data', '6_exam_evaluation'
-            )
+            # 출력 디렉토리 설정
+            if transformed:
+                # 변형 모드: 8_multiple_exam_+ 밑에 exam_+_result 폴더
+                output_dir = os.path.join(
+                    self.onedrive_path,
+                    'evaluation', 'eval_data', '8_multiple_exam_+', 'exam_+_result'
+                )
+            else:
+                # 기본 모드: 4_multiple_exam 밑에 exam_result 폴더
+                output_dir = os.path.join(
+                    self.onedrive_path,
+                    'evaluation', 'eval_data', '4_multiple_exam', 'exam_result'
+                )
             os.makedirs(output_dir, exist_ok=True)
             
             # exam_dir가 단일 JSON 파일인지 확인
@@ -165,7 +182,7 @@ class Step6Evaluate(PipelineBase):
                     self.logger.info(f"{'='*50}")
                     
                     # 평가 실행
-                    self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size})")
+                    self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size}, 변형 모드: {transformed})")
                     df_all, pred_long, pred_wide, acc = run_eval_pipeline(
                         file_data,
                         models,
@@ -174,7 +191,9 @@ class Step6Evaluate(PipelineBase):
                         seed=42,
                         use_server_mode=use_server_mode,
                         use_ox_support=use_ox_support,
-                        api_key=api_key
+                        api_key=api_key,
+                        output_base_dir=output_dir,
+                        transformed=transformed
                     )
                     
                     # 결과 출력
@@ -192,19 +211,30 @@ class Step6Evaluate(PipelineBase):
                             detected_set = set_name
                             break
                     
-                    # 결과 저장 - 세트별 디렉토리에 저장 (세트 정보가 있으면)
-                    if detected_set:
-                        set_output_dir = os.path.join(output_dir, detected_set)
-                        os.makedirs(set_output_dir, exist_ok=True)
-                    else:
-                        set_output_dir = output_dir
-                    
+                    # 결과 저장 경로 설정
+                    # 모델 이름들을 파일명에 사용할 수 있도록 변환
                     model_names = [model.split("/")[-1].replace(':', '_') for model in models]
                     models_str = '_'.join(model_names)
                     if len(models_str) > 200:
                         models_str = models_str[:200] + '_etc'
-                    output_filename = f"{exam_name}_evaluation_{models_str}.xlsx"
-                    output_path = os.path.join(set_output_dir, output_filename)
+                    
+                    if transformed:
+                        # 변형 모드: 기본 모드와 같은 파일명 형식에 _transformed 추가
+                        if detected_set:
+                            output_filename = f"{detected_set}_evaluation_{models_str}_transformed.xlsx"
+                        else:
+                            output_filename = f"{exam_name}_evaluation_{models_str}_transformed.xlsx"
+                        output_path = os.path.join(output_dir, output_filename)
+                    else:
+                        # 기본 모드: 세트별 디렉토리에 저장
+                        if detected_set:
+                            set_output_dir = os.path.join(output_dir, detected_set)
+                            os.makedirs(set_output_dir, exist_ok=True)
+                        else:
+                            set_output_dir = output_dir
+                        
+                        output_filename = f"{exam_name}_evaluation_{models_str}.xlsx"
+                        output_path = os.path.join(set_output_dir, output_filename)
                     
                     if save_results_to_excel:
                         save_results_to_excel(
@@ -261,16 +291,25 @@ class Step6Evaluate(PipelineBase):
                 
                 self.logger.info(f"{'='*50}")
                 self.logger.info(f"세트: {set_name}")
+                self.logger.info(f"세트 디렉토리: {set_dir}")
                 self.logger.info(f"{'='*50}")
                 
                 # 세트 내 모든 시험 파일 찾기
                 exam_files = []
-                for file in os.listdir(set_dir):
-                    if file.endswith('_exam.json'):
-                        exam_files.append(os.path.join(set_dir, file))
+                try:
+                    files_in_dir = os.listdir(set_dir)
+                    self.logger.info(f"디렉토리 내 파일 목록: {files_in_dir}")
+                    for file in files_in_dir:
+                        if file.endswith('_exam.json'):
+                            exam_files.append(os.path.join(set_dir, file))
+                        if transformed and file.endswith('_exam_transformed.json'):
+                            exam_files.append(os.path.join(set_dir, file))
+                except Exception as e:
+                    self.logger.error(f"디렉토리 읽기 오류 ({set_dir}): {e}")
+                    continue
                 
                 if not exam_files:
-                    self.logger.warning(f"{set_name} 세트에 시험 파일이 없습니다.")
+                    self.logger.warning(f"{set_name} 세트에 시험 파일(~_exam.json 또는 ~_exam_transformed.json)이 없습니다. (디렉토리: {set_dir})")
                     continue
                 
                 self.logger.info(f"{set_name} 세트에서 {len(exam_files)}개의 시험 파일을 찾았습니다.")
@@ -311,7 +350,7 @@ class Step6Evaluate(PipelineBase):
                     self.logger.info(f"{'='*50}")
                     
                     # 평가 실행
-                    self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size})")
+                    self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size}, 변형 모드: {transformed})")
                     df_all, pred_long, pred_wide, acc = run_eval_pipeline(
                         all_combined_data,
                         models,
@@ -320,7 +359,9 @@ class Step6Evaluate(PipelineBase):
                         seed=42,
                         use_server_mode=use_server_mode,
                         use_ox_support=use_ox_support,
-                        api_key=api_key
+                        api_key=api_key,
+                        output_base_dir=output_dir,
+                        transformed=transformed
                     )
                     
                     # 결과 출력
@@ -330,19 +371,26 @@ class Step6Evaluate(PipelineBase):
                     if print_evaluation_summary:
                         print_evaluation_summary(acc, pred_long)
                     
-                    # 결과 저장 - 세트별 디렉토리에 저장
-                    # 세트별 출력 디렉토리 생성 (예: 6_exam_evaluation/1st, 6_exam_evaluation/2nd)
-                    set_output_dir = os.path.join(output_dir, set_name)
-                    os.makedirs(set_output_dir, exist_ok=True)
-                    
+                    # 결과 저장 경로 설정
                     # 모델 이름들을 파일명에 사용할 수 있도록 변환 (특수문자 제거)
                     model_names = [model.split("/")[-1].replace(':', '_') for model in models]
                     models_str = '_'.join(model_names)
                     # 파일명이 너무 길어지지 않도록 제한 (최대 200자)
                     if len(models_str) > 200:
                         models_str = models_str[:200] + '_etc'
-                    output_filename = f"{set_name}_evaluation_{models_str}.xlsx"
-                    output_path = os.path.join(set_output_dir, output_filename)
+                    
+                    if transformed:
+                        # 변형 모드: 기본 모드와 같은 파일명 형식에 _transformed 추가
+                        output_filename = f"{set_name}_evaluation_{models_str}_transformed.xlsx"
+                        output_path = os.path.join(output_dir, output_filename)
+                    else:
+                        # 기본 모드: 세트별 디렉토리에 저장
+                        # 세트별 출력 디렉토리 생성 (예: exam_result/1st, exam_result/2nd)
+                        set_output_dir = os.path.join(output_dir, set_name)
+                        os.makedirs(set_output_dir, exist_ok=True)
+                        
+                        output_filename = f"{set_name}_evaluation_{models_str}.xlsx"
+                        output_path = os.path.join(set_output_dir, output_filename)
                     
                     if save_results_to_excel:
                         save_results_to_excel(
@@ -385,21 +433,13 @@ class Step6Evaluate(PipelineBase):
     
     def _setup_step_logging(self, step_name: str):
         """단계별 로그 파일 핸들러 설정"""
-        log_dir = os.path.join(SFAICENTER_PATH, 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-        
-        log_file = os.path.join(log_dir, f'step6_{step_name}.log')
-        
-        # 파일 핸들러 생성 (append 모드)
-        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        
-        # 로거에 핸들러 추가
+        step_logger, file_handler = setup_step_logger(
+            step_name=step_name,
+            step_number=6
+        )
+        # 기존 로거에 핸들러 추가
         self.logger.addHandler(file_handler)
         self._step_log_handler = file_handler
-        
-        self.logger.info(f"로그 파일 생성/추가: {log_file}")
     
     def _remove_step_logging(self):
         """단계별 로그 파일 핸들러 제거"""

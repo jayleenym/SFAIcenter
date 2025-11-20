@@ -22,23 +22,17 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 tools_dir = os.path.dirname(os.path.dirname(current_dir))  # processing -> qna -> tools
 project_root = os.path.dirname(tools_dir)  # tools -> project_root
 
-# 로깅 설정
-log_dir = os.path.join(project_root, 'logs')
-os.makedirs(log_dir, exist_ok=True)
-log_file = os.path.join(log_dir, 'qna_subdomain_classifier.log')
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(log_file, encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
-
 # llm_query 모듈 import
 sys.path.insert(0, tools_dir)
+
+# 중앙화된 로깅 유틸리티 사용
+from core.logger import setup_logger
+logger = setup_logger(
+    name=__name__,
+    log_file='qna_subdomain_classifier.log',
+    use_console=True,
+    use_file=True
+)
 from core.llm_query import LLMQuery
 from core.exam_config import ExamConfig
 
