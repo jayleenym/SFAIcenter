@@ -251,9 +251,9 @@ SYSTEM_PROMPT_TRANSFORMED = """당신은 금융전문가이자 객관식 문제 
 - 각 문제는 고유 ID와 함께 제시됩니다.
 - 출력은 반드시 한 줄당 "ID<TAB>번호1,번호2,..." 형식으로만 합니다. (예: SS0000_q_0377_0001<TAB>1,3 또는 SS0000_q_0377_0001<TAB>1 3)
 - 여러 정답이 있는 경우 쉼표(,) 또는 공백으로 구분하여 모두 선택합니다. (예: 1,3 또는 1 3)
-- 정답이 하나인 경우에도 동일한 형식을 사용합니다. (예: 3 또는 3)
+- 정답 개수는 두 개 이상 다섯 개 이하입니다.
 - 다른 글자, 마크다운, 이유, 기호는 절대 출력하지 않습니다.
-- 모든 문제는 보기(1~5) 중 하나 이상을 선택합니다.
+- 모든 문제는 보기(1~5) 중 두 개 이상을 선택합니다.
 - 출력 줄 수는 입력 문제 개수와 동일해야 합니다.
 """
 
@@ -667,7 +667,14 @@ def run_eval_pipeline(
                         valid_predictions = sum(1 for v in parsed.values() if isinstance(v, set) and len(v) > 0)
                     else:
                         # 기본 모드: float 반환, NaN이 아니면 유효
-                        valid_predictions = sum(1 for v in parsed.values() if not np.isnan(v))
+                        def _is_valid_pred(v):
+                            try:
+                                if isinstance(v, (int, float)):
+                                    return not (pd.isna(v) or np.isnan(v))
+                                return False
+                            except (TypeError, ValueError):
+                                return False
+                        valid_predictions = sum(1 for v in parsed.values() if _is_valid_pred(v))
                     
                     # 무효 예측이 있는 경우에만 로그 출력
                     if valid_predictions < len(ids):
@@ -684,7 +691,13 @@ def run_eval_pipeline(
                                 is_invalid = not (isinstance(parsed[_id], set) and len(parsed[_id]) > 0)
                             else:
                                 # 기본 모드: NaN이면 무효
-                                is_invalid = np.isnan(parsed[_id])
+                                try:
+                                    if isinstance(parsed[_id], (int, float)):
+                                        is_invalid = pd.isna(parsed[_id]) or np.isnan(parsed[_id])
+                                    else:
+                                        is_invalid = True
+                                except (TypeError, ValueError):
+                                    is_invalid = True
                             
                             if is_invalid:
                                 # 문제 정보 가져오기
@@ -1276,7 +1289,26 @@ def calculate_domain_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) -> 
     
     # 정답 여부 계산 (기존 로직 사용)
     def _is_correct(pred: float, s: Set[int]) -> float:
-        if np.isnan(pred) or not s:
+        # pred가 NaN인지 안전하게 확인
+        if not s:
+            return np.nan
+        # pred가 None이거나 빈 값인 경우
+        if pred is None or (isinstance(pred, str) and pred.strip() == ''):
+            return np.nan
+        # pred가 set 타입인 경우 (transformed mode)
+        if isinstance(pred, set):
+            return float(pred == s) if pred else np.nan
+        # pred가 문자열인 경우 숫자로 변환 시도
+        if isinstance(pred, str):
+            try:
+                pred = float(pred)
+            except (ValueError, TypeError):
+                return np.nan
+        # 숫자 타입인 경우에만 np.isnan 사용
+        try:
+            if pd.isna(pred) or np.isnan(pred):
+                return np.nan
+        except (TypeError, ValueError):
             return np.nan
         return float(int(pred) in s)
     
@@ -1302,7 +1334,26 @@ def calculate_subdomain_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) 
     
     # 정답 여부 계산
     def _is_correct(pred: float, s: Set[int]) -> float:
-        if np.isnan(pred) or not s:
+        # pred가 NaN인지 안전하게 확인
+        if not s:
+            return np.nan
+        # pred가 None이거나 빈 값인 경우
+        if pred is None or (isinstance(pred, str) and pred.strip() == ''):
+            return np.nan
+        # pred가 set 타입인 경우 (transformed mode)
+        if isinstance(pred, set):
+            return float(pred == s) if pred else np.nan
+        # pred가 문자열인 경우 숫자로 변환 시도
+        if isinstance(pred, str):
+            try:
+                pred = float(pred)
+            except (ValueError, TypeError):
+                return np.nan
+        # 숫자 타입인 경우에만 np.isnan 사용
+        try:
+            if pd.isna(pred) or np.isnan(pred):
+                return np.nan
+        except (TypeError, ValueError):
             return np.nan
         return float(int(pred) in s)
     
@@ -1328,7 +1379,26 @@ def calculate_subject_accuracy(pred_long: pd.DataFrame, df_all: pd.DataFrame) ->
     
     # 정답 여부 계산
     def _is_correct(pred: float, s: Set[int]) -> float:
-        if np.isnan(pred) or not s:
+        # pred가 NaN인지 안전하게 확인
+        if not s:
+            return np.nan
+        # pred가 None이거나 빈 값인 경우
+        if pred is None or (isinstance(pred, str) and pred.strip() == ''):
+            return np.nan
+        # pred가 set 타입인 경우 (transformed mode)
+        if isinstance(pred, set):
+            return float(pred == s) if pred else np.nan
+        # pred가 문자열인 경우 숫자로 변환 시도
+        if isinstance(pred, str):
+            try:
+                pred = float(pred)
+            except (ValueError, TypeError):
+                return np.nan
+        # 숫자 타입인 경우에만 np.isnan 사용
+        try:
+            if pd.isna(pred) or np.isnan(pred):
+                return np.nan
+        except (TypeError, ValueError):
             return np.nan
         return float(int(pred) in s)
     
