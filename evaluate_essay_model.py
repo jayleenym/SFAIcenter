@@ -21,6 +21,7 @@ import argparse
 from typing import Dict, List, Any, Optional
 from tqdm import tqdm
 from collections import defaultdict
+import pandas as pd
 
 from tools.pipeline.config import ONEDRIVE_PATH
 from tools.core.llm_query import LLMQuery
@@ -257,6 +258,167 @@ def print_statistics(stats: Dict[str, Any], model_name: str):
     print("="*60 + "\n")
 
 
+def generate_statistics_markdown(stats: Dict[str, Any], model_name: str) -> str:
+    """
+    통계를 마크다운 형식으로 생성
+    
+    Args:
+        stats: 통계 정보
+        model_name: 평가한 모델명
+    
+    Returns:
+        str: 마크다운 형식의 통계 문자열
+    """
+    md_lines = []
+    md_lines.append(f"# 모델 평가 통계: {model_name}\n")
+    md_lines.append("---\n")
+    
+    md_lines.append("## 기본 통계\n")
+    md_lines.append(f"- **총 평가 문제 수**: {stats['total_count']}개")
+    md_lines.append(f"- **키워드 포함 비율**: {stats['keyword_inclusion_rate']:.2f}%")
+    md_lines.append(f"- **평균 점수**: {stats['average_score']:.2f}점")
+    md_lines.append(f"- **최고 점수**: {stats['max_score']:.2f}점")
+    md_lines.append(f"- **최저 점수**: {stats['min_score']:.2f}점")
+    md_lines.append(f"- **0점 문제 수**: {stats['zero_score_count']}개")
+    md_lines.append(f"- **100점 문제 수**: {stats['perfect_score_count']}개")
+    md_lines.append("")
+    
+    md_lines.append("## 점수 분포\n")
+    md_lines.append("| 점수 구간 | 문제 수 | 비율 |")
+    md_lines.append("|----------|--------|------|")
+    for bucket in sorted(stats['score_distribution'].keys(), key=lambda x: int(x.split('-')[0])):
+        count = stats['score_distribution'][bucket]
+        percentage = (count / stats['total_count']) * 100
+        md_lines.append(f"| {bucket} | {count}개 | {percentage:.1f}% |")
+    md_lines.append("")
+    
+    if stats['keyword_avg_scores']:
+        md_lines.append("## 키워드별 평균 점수 (5점 만점)\n")
+        md_lines.append("| 키워드 | 평균 점수 |")
+        md_lines.append("|--------|----------|")
+        for keyword, avg_score in sorted(stats['keyword_avg_scores'].items()):
+            md_lines.append(f"| {keyword} | {avg_score:.2f}점 |")
+        md_lines.append("")
+    
+    return "\n".join(md_lines)
+
+
+def save_essay_results_to_excel(detailed_results: List[Dict[str, Any]], stats: Dict[str, Any], 
+                                 model_name: str, output_path: str):
+    """
+    서술형 평가 결과를 엑셀 파일로 저장
+    
+    Args:
+        detailed_results: 상세 평가 결과 리스트
+        stats: 통계 정보
+        model_name: 모델명
+        output_path: 저장할 엑셀 파일 경로
+    """
+    try:
+        with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+            # 1. 전체 결과 시트
+            df_results = []
+            for result in detailed_results:
+                row = {
+                    '파일번호': result.get('file_id', ''),
+                    '태그': result.get('tag', ''),
+                    '서술형문제': result.get('essay_question', ''),
+                    '키워드': result.get('essay_keyword', ''),
+                    '모델답변': result.get('model_answer', ''),
+                    '모범답안': result.get('best_answer', ''),
+                    '키워드포함여부': result.get('evaluation_result', {}).get('has_all_keywords', False),
+                    '최종점수': result.get('evaluation_result', {}).get('final_score', 0.0),
+                    '키워드별점수': json.dumps(result.get('evaluation_result', {}).get('keyword_scores', {}), ensure_ascii=False)
+                }
+                df_results.append(row)
+            
+            df_all = pd.DataFrame(df_results)
+            df_all.to_excel(writer, index=False, sheet_name='전체결과')
+            
+            # 2. 통계 요약 시트
+            stats_data = {
+                '항목': [
+                    '총 평가 문제 수',
+                    '키워드 포함 비율 (%)',
+                    '평균 점수',
+                    '최고 점수',
+                    '최저 점수',
+                    '0점 문제 수',
+                    '100점 문제 수'
+                ],
+                '값': [
+                    stats.get('total_count', 0),
+                    f"{stats.get('keyword_inclusion_rate', 0.0):.2f}",
+                    f"{stats.get('average_score', 0.0):.2f}",
+                    f"{stats.get('max_score', 0.0):.2f}",
+                    f"{stats.get('min_score', 0.0):.2f}",
+                    stats.get('zero_score_count', 0),
+                    stats.get('perfect_score_count', 0)
+                ]
+            }
+            df_stats = pd.DataFrame(stats_data)
+            df_stats.to_excel(writer, index=False, sheet_name='통계요약')
+            
+            # 3. 점수 분포 시트
+            score_dist = stats.get('score_distribution', {})
+            if score_dist:
+                dist_data = {
+                    '점수구간': sorted(score_dist.keys(), key=lambda x: int(x.split('-')[0])),
+                    '문제수': [score_dist[k] for k in sorted(score_dist.keys(), key=lambda x: int(x.split('-')[0]))],
+                    '비율 (%)': [f"{(score_dist[k] / stats.get('total_count', 1)) * 100:.1f}" 
+                                for k in sorted(score_dist.keys(), key=lambda x: int(x.split('-')[0]))]
+                }
+                df_dist = pd.DataFrame(dist_data)
+                df_dist.to_excel(writer, index=False, sheet_name='점수분포')
+            
+            # 4. 키워드별 평균 점수 시트
+            keyword_avg = stats.get('keyword_avg_scores', {})
+            if keyword_avg:
+                keyword_data = {
+                    '키워드': sorted(keyword_avg.keys()),
+                    '평균점수 (5점만점)': [f"{keyword_avg[k]:.2f}" for k in sorted(keyword_avg.keys())]
+                }
+                df_keyword = pd.DataFrame(keyword_data)
+                df_keyword.to_excel(writer, index=False, sheet_name='키워드별평균점수')
+            
+            # 5. 키워드 미포함 문제 시트
+            no_keyword_results = [r for r in detailed_results 
+                                if not r.get('evaluation_result', {}).get('has_all_keywords', False)]
+            if no_keyword_results:
+                df_no_keyword = []
+                for result in no_keyword_results:
+                    row = {
+                        '파일번호': result.get('file_id', ''),
+                        '태그': result.get('tag', ''),
+                        '서술형문제': result.get('essay_question', ''),
+                        '키워드': result.get('essay_keyword', ''),
+                        '모델답변': result.get('model_answer', '')
+                    }
+                    df_no_keyword.append(row)
+                df_no_keyword_df = pd.DataFrame(df_no_keyword)
+                df_no_keyword_df.to_excel(writer, index=False, sheet_name='키워드미포함문제')
+        
+        print(f"엑셀 파일 저장 완료: {output_path}")
+        
+    except Exception as e:
+        print(f"엑셀 파일 저장 중 오류 발생: {e}")
+        raise
+
+
+def get_set_dir_name(set_num: int) -> str:
+    """
+    세트 번호를 디렉토리 이름으로 변환 (1 -> 1st, 2 -> 2nd, ...)
+    
+    Args:
+        set_num: 세트 번호 (1~5)
+    
+    Returns:
+        str: 디렉토리 이름 (1st, 2nd, 3rd, 4th, 5th)
+    """
+    suffixes = {1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th'}
+    return suffixes.get(set_num, str(set_num))
+
+
 def evaluate_single_model(model_name: str, question_file: str, 
                           keyword_check_model: str = 'google/gemini-2.5-flash',
                           scoring_model: str = 'google/gemini-3-pro-preview',
@@ -278,9 +440,10 @@ def evaluate_single_model(model_name: str, question_file: str,
     base_dir = os.path.dirname(question_file)
     model_safe_name = model_name.replace("/", "_")
     
-    # 세트 번호가 있으면 해당 디렉토리에서 파일 읽기
+    # 세트 번호가 있으면 해당 디렉토리에서 파일 읽기 (1st/2nd/3rd/4th/5th 형식)
     if set_num is not None:
-        answer_file = os.path.join(base_dir, str(set_num), f'{model_safe_name}_answer.json')
+        set_dir = get_set_dir_name(set_num)
+        answer_file = os.path.join(base_dir, set_dir, f'{model_safe_name}_answer.json')
     else:
         answer_file = os.path.join(base_dir, f'{model_safe_name}_answer.json')
     
@@ -294,15 +457,35 @@ def evaluate_single_model(model_name: str, question_file: str,
     print(f"\n[모델: {model_name}]")
     if set_num is not None:
         print(f"[세트: {set_num}]")
-    print(f"문제 데이터 로드 중: {question_file}")
-    with open(question_file, 'r', encoding='utf-8') as f:
-        questions = json.load(f)
     
+    # 모델 답변 파일을 먼저 로드 (평가할 문제 목록을 결정)
     print(f"모델 답변 데이터 로드 중: {answer_file}")
     with open(answer_file, 'r', encoding='utf-8') as f:
         model_answers = json.load(f)
     
-    print(f"총 {len(questions)}개의 문제를 평가합니다.")
+    # 모델 답변에 있는 문제들의 키 추출 (file_id, tag)
+    answer_keys = set()
+    answer_dict = {}
+    for ma in model_answers[:2]:
+        key = (ma.get('file_id'), ma.get('tag'))
+        answer_keys.add(key)
+        answer_dict[key] = ma.get('answer', '')
+    
+    print(f"모델 답변 파일에 {len(answer_keys)}개의 문제가 있습니다.")
+    
+    # 전체 문제 데이터 로드
+    print(f"문제 데이터 로드 중: {question_file}")
+    with open(question_file, 'r', encoding='utf-8') as f:
+        all_questions = json.load(f)
+    
+    # 모델 답변에 있는 문제들만 필터링
+    questions = []
+    for q in all_questions:
+        key = (q.get('file_id'), q.get('tag'))
+        if key in answer_keys:
+            questions.append(q)
+    
+    print(f"평가할 문제 수: {len(questions)}개")
     print(f"키워드 확인 모델: {keyword_check_model}")
     print(f"점수 평가 모델: {scoring_model}\n")
     
@@ -313,30 +496,18 @@ def evaluate_single_model(model_name: str, question_file: str,
     evaluation_results = []
     detailed_results = []
     
-    # 모델 답변을 딕셔너리로 변환하여 빠른 조회 (file_id + tag를 키로 사용)
-    answer_dict = {}
-    for ma in model_answers:
-        key = (ma.get('file_id'), ma.get('tag'))
-        answer_dict[key] = ma.get('answer', '')
-    
     for q in tqdm(questions, desc=f"평가 진행 [{model_name}]"):
         # 모델 답변 찾기 (file_id와 tag로 매칭)
         key = (q.get('file_id'), q.get('tag'))
         model_answer = answer_dict.get(key)
         
         if model_answer is None:
-            # 순서대로 매칭 시도 (인덱스 기반, 같은 순서로 저장된 경우)
-            q_idx = questions.index(q)
-            if q_idx < len(model_answers):
-                model_answer = model_answers[q_idx].get('answer', '')
-            else:
-                print(f"경고: 모델 답변을 찾을 수 없습니다. (file_id: {q.get('file_id')}, tag: {q.get('tag')})")
-                continue
+            print(f"경고: 모델 답변을 찾을 수 없습니다. (file_id: {q.get('file_id')}, tag: {q.get('tag')})")
+            continue
         
-        # 모범답안 찾기
+        # 모범답안 찾기 (모델 답변에 있는 문제에 해당하는 것만)
         best_answer = None
         if best_answers_dict:
-            key = (q.get('file_id'), q.get('tag'))
             best_answer = best_answers_dict.get(key)
         
         # 평가 수행
@@ -347,11 +518,17 @@ def evaluate_single_model(model_name: str, question_file: str,
         detailed_results.append({
             'file_id': q.get('file_id'),
             'tag': q.get('tag'),
-            'question': q.get('essay_question'),
-            'keyword': q.get('essay_keyword'),
-            'has_all_keywords': result['has_all_keywords'],
-            'final_score': result['final_score'],
-            'keyword_scores': result['keyword_scores']
+            'essay_question': q.get('essay_question'),
+            'essay_keyword': q.get('essay_keyword'),
+            'model_answer': model_answer,
+            'best_answer': best_answer if best_answer else q.get('essay_answer', ''),
+            'evaluation_result': {
+                'has_all_keywords': result['has_all_keywords'],
+                'final_score': result['final_score'],
+                'keyword_scores': result['keyword_scores'],
+                'keyword_check_response': result.get('keyword_check_response', ''),
+                'scoring_response': result.get('scoring_response', '')
+            }
         })
     
     # 통계 계산
@@ -452,8 +629,9 @@ def main():
         display_name = f"{args.model_name} (세트: {set_num})"
         print_statistics(stats, display_name)
         
-        # 결과 저장
-        output_dir = os.path.join(base_dir, 'evaluation_results')
+        # 결과 저장 (exam_result/1st, 2nd, 3rd, 4th, 5th 디렉토리에 저장)
+        set_dir = get_set_dir_name(set_num)
+        output_dir = os.path.join(base_dir, 'exam_result', set_dir)
         os.makedirs(output_dir, exist_ok=True)
         
         # 파일명 생성
@@ -466,14 +644,16 @@ def main():
             json.dump(detailed_results, f, ensure_ascii=False, indent=2)
         print(f"상세 결과 저장: {detailed_output_file}")
         
-        # 통계 저장
-        stats_output_file = os.path.join(output_dir, f'{model_safe_name}{set_suffix}_statistics.json')
-        # JSON 직렬화를 위해 defaultdict를 dict로 변환
-        stats_for_save = dict(stats)
-        stats_for_save['keyword_avg_scores'] = dict(stats['keyword_avg_scores'])
+        # 통계 저장 (마크다운 파일)
+        stats_markdown = generate_statistics_markdown(stats, display_name)
+        stats_output_file = os.path.join(output_dir, f'STATS_{model_safe_name}{set_suffix}.md')
         with open(stats_output_file, 'w', encoding='utf-8') as f:
-            json.dump(stats_for_save, f, ensure_ascii=False, indent=2)
+            f.write(stats_markdown)
         print(f"통계 저장: {stats_output_file}")
+        
+        # 엑셀 파일 저장
+        excel_output_file = os.path.join(output_dir, f'{model_safe_name}{set_suffix}_results.xlsx')
+        save_essay_results_to_excel(detailed_results, stats, display_name, excel_output_file)
 
 
 if __name__ == '__main__':
