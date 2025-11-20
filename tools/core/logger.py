@@ -73,6 +73,9 @@ def setup_logger(
     if logger.handlers:
         return logger
     
+    # 부모 로거로의 전파 방지 (중복 로그 방지)
+    logger.propagate = False
+    
     # 포맷 설정
     if format_string is None:
         format_string = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -155,6 +158,9 @@ def setup_step_logger(
     logger_name = f'pipeline.step{step_number}'
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
+    
+    # 부모 로거로의 전파 방지 (중복 로그 방지)
+    logger.propagate = False
     
     # 경로 설정
     if log_dir is None:
