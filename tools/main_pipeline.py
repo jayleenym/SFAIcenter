@@ -105,10 +105,22 @@ def main():
         logging.getLogger('pipeline').setLevel(logging.DEBUG)
         logging.getLogger('evaluation').setLevel(logging.DEBUG)
     
+    # config_path가 상대 경로인 경우 절대 경로로 변환
+    config_path = args.config_path
+    if config_path and not os.path.isabs(config_path):
+        # 상대 경로인 경우 현재 스크립트 디렉토리 기준으로 변환
+        # 또는 프로젝트 루트 기준으로 변환
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # SFAIcenter/tools/main_pipeline.py -> SFAIcenter/tools
+        # SFAIcenter/llm_config_0123.ini -> SFAIcenter/tools/../llm_config_0123.ini
+        project_root = os.path.dirname(script_dir)  # SFAIcenter
+        config_path = os.path.join(project_root, config_path)
+        config_path = os.path.normpath(config_path)  # 경로 정규화
+    
     # 파이프라인 실행
     pipeline = Pipeline(
         base_path=args.base_path,
-        config_path=args.config_path,
+        config_path=config_path,
         onedrive_path=args.onedrive_path,
         project_root_path=args.project_root_path
     )

@@ -102,7 +102,11 @@ class PipelineBase:
             config_path = os.path.join(self.project_root_path, 'llm_config.ini')
             if not os.path.exists(config_path):
                 config_path = None
+        elif not os.path.isabs(config_path):
+            # 상대 경로인 경우 프로젝트 루트 기준으로 변환
+            config_path = os.path.join(self.project_root_path, config_path)
         
+        self.config_path = config_path
         self.file_manager = FileManager(base_path)
         self.text_processor = TextProcessor()
         self.json_handler = JSONHandler()

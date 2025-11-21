@@ -72,11 +72,16 @@ class Step6Evaluate(PipelineBase):
             api_key = None
             if not use_server_mode:  # OpenRouter API 모드일 때만 key_evaluate 필수
                 try:
-                    config_path = os.path.join(self.project_root_path, 'llm_config.ini')
+                    # self.config_path 사용 (--config_path로 지정한 경로 또는 기본값)
+                    config_path = self.config_path
+                    if not config_path:
+                        config_path = os.path.join(self.project_root_path, 'llm_config.ini')
+                    
                     if not os.path.exists(config_path):
                         self.logger.error(f"설정 파일을 찾을 수 없습니다: {config_path}")
                         return {'success': False, 'error': f'설정 파일 없음: {config_path}'}
                     
+                    self.logger.info(f"설정 파일 사용: {config_path}")
                     config = configparser.ConfigParser()
                     config.read(config_path, encoding='utf-8')
                     
@@ -296,14 +301,31 @@ class Step6Evaluate(PipelineBase):
                 
                 # 세트 내 모든 시험 파일 찾기
                 exam_files = []
+                transformed_files = []
+                normal_files = []
+                actual_transformed = transformed  # 기본값은 파라미터로 전달된 값
                 try:
                     files_in_dir = os.listdir(set_dir)
                     self.logger.info(f"디렉토리 내 파일 목록: {files_in_dir}")
                     for file in files_in_dir:
-                        if file.endswith('_exam.json'):
-                            exam_files.append(os.path.join(set_dir, file))
-                        if transformed and file.endswith('_exam_transformed.json'):
-                            exam_files.append(os.path.join(set_dir, file))
+                        if file.endswith('_exam_transformed.json'):
+                            transformed_files.append(os.path.join(set_dir, file))
+                        elif file.endswith('_exam.json'):
+                            normal_files.append(os.path.join(set_dir, file))
+                    
+                    # 파일명에 따라 transformed 모드 자동 감지
+                    # _exam_transformed.json 파일이 있으면 transformed 모드로 평가
+                    if transformed_files:
+                        exam_files = transformed_files
+                        # 파일명 기반으로 transformed 모드 자동 설정
+                        actual_transformed = True
+                        self.logger.info(f"{set_name} 세트: _exam_transformed.json 파일 발견, transformed 모드로 평가합니다.")
+                    elif normal_files:
+                        exam_files = normal_files
+                        actual_transformed = False
+                        self.logger.info(f"{set_name} 세트: _exam.json 파일 발견, 기본 모드로 평가합니다.")
+                    else:
+                        exam_files = []
                 except Exception as e:
                     self.logger.error(f"디렉토리 읽기 오류 ({set_dir}): {e}")
                     continue
@@ -350,7 +372,7 @@ class Step6Evaluate(PipelineBase):
                     self.logger.info(f"{'='*50}")
                     
                     # 평가 실행
-                    self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size}, 변형 모드: {transformed})")
+                    self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size}, 변형 모드: {actual_transformed})")
                     df_all, pred_long, pred_wide, acc = run_eval_pipeline(
                         all_combined_data,
                         models,
@@ -361,7 +383,7 @@ class Step6Evaluate(PipelineBase):
                         use_ox_support=use_ox_support,
                         api_key=api_key,
                         output_base_dir=output_dir,
-                        transformed=transformed
+                        transformed=actual_transformed
                     )
                     
                     # 결과 출력
@@ -379,7 +401,7 @@ class Step6Evaluate(PipelineBase):
                     if len(models_str) > 200:
                         models_str = models_str[:200] + '_etc'
                     
-                    if transformed:
+                    if actual_transformed:
                         # 변형 모드: 기본 모드와 같은 파일명 형식에 _transformed 추가
                         output_filename = f"{set_name}_evaluation_{models_str}_transformed.xlsx"
                         output_path = os.path.join(output_dir, output_filename)

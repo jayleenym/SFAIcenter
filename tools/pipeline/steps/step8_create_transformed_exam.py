@@ -88,12 +88,13 @@ class Step8CreateTransformedExam(PipelineBase):
                     'evaluation', 'eval_data', '4_multiple_exam', set_name
                 )
                 
-                # 출력 디렉토리
+                # 출력 디렉토리 (세트별 디렉토리: 1st, 2nd, 3rd, 4th, 5th)
                 output_dir = os.path.join(
                     self.onedrive_path,
                     'evaluation', 'eval_data', '8_multiple_exam_+', set_name
                 )
                 os.makedirs(output_dir, exist_ok=True)
+                self.logger.info(f"  출력 디렉토리: {output_dir}")
                 
                 # 세트별 통계 수집용
                 set_statistics = {}
@@ -135,18 +136,18 @@ class Step8CreateTransformedExam(PipelineBase):
                     self.logger.info(f"    변형된 문제 수: {transformed_count}개")
                     self.logger.info(f"    변형되지 않은 문제 수: {len(missing_questions)}개")
                     
-                    # 변형된 시험지 저장
+                    # 변형된 시험지 저장 (세트별 디렉토리에 저장)
                     output_filename = f"{exam_name}_exam_transformed.json"
                     output_path = os.path.join(output_dir, output_filename)
                     self.json_handler.save(transformed_exam, output_path)
-                    self.logger.info(f"    ✅ 저장 완료: {output_path}")
+                    self.logger.info(f"    ✅ 저장 완료: {output_path} (세트: {set_name})")
                     
-                    # 누락된 문제들 저장
+                    # 누락된 문제들 저장 (세트별 디렉토리에 저장)
                     if missing_questions:
                         missing_filename = f"{exam_name}_missing.json"
                         missing_path = os.path.join(output_dir, missing_filename)
                         self.json_handler.save(missing_questions, missing_path)
-                        self.logger.info(f"    ✅ 누락된 문제 저장 완료: {missing_path}")
+                        self.logger.info(f"    ✅ 누락된 문제 저장 완료: {missing_path} (세트: {set_name})")
                     
                     # 통계를 메모리에 저장 (세트별 집계용)
                     set_statistics[exam_name] = transform_stats

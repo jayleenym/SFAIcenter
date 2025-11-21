@@ -489,12 +489,19 @@ def parse_model_output(raw: str, expected_ids: List[str], transformed: bool = Fa
         ln = ln.replace("\\t", "\t")
         # 3. 실제 탭 문자는 이미 \t이므로 추가 처리 불필요
         logger.debug(f"줄 {i+1} (탭 정규화 후): '{ln}'")
+        
+        # 탭 또는 띄어쓰기로 ID와 답변 구분
+        if "\t" in ln:
+            # 탭이 있으면 탭으로 분리
+            left, right = ln.split("\t", 1)
+        else:
+            # 탭이 없으면 첫 번째 띄어쓰기로 분리
+            parts = ln.split(None, 1)  # None은 모든 공백 문자(스페이스, 탭 등)로 분리
+            if len(parts) < 2:
+                logger.debug(f"줄 {i+1}: ID와 답변을 구분할 수 없음 (탭 또는 띄어쓰기 없음), 스킵")
+                continue
+            left, right = parts[0], parts[1]
             
-        if "\t" not in ln:
-            logger.debug(f"줄 {i+1}: 탭이 없음, 스킵")
-            continue
-            
-        left, right = ln.split("\t", 1)
         _id = left.strip()
         logger.debug(f"줄 {i+1}: ID='{_id}', 답변='{right}'")
         
