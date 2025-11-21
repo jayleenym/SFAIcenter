@@ -20,19 +20,31 @@ def get_api_key():
             print(f"경고: 설정 파일에서 API 키를 읽는 중 오류 발생: {e}")
     return None
 
-def process_essay_questions(model, round_number, round_folder, selected_questions, api_key=None):
+def process_essay_questions(model, round_number, round_folder, selected_questions, api_key=None, use_server_mode=False):
     """특정 모델과 회차에 대해 서술형 문제를 처리하는 함수"""
     llm = LLMQuery(api_key=api_key)
     
+    # 서버 모드일 때 모델 로드
+    if use_server_mode:
+        print(f"[VLLM] 모델 로드 중: {model}")
+        llm.load_vllm_model(model)
+        print(f"[VLLM] 모델 로드 완료: {model}")
+    
     eval_model_answer = []
-    print(f"\n평가 모델: {model}, 회차: {round_number} ({round_folder}), 선택된 문제 수: {len(selected_questions)}")
+    mode_str = "[VLLM]" if use_server_mode else "[API]"
+    print(f"\n{mode_str} 평가 모델: {model}, 회차: {round_number} ({round_folder}), 선택된 문제 수: {len(selected_questions)}")
     
     for q in tqdm(selected_questions, desc=f"{model} - {round_folder}"):
         user_prompt = f"""
 서술형 질문: {q['essay_question']}
 키워드: {q['essay_keyword']}
 """
-        answer = llm.query_openrouter("주어진 키워드를 모두 사용하여 서술형 문제에 대한 답변을 작성해주세요.", user_prompt, model_name = model)
+        system_prompt = "주어진 키워드를 모두 사용하여 서술형 문제에 대한 답변을 작성해주세요."
+        
+        if use_server_mode:
+            answer = llm.query_vllm(system_prompt, user_prompt)
+        else:
+            answer = llm.query_openrouter(system_prompt, user_prompt, model_name=model)
         
         answers = {
             'file_id': q['file_id'],
@@ -60,15 +72,22 @@ def process_essay_questions(model, round_number, round_folder, selected_question
 
 def main():
     parser = argparse.ArgumentParser(description='서술형 문제 답변 생성')
-    parser.add_argument('--models', type=str, required=True, help='모델 이름 (예: google/gemini-2.5-pro)')
+    parser.add_argument('--models', type=str, required=True, help='모델 이름 (예: google/gemini-2.5-pro 또는 로컬 모델 경로)')
     parser.add_argument('--sets', type=str, nargs='+', help='회차 리스트 (예: 1 2 3 또는 생략 시 전체 회차)')
+    parser.add_argument('--servermode', action='store_true', help='vLLM 서버 모드 사용 (로컬 모델 로드)')
     
     args = parser.parse_args()
     
-    # API 키 읽기
-    api_key = get_api_key()
-    if api_key is None:
-        print("경고: llm_config.ini에서 API 키를 찾을 수 없습니다. API 키 없이 진행합니다.")
+    use_server_mode = args.servermode
+    
+    # API 키 읽기 (서버 모드가 아닐 때만 필요)
+    api_key = None
+    if not use_server_mode:
+        api_key = get_api_key()
+        if api_key is None:
+            print("경고: llm_config.ini에서 API 키를 찾을 수 없습니다. API 키 없이 진행합니다.")
+    else:
+        print("[VLLM] 서버 모드: API 키가 필요하지 않습니다.")
     
     model = args.models
     
@@ -110,7 +129,7 @@ def main():
         print(f"[{round_folder}] 선택된 문제 수: {len(selected_questions)}")
         
         # 해당 회차 처리 및 저장
-        process_essay_questions(model, round_number, round_folder, selected_questions, api_key)
+        process_essay_questions(model, round_number, round_folder, selected_questions, api_key, use_server_mode)
 
 if __name__ == '__main__':
     main()
