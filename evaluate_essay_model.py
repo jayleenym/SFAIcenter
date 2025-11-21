@@ -585,7 +585,7 @@ def main():
         print(f"경고: 모범답안 파일을 찾을 수 없습니다: {best_ans_file}")
     
     # 문제 파일 경로 (기본적으로 essay_w_keyword.json 사용)
-    question_file = os.path.join(base_dir, 'essay_w_keyword.json')
+    question_file = os.path.join(base_dir, 'best_ans.json')
     if not os.path.exists(question_file):
         print(f"오류: 문제 파일을 찾을 수 없습니다: {question_file}")
         sys.exit(1)
