@@ -12,12 +12,9 @@
 
 import os
 import sys
-import logging
 import glob
 from typing import Dict, Any
 from ..base import PipelineBase
-from ..config import PROJECT_ROOT_PATH, SFAICENTER_PATH
-from core.logger import setup_step_logger
 
 # qna processing 모듈 import (tools 폴더에서)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -51,7 +48,7 @@ class Step4FillDomain(PipelineBase):
         self.logger.info(f"=== 4단계: Domain/Subdomain 채우기 (QnA Type: {qna_type}) ===")
         
         # 로깅 설정
-        self._setup_step_logging('fill_domain')
+        self._setup_step_logging('fill_domain', 4)
         
         try:
             if QnASubdomainClassifier is None:
@@ -262,19 +259,3 @@ class Step4FillDomain(PipelineBase):
         finally:
             self._remove_step_logging()
     
-    def _setup_step_logging(self, step_name: str):
-        """단계별 로그 파일 핸들러 설정"""
-        step_logger, file_handler = setup_step_logger(
-            step_name=step_name,
-            step_number=4
-        )
-        # 기존 로거에 핸들러 추가
-        self.logger.addHandler(file_handler)
-        self._step_log_handler = file_handler
-    
-    def _remove_step_logging(self):
-        """단계별 로그 파일 핸들러 제거"""
-        if self._step_log_handler:
-            self.logger.removeHandler(self._step_log_handler)
-            self._step_log_handler.close()
-            self._step_log_handler = None

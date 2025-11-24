@@ -5,12 +5,16 @@
 """
 
 import os
-import logging
+import sys
 from typing import List, Dict, Any, Optional
 from ..base import PipelineBase
-from ..config import SFAICENTER_PATH
-from core.logger import setup_step_logger
 from qna.qna_processor import QnAExtractor, TagProcessor
+
+# 포맷화 유틸리티 import
+current_dir = os.path.dirname(os.path.abspath(__file__))
+tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools
+sys.path.insert(0, tools_dir)
+from qna.formatting import format_qna_item
 
 
 class Step2ExtractFull(PipelineBase):
@@ -37,7 +41,7 @@ class Step2ExtractFull(PipelineBase):
             self.logger.info(f"=== 2단계: 전체 문제 추출 (태그 대치 포함) + Q&A 타입별 분류 (Cycle {cycle}) ===")
         
         # 로깅 설정
-        self._setup_step_logging('extract_full')
+        self._setup_step_logging('extract_full', 2)
         
         try:
             if levels is None:
@@ -230,21 +234,7 @@ class Step2ExtractFull(PipelineBase):
                         qna_type = qna_item.get('qna_type', 'etc')
                         
                         # 포맷화된 데이터 생성
-                        formatted_item = {
-                            'file_id': qna_item.get('file_id'),
-                            'tag': qna_item.get('qna_data', {}).get('tag', ''),
-                            'title': qna_item.get('title'),
-                            'cat1_domain': qna_item.get('cat1_domain'),
-                            'cat2_sub': qna_item.get('cat2_sub'),
-                            'cat3_specific': qna_item.get('cat3_specific'),
-                            'chapter': qna_item.get('chapter'),
-                            'page': qna_item.get('page'),
-                            'qna_type': qna_type,
-                            'question': qna_item.get('qna_data', {}).get('description', {}).get('question', ''),
-                            'options': qna_item.get('qna_data', {}).get('description', {}).get('options', []),
-                            'answer': qna_item.get('qna_data', {}).get('description', {}).get('answer', ''),
-                            'explanation': qna_item.get('qna_data', {}).get('description', {}).get('explanation', '')
-                        }
+                        formatted_item = format_qna_item(qna_item)
                         
                         if qna_type in classified_data:
                             classified_data[qna_type].append(formatted_item)
@@ -282,20 +272,4 @@ class Step2ExtractFull(PipelineBase):
         finally:
             self._remove_step_logging()
     
-    def _setup_step_logging(self, step_name: str):
-        """단계별 로그 파일 핸들러 설정"""
-        step_logger, file_handler = setup_step_logger(
-            step_name=step_name,
-            step_number=2
-        )
-        # 기존 로거에 핸들러 추가
-        self.logger.addHandler(file_handler)
-        self._step_log_handler = file_handler
-    
-    def _remove_step_logging(self):
-        """단계별 로그 파일 핸들러 제거"""
-        if self._step_log_handler:
-            self.logger.removeHandler(self._step_log_handler)
-            self._step_log_handler.close()
-            self._step_log_handler = None
 

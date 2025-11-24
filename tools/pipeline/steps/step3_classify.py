@@ -5,12 +5,16 @@
 """
 
 import os
-import logging
+import sys
 from typing import Dict, Any, Optional
 from ..base import PipelineBase
-from ..config import SFAICENTER_PATH
-from core.logger import setup_step_logger
 from qna.qna_processor import QnATypeClassifier
+
+# 포맷화 유틸리티 import
+current_dir = os.path.dirname(os.path.abspath(__file__))
+tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools
+sys.path.insert(0, tools_dir)
+from qna.formatting import format_qna_item, should_include_qna_item
 
 
 class Step3Classify(PipelineBase):
@@ -35,7 +39,7 @@ class Step3Classify(PipelineBase):
             self.logger.info(f"=== 3단계: Q&A 타입별 분류 (Cycle {cycle}) ===")
         
         # 로깅 설정
-        self._setup_step_logging('classify')
+        self._setup_step_logging('classify', 3)
         
         try:
             workbook_base = os.path.join(self.onedrive_path, 'evaluation', 'workbook_data')
@@ -90,49 +94,12 @@ class Step3Classify(PipelineBase):
                     for qna_item in qna_data:
                         qna_type = qna_item.get('qna_type', 'etc')
                         
-                        # workbook_groupby_qtype.py와 동일한 필터링 로직 적용
-                        qna_data_desc = qna_item.get('qna_data', {}).get('description', {})
-                        options = qna_data_desc.get('options', [])
-                        answer = qna_data_desc.get('answer', '')
-                        
-                        # 각 타입별 필터링 조건 확인
-                        should_include = False
-                        if qna_type == "multiple-choice":
-                            # 객관식: OX 문제 제외, 선지가 3개 이상인 경우
-                            if (options is not None) and (len(options) > 2):
-                                should_include = True
-                        elif qna_type == "short-answer":
-                            # 단답형: 답변이 있고, 답변이 삭제되지 않은 경우
-                            if (answer is not None) and (answer != "삭제"):
-                                should_include = True
-                        elif qna_type == "essay":
-                            # 서술형: 답변이 있는 경우
-                            if answer is not None:
-                                should_include = True
-                        elif qna_type == "etc":
-                            # etc 타입은 모두 포함
-                            should_include = True
-                        
-                        # 조건을 만족하지 않으면 건너뛰기
-                        if not should_include:
+                        # 필터링 조건 확인
+                        if not should_include_qna_item(qna_item, qna_type):
                             continue
                         
                         # 포맷화된 데이터 생성
-                        formatted_item = {
-                            'file_id': qna_item.get('file_id'),
-                            'tag': qna_item.get('qna_data', {}).get('tag', ''),
-                            'title': qna_item.get('title'),
-                            'cat1_domain': qna_item.get('cat1_domain'),
-                            'cat2_sub': qna_item.get('cat2_sub'),
-                            'cat3_specific': qna_item.get('cat3_specific'),
-                            'chapter': qna_item.get('chapter'),
-                            'page': qna_item.get('page'),
-                            'qna_type': qna_type,
-                            'question': qna_data_desc.get('question', ''),
-                            'options': options,
-                            'answer': answer,
-                            'explanation': qna_data_desc.get('explanation', '')
-                        }
+                        formatted_item = format_qna_item(qna_item)
                         
                         if qna_type in classified_data:
                             classified_data[qna_type].append(formatted_item)
@@ -193,20 +160,4 @@ class Step3Classify(PipelineBase):
         finally:
             self._remove_step_logging()
     
-    def _setup_step_logging(self, step_name: str):
-        """단계별 로그 파일 핸들러 설정"""
-        step_logger, file_handler = setup_step_logger(
-            step_name=step_name,
-            step_number=3
-        )
-        # 기존 로거에 핸들러 추가
-        self.logger.addHandler(file_handler)
-        self._step_log_handler = file_handler
-    
-    def _remove_step_logging(self):
-        """단계별 로그 파일 핸들러 제거"""
-        if self._step_log_handler:
-            self.logger.removeHandler(self._step_log_handler)
-            self._step_log_handler.close()
-            self._step_log_handler = None
 

@@ -5,11 +5,8 @@
 """
 
 import os
-import logging
 from typing import List, Dict, Any
 from ..base import PipelineBase
-from ..config import SFAICENTER_PATH
-from core.logger import setup_step_logger
 
 
 class Step0Preprocessing(PipelineBase):
@@ -31,7 +28,7 @@ class Step0Preprocessing(PipelineBase):
         self.logger.info(f"=== 0단계: 텍스트 전처리 (Cycle {cycle}) ===")
         
         # 로깅 설정
-        self._setup_step_logging('preprocessing')
+        self._setup_step_logging('preprocessing', 0)
         
         try:
             if levels is None:
@@ -83,20 +80,4 @@ class Step0Preprocessing(PipelineBase):
         finally:
             self._remove_step_logging()
     
-    def _setup_step_logging(self, step_name: str):
-        """단계별 로그 파일 핸들러 설정"""
-        step_logger, file_handler = setup_step_logger(
-            step_name=step_name,
-            step_number=0
-        )
-        # 기존 로거에 핸들러 추가
-        self.logger.addHandler(file_handler)
-        self._step_log_handler = file_handler
-    
-    def _remove_step_logging(self):
-        """단계별 로그 파일 핸들러 제거"""
-        if self._step_log_handler:
-            self.logger.removeHandler(self._step_log_handler)
-            self._step_log_handler.close()
-            self._step_log_handler = None
 

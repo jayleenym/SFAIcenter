@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--cycle', type=int, default=None, choices=[1, 2, 3],
                        help='사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리)')
     parser.add_argument('--steps', nargs='+',
-                       choices=['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam'],
+                       choices=['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam', 'evaluate_essay'],
                        default=None,
                        help='실행할 단계 (기본값: 전체 실행)')
     parser.add_argument('--base_path', type=str, default=None, 
@@ -68,8 +68,10 @@ def main():
     parser.add_argument('--eval_sets', type=int, nargs='+', default=None,
                        choices=[1, 2, 3, 4, 5],
                        help='평가할 세트 번호 (6단계에서 사용, 예: --eval_sets 1 또는 --eval_sets 1 2 3, None이면 모든 세트 평가)')
-    parser.add_argument('--transformed', action='store_true', default=False,
+    parser.add_argument('--eval_transformed', action='store_true', default=False,
                        help='변형 시험지 평가 모드 (6단계에서 사용, 기본값: False)')
+    parser.add_argument('--eval_essay', action='store_true', default=False,
+                       help='서술형 문제 평가 모드 (6단계에서 사용, 기본값: False)')
     parser.add_argument('--transform_classified_data_path', type=str, default=None,
                        help='이미 분류된 데이터 파일 경로 (7단계에서 사용, --transform_classify가 없을 때 필수)')
     parser.add_argument('--transform_classify', action='store_true', default=False,
@@ -92,6 +94,13 @@ def main():
     parser.add_argument('--create_transformed_exam_sets', type=int, nargs='+', default=None,
                        choices=[1, 2, 3, 4, 5],
                        help='변형 시험지 생성할 세트 번호 (8단계에서 사용, 예: --create_transformed_exam_sets 1 또는 --create_transformed_exam_sets 1 2 3, None이면 모든 세트 처리)')
+    parser.add_argument('--essay_models', nargs='+', default=None,
+                       help='모델 답변 생성할 모델 목록 (9단계에서 사용, None이면 답변 생성 안 함)')
+    parser.add_argument('--essay_sets', type=int, nargs='+', default=None,
+                       choices=[1, 2, 3, 4, 5],
+                       help='처리할 세트 번호 (9단계에서 사용, models가 있을 때만 사용, 예: --essay_sets 1 또는 --essay_sets 1 2 3, None이면 모든 세트 처리)')
+    parser.add_argument('--essay_use_server_mode', action='store_true', default=False,
+                       help='vLLM 서버 모드 사용 (9단계에서 사용, models가 있을 때만 사용)')
     parser.add_argument('--debug', action='store_true',
                        help='디버그 로그 활성화')
     
@@ -138,7 +147,8 @@ def main():
         eval_use_server_mode=args.eval_use_server_mode,
         eval_exam_dir=args.eval_exam_dir,
         eval_sets=args.eval_sets,
-        eval_transformed=args.transformed,
+        eval_transformed=args.eval_transformed,
+        eval_essay=args.eval_essay,
         transform_classified_data_path=args.transform_classified_data_path,
         transform_input_data_path=args.transform_input_data_path,
         transform_run_classify=args.transform_classify,
@@ -148,7 +158,10 @@ def main():
         transform_wrong_to_right=args.transform_wrong_to_right,
         transform_right_to_wrong=args.transform_right_to_wrong,
         transform_abcd=args.transform_abcd,
-        create_transformed_exam_sets=args.create_transformed_exam_sets
+        create_transformed_exam_sets=args.create_transformed_exam_sets,
+        essay_models=args.essay_models,
+        essay_sets=args.essay_sets,
+        essay_use_server_mode=args.essay_use_server_mode
     )
     
     # 결과 확인 (에러 시에만 종료)

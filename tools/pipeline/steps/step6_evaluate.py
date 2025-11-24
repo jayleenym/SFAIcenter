@@ -6,12 +6,10 @@
 
 import os
 import sys
+import json
 import configparser
-import logging
 from typing import List, Dict, Any
 from ..base import PipelineBase
-from ..config import PROJECT_ROOT_PATH, SFAICENTER_PATH
-from core.logger import setup_step_logger
 
 # evaluation 모듈 import (tools 폴더에서)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,12 +22,21 @@ try:
         save_results_to_excel,
         print_evaluation_summary
     )
+    from evaluation.evaluate_essay_model import (
+        evaluate_single_model,
+        calculate_statistics
+    )
+    from evaluation.essay_utils import load_best_answers, setup_llm_with_api_key
 except ImportError:
     # fallback: 이미 tools_dir에 추가되어 있으므로 None으로 설정
     run_eval_pipeline = None
     load_data_from_directory = None
     save_results_to_excel = None
     print_evaluation_summary = None
+    evaluate_single_model = None
+    calculate_statistics = None
+    load_best_answers = None
+    setup_llm_with_api_key = None
 
 
 class Step6Evaluate(PipelineBase):
@@ -43,7 +50,7 @@ class Step6Evaluate(PipelineBase):
     def execute(self, models: List[str] = None, batch_size: int = 10, 
                 use_ox_support: bool = True, use_server_mode: bool = False,
                 exam_dir: str = None, sets: List[int] = None, 
-                transformed: bool = False) -> Dict[str, Any]:
+                transformed: bool = False, essay: bool = False) -> Dict[str, Any]:
         """
         6단계: 시험지 평가
         - 만들어진 시험지(1st/2nd/3rd/4th/5th) 모델별 답변 평가
@@ -57,11 +64,12 @@ class Step6Evaluate(PipelineBase):
             exam_dir: 시험지 디렉토리 경로 (None이면 기본 경로 사용)
             sets: 평가할 세트 번호 리스트 (None이면 모든 세트 평가, 예: [1] 또는 [1, 2, 3])
             transformed: 변형 시험지 평가 모드 (True면 8_multiple_exam_+ 사용, False면 4_multiple_exam 사용)
+            essay: 서술형 문제 평가 모드 (True면 9_multiple_to_essay 평가 수행)
         """
         self.logger.info(f"=== 6단계: 시험지 평가 (배치 크기: {batch_size}) ===")
         
         # 로깅 설정
-        self._setup_step_logging('evaluate')
+        self._setup_step_logging('evaluate', 6)
         
         try:
             if run_eval_pipeline is None or load_data_from_directory is None:
@@ -336,64 +344,13 @@ class Step6Evaluate(PipelineBase):
                 
                 self.logger.info(f"{set_name} 세트에서 {len(exam_files)}개의 시험 파일을 찾았습니다.")
                 
-                # 모든 시험 파일의 데이터를 합쳐서 한번에 평가
+                # 각 시험지별로 개별 평가 수행
                 try:
                     # load_data_from_directory가 None인지 확인
                     if load_data_from_directory is None:
                         self.logger.error("load_data_from_directory 함수를 import할 수 없습니다.")
                         continue
                     
-                    # 모든 파일의 데이터를 합치기
-                    all_combined_data = []
-                    loaded_files = []
-                    
-                    for exam_file in exam_files:
-                        exam_name = os.path.splitext(os.path.basename(exam_file))[0].replace('_exam', '')
-                        self.logger.info(f"데이터 로딩 중: {exam_file}")
-                        
-                        file_data = load_data_from_directory(
-                            exam_file,
-                            apply_tag_replacement=False
-                        )
-                        
-                        if file_data:
-                            all_combined_data.extend(file_data)
-                            loaded_files.append(exam_name)
-                            self.logger.info(f"  - {exam_name}: {len(file_data)}개 문제 로드")
-                        else:
-                            self.logger.warning(f"  - {exam_name}: 데이터를 로드할 수 없습니다.")
-                    
-                    if not all_combined_data:
-                        self.logger.warning(f"{set_name} 세트에서 로드된 데이터가 없습니다.")
-                        continue
-                    
-                    self.logger.info(f"{'='*50}")
-                    self.logger.info(f"세트: {set_name} - 총 {len(all_combined_data)}개 문제 (파일: {', '.join(loaded_files)})")
-                    self.logger.info(f"{'='*50}")
-                    
-                    # 평가 실행
-                    self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size}, 변형 모드: {actual_transformed})")
-                    df_all, pred_long, pred_wide, acc = run_eval_pipeline(
-                        all_combined_data,
-                        models,
-                        sample_size=len(all_combined_data),
-                        batch_size=batch_size,
-                        seed=42,
-                        use_server_mode=use_server_mode,
-                        use_ox_support=use_ox_support,
-                        api_key=api_key,
-                        output_base_dir=output_dir,
-                        transformed=actual_transformed
-                    )
-                    
-                    # 결과 출력
-                    self.logger.info(f"\n{'='*50}")
-                    self.logger.info(f"평가 결과 요약 ({set_name} 세트 - 총 {len(all_combined_data)}개 문제)")
-                    self.logger.info(f"{'='*50}")
-                    if print_evaluation_summary:
-                        print_evaluation_summary(acc, pred_long)
-                    
-                    # 결과 저장 경로 설정
                     # 모델 이름들을 파일명에 사용할 수 있도록 변환 (특수문자 제거)
                     model_names = [model.split("/")[-1].replace(':', '_') for model in models]
                     models_str = '_'.join(model_names)
@@ -401,38 +358,80 @@ class Step6Evaluate(PipelineBase):
                     if len(models_str) > 200:
                         models_str = models_str[:200] + '_etc'
                     
-                    if actual_transformed:
-                        # 변형 모드: 기본 모드와 같은 파일명 형식에 _transformed 추가
-                        output_filename = f"{set_name}_evaluation_{models_str}_transformed.xlsx"
-                        output_path = os.path.join(output_dir, output_filename)
-                    else:
-                        # 기본 모드: 세트별 디렉토리에 저장
-                        # 세트별 출력 디렉토리 생성 (예: exam_result/1st, exam_result/2nd)
-                        set_output_dir = os.path.join(output_dir, set_name)
-                        os.makedirs(set_output_dir, exist_ok=True)
+                    # 각 시험지별로 개별 평가
+                    for exam_file in exam_files:
+                        exam_name = os.path.splitext(os.path.basename(exam_file))[0].replace('_exam', '').replace('_transformed', '')
+                        self.logger.info(f"\n{'='*50}")
+                        self.logger.info(f"시험지: {exam_name} (세트: {set_name})")
+                        self.logger.info(f"{'='*50}")
+                        self.logger.info(f"데이터 로딩 중: {exam_file}")
                         
-                        output_filename = f"{set_name}_evaluation_{models_str}.xlsx"
-                        output_path = os.path.join(set_output_dir, output_filename)
-                    
-                    if save_results_to_excel:
-                        save_results_to_excel(
-                            df_all, pred_wide, acc, pred_long,
-                            output_path
+                        file_data = load_data_from_directory(
+                            exam_file,
+                            apply_tag_replacement=False
                         )
-                        self.logger.info(f"결과 저장 완료: {output_path}")
-                    
-                    # 결과 저장
-                    result_key = f"{set_name}_combined"
-                    all_results[result_key] = {
-                        'set_name': set_name,
-                        'loaded_files': loaded_files,
-                        'total_questions': len(all_combined_data),
-                        'models': models,
-                        'accuracy': acc.to_dict() if hasattr(acc, 'to_dict') else acc,
-                        'output_file': output_path
-                    }
-                    
-                    self.logger.info(f"{set_name} 세트 평가 완료 (총 {len(all_combined_data)}개 문제)")
+                        
+                        if not file_data:
+                            self.logger.warning(f"  - {exam_name}: 데이터를 로드할 수 없습니다.")
+                            continue
+                        
+                        self.logger.info(f"  - {exam_name}: {len(file_data)}개 문제 로드")
+                        
+                        # 평가 실행
+                        self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size}, 변형 모드: {actual_transformed})")
+                        df_all, pred_long, pred_wide, acc = run_eval_pipeline(
+                            file_data,
+                            models,
+                            sample_size=len(file_data),
+                            batch_size=batch_size,
+                            seed=42,
+                            use_server_mode=use_server_mode,
+                            use_ox_support=use_ox_support,
+                            api_key=api_key,
+                            output_base_dir=output_dir,
+                            transformed=actual_transformed
+                        )
+                        
+                        # 결과 출력
+                        self.logger.info(f"\n{'='*50}")
+                        self.logger.info(f"평가 결과 요약 ({exam_name} - 세트: {set_name}, 총 {len(file_data)}개 문제)")
+                        self.logger.info(f"{'='*50}")
+                        if print_evaluation_summary:
+                            print_evaluation_summary(acc, pred_long)
+                        
+                        # 결과 저장 경로 설정
+                        if actual_transformed:
+                            # 변형 모드: 기본 모드와 같은 파일명 형식에 _transformed 추가
+                            output_filename = f"{set_name}_{exam_name}_evaluation_{models_str}_transformed.xlsx"
+                            output_path = os.path.join(output_dir, output_filename)
+                        else:
+                            # 기본 모드: 세트별 디렉토리에 저장
+                            # 세트별 출력 디렉토리 생성 (예: exam_result/1st, exam_result/2nd)
+                            set_output_dir = os.path.join(output_dir, set_name)
+                            os.makedirs(set_output_dir, exist_ok=True)
+                            
+                            output_filename = f"{set_name}_{exam_name}_evaluation_{models_str}.xlsx"
+                            output_path = os.path.join(set_output_dir, output_filename)
+                        
+                        if save_results_to_excel:
+                            save_results_to_excel(
+                                df_all, pred_wide, acc, pred_long,
+                                output_path
+                            )
+                            self.logger.info(f"결과 저장 완료: {output_path}")
+                        
+                        # 결과 저장
+                        result_key = f"{set_name}_{exam_name}"
+                        all_results[result_key] = {
+                            'set_name': set_name,
+                            'exam_name': exam_name,
+                            'total_questions': len(file_data),
+                            'models': models,
+                            'accuracy': acc.to_dict() if hasattr(acc, 'to_dict') else acc,
+                            'output_file': output_path
+                        }
+                        
+                        self.logger.info(f"{exam_name} (세트: {set_name}) 평가 완료 (총 {len(file_data)}개 문제)")
                 
                 except Exception as e:
                     self.logger.error(f"시험 평가 오류 ({set_name} 세트): {e}")
@@ -441,6 +440,123 @@ class Step6Evaluate(PipelineBase):
                     continue
             
             self.logger.info("모든 시험지 평가 완료")
+            
+            # essay=True일 때 서술형 문제 평가 수행
+            if essay:
+                self.logger.info("\n" + "="*60)
+                self.logger.info("서술형 문제 평가 시작")
+                self.logger.info("="*60)
+                
+                if evaluate_single_model is None:
+                    self.logger.warning("evaluate_essay_model 모듈을 import할 수 없어 서술형 평가를 건너뜁니다.")
+                else:
+                    try:
+                        # 서술형 문제 평가 경로 설정
+                        essay_base_dir = os.path.join(
+                            self.onedrive_path,
+                            'evaluation', 'eval_data', '9_multiple_to_essay'
+                        )
+                        
+                        if not os.path.exists(essay_base_dir):
+                            self.logger.warning(f"서술형 문제 디렉토리를 찾을 수 없습니다: {essay_base_dir}")
+                        else:
+                            # 모범답안 로드
+                            best_ans_file = os.path.join(essay_base_dir, 'best_ans.json')
+                            best_answers_dict = {}
+                            if load_best_answers:
+                                best_answers_dict = load_best_answers(best_ans_file, self.logger)
+                            else:
+                                # 직접 로드
+                                if os.path.exists(best_ans_file):
+                                    with open(best_ans_file, 'r', encoding='utf-8') as f:
+                                        best_answers = json.load(f)
+                                    for ba in best_answers:
+                                        key = (ba.get('file_id'), ba.get('tag'))
+                                        best_answers_dict[key] = ba.get('essay_answer', ba.get('answer', ''))
+                            
+                            # LLM 인스턴스 생성
+                            if setup_llm_with_api_key:
+                                llm = setup_llm_with_api_key(self.project_root_path, self.logger)
+                            else:
+                                llm = self.llm_query
+                            
+                            # 평가할 세트 설정 (객관식 평가와 동일한 sets 파라미터 사용)
+                            sets_to_evaluate = sets if sets else [1, 2, 3, 4, 5]
+                            
+                            # 출력 디렉토리
+                            essay_output_dir = os.path.join(essay_base_dir, 'evaluation_results')
+                            os.makedirs(essay_output_dir, exist_ok=True)
+                            
+                            # 세트 이름 매핑
+                            set_names = {1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th'}
+                            
+                            # 각 모델과 세트 조합에 대해 평가 수행
+                            for set_num in sets_to_evaluate:
+                                set_name = set_names[set_num]
+                                
+                                # 각 세트별 문제 파일 경로 (questions/essay_questions_{set_name}.json)
+                                question_file = os.path.join(
+                                    essay_base_dir, 'questions', f'essay_questions_{set_name}.json'
+                                )
+                                
+                                if not os.path.exists(question_file):
+                                    self.logger.warning(f"서술형 문제 파일을 찾을 수 없습니다: {question_file}")
+                                    continue
+                                
+                                for model_name in models:
+                                    try:
+                                        self.logger.info(f"서술형 평가: 모델 {model_name}, 세트 {set_num} ({set_name})")
+                                        
+                                        # 평가 수행
+                                        evaluation_results, detailed_results, stats = evaluate_single_model(
+                                            model_name, question_file, 
+                                            keyword_check_model='google/gemini-2.5-flash',
+                                            scoring_model='google/gemini-3-pro-preview',
+                                            set_num=set_num,
+                                            best_answers_dict=best_answers_dict
+                                        )
+                                        
+                                        if evaluation_results is None:
+                                            self.logger.warning(f"모델 {model_name} 세트 {set_num} 평가 결과가 없습니다.")
+                                            continue
+                                        
+                                        # 파일명 생성
+                                        model_safe_name = model_name.replace("/", "_")
+                                        set_suffix = f"_set{set_num}"
+                                        
+                                        # 상세 결과 저장
+                                        detailed_output_file = os.path.join(
+                                            essay_output_dir, 
+                                            f'{model_safe_name}{set_suffix}_detailed_results.json'
+                                        )
+                                        with open(detailed_output_file, 'w', encoding='utf-8') as f:
+                                            json.dump(detailed_results, f, ensure_ascii=False, indent=2)
+                                        self.logger.info(f"상세 결과 저장: {detailed_output_file}")
+                                        
+                                        # 통계 저장
+                                        stats_output_file = os.path.join(
+                                            essay_output_dir,
+                                            f'{model_safe_name}{set_suffix}_statistics.json'
+                                        )
+                                        stats_for_save = dict(stats)
+                                        if 'keyword_avg_scores' in stats_for_save:
+                                            stats_for_save['keyword_avg_scores'] = dict(stats['keyword_avg_scores'])
+                                        with open(stats_output_file, 'w', encoding='utf-8') as f:
+                                            json.dump(stats_for_save, f, ensure_ascii=False, indent=2)
+                                        self.logger.info(f"통계 저장: {stats_output_file}")
+                                        
+                                    except Exception as e:
+                                        self.logger.error(f"서술형 평가 오류 (모델: {model_name}, 세트: {set_num}): {e}")
+                                        import traceback
+                                        self.logger.error(traceback.format_exc())
+                                        continue
+                            
+                            self.logger.info("서술형 문제 평가 완료")
+                    except Exception as e:
+                        self.logger.error(f"서술형 평가 중 오류: {e}")
+                        import traceback
+                        self.logger.error(traceback.format_exc())
+            
             return {
                 'success': True,
                 'results': all_results
@@ -453,20 +569,4 @@ class Step6Evaluate(PipelineBase):
         finally:
             self._remove_step_logging()
     
-    def _setup_step_logging(self, step_name: str):
-        """단계별 로그 파일 핸들러 설정"""
-        step_logger, file_handler = setup_step_logger(
-            step_name=step_name,
-            step_number=6
-        )
-        # 기존 로거에 핸들러 추가
-        self.logger.addHandler(file_handler)
-        self._step_log_handler = file_handler
-    
-    def _remove_step_logging(self):
-        """단계별 로그 파일 핸들러 제거"""
-        if self._step_log_handler:
-            self.logger.removeHandler(self._step_log_handler)
-            self._step_log_handler.close()
-            self._step_log_handler = None
 

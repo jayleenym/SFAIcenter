@@ -18,7 +18,7 @@ sys.path.insert(0, PROJECT_ROOT_PATH)
 
 from core.utils import FileManager, TextProcessor, JSONHandler
 from core.llm_query import LLMQuery
-from core.logger import setup_logger
+from core.logger import setup_logger, setup_step_logger
 from data_processing.json_cleaner import JSONCleaner
 
 # qna processing 및 evaluation 모듈 import (tools 폴더에서 우선 시도)
@@ -29,7 +29,7 @@ sys.path.insert(0, tools_dir)
 # 전역 변수로 export (steps에서 사용)
 try:
     from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
-    from evaluation.fill_multiple_choice_data import (
+    from tools.qna.fill_multiple_choice_data import (
         load_json_file, create_lookup_dict, fill_multiple_choice_data
     )
     from evaluation.multiple_eval_by_model import (
@@ -44,7 +44,7 @@ except ImportError:
     sys.path.insert(0, tools_dir)
     try:
         from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
-        from evaluation.fill_multiple_choice_data import (
+        from tools.qna.fill_multiple_choice_data import (
             load_json_file, create_lookup_dict, fill_multiple_choice_data
         )
         from evaluation.multiple_eval_by_model import (
@@ -124,4 +124,27 @@ class PipelineBase:
             use_file=False,  # step별로 파일 핸들러 추가
             use_console=True
         )
+    
+    def _setup_step_logging(self, step_name: str, step_number: int):
+        """
+        단계별 로그 파일 핸들러 설정
+        
+        Args:
+            step_name: 단계 이름 (예: 'preprocessing', 'extract_basic')
+            step_number: 단계 번호 (0~9)
+        """
+        step_logger, file_handler = setup_step_logger(
+            step_name=step_name,
+            step_number=step_number
+        )
+        # 기존 로거에 핸들러 추가
+        self.logger.addHandler(file_handler)
+        self._step_log_handler = file_handler
+    
+    def _remove_step_logging(self):
+        """단계별 로그 파일 핸들러 제거"""
+        if hasattr(self, '_step_log_handler') and self._step_log_handler:
+            self.logger.removeHandler(self._step_log_handler)
+            self._step_log_handler.close()
+            self._step_log_handler = None
 

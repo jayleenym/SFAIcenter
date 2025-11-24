@@ -11,6 +11,7 @@
 - **단계별 분리**: 각 파이프라인 단계를 독립적인 모듈로 분리하여 유지보수성 향상
 - **플랫폼 독립적 경로**: Windows와 macOS에서 자동으로 올바른 경로를 감지하고 사용
 - **경로 자동화**: 하드코딩된 경로를 제거하고 플랫폼별 자동 감지 기능 추가
+- **코드 간소화**: 변형 로직, 검증 로직 등을 별도 모듈로 분리하여 각 step 파일 간소화
 
 ## 📁 폴더 구조
 
@@ -29,11 +30,29 @@ tools/
 │       ├── step1_extract_basic.py      # 1단계: 기본 문제 추출
 │       ├── step2_extract_full.py       # 2단계: 전체 문제 추출 (태그 대치)
 │       ├── step3_classify.py           # 3단계: Q&A 타입별 분류
-│       ├── step4_domain_subdomain.py   # 4단계: Domain/Subdomain 분류
+│       ├── step4_fill_domain.py        # 4단계: Domain/Subdomain 분류
 │       ├── step5_create_exam.py        # 5단계: 시험문제 만들기
 │       ├── step6_evaluate.py           # 6단계: 시험지 평가
 │       ├── step7_transform_multiple_choice.py  # 7단계: 객관식 문제 변형
-│       └── step8_create_transformed_exam.py    # 8단계: 변형 문제를 포함한 시험지 생성
+│       ├── step8_create_transformed_exam.py    # 8단계: 변형 문제를 포함한 시험지 생성
+│       └── step9_multiple_essay.py             # 9단계: 객관식 문제를 서술형 문제로 변환
+│
+├── statistics/              # 통계 저장 및 집계
+│   ├── __init__.py
+│   └── statistics_saver.py   # StatisticsSaver 클래스 (통계 저장/집계/로깅)
+│
+├── transformed/             # 문제 변형 관련 기능
+│   ├── __init__.py
+│   ├── transform_multiple_choice.py    # MultipleChoiceTransformer 클래스 (객관식 변형)
+│   ├── load_transformed_questions.py    # 변형된 문제 로드 유틸리티
+│   ├── create_transformed_exam.py      # 변형된 시험지 생성 유틸리티
+│   ├── classify_essay_by_exam.py       # 서술형 문제 시험별 분류
+│   ├── create_essay_with_keywords.py   # 키워드 포함 서술형 문제 생성
+│   └── multi_essay_answer.py           # 서술형 문제 모델 답변 생성
+│
+├── exam/                    # 시험지 생성 및 검증
+│   ├── __init__.py
+│   └── exam_validator.py    # ExamValidator 클래스 (시험지 검증/업데이트)
 │
 ├── core/                    # 핵심 유틸리티 및 공통 기능
 │   ├── utils.py            # FileManager, TextProcessor, JSONHandler 클래스
@@ -48,6 +67,7 @@ tools/
 │
 ├── qna/                     # Q&A 관련 처리
 │   ├── qna_processor.py    # QnATypeClassifier, QnAExtractor, TagProcessor 클래스
+│   ├── formatting.py       # Q&A 데이터 포맷화 유틸리티
 │   ├── extraction/         # Q&A 추출 (레거시)
 │   │   ├── qna_extract.py      # Q&A 추출 메인 함수 (레거시)
 │   │   └── process_qna.py      # Q&A 도메인 분류 (레거시)
@@ -66,10 +86,12 @@ tools/
 │       └── find_invalid_options.py              # 유효하지 않은 선지 찾기
 │
 └── evaluation/             # 평가 관련
-    ├── multiple_eval_by_model.py      # LLM 평가 시스템 (O, X 문제 포함)
-    ├── qna_subdomain_classifier.py    # Q&A 서브도메인 분류기
-    ├── fill_multiple_choice_data.py   # 객관식 데이터 채우기
-    ├── workbook_groupby_qtype.py       # 문제 타입별 그룹화
+    ├── evaluate_essay_model.py      # 서술형 문제 평가 시스템
+    ├── essay_utils.py               # 서술형 평가 유틸리티 (모범답안 로드, API 키 설정)
+    ├── multiple_eval_by_model.py    # LLM 평가 시스템 (O, X 문제 포함)
+    ├── qna_subdomain_classifier.py  # Q&A 서브도메인 분류기
+    ├── fill_multiple_choice_data.py # 객관식 데이터 채우기
+    ├── workbook_groupby_qtype.py    # 문제 타입별 그룹화
     ├── README_multiple_eval_by_model.md
     └── README_subdomain_classifier.md
 ```
@@ -88,7 +110,7 @@ tools/
 **base.py** - 파이프라인 기본 클래스
 - `PipelineBase`: 모든 파이프라인 단계의 기본 클래스
 - 공통 유틸리티 초기화 (FileManager, TextProcessor, JSONHandler, LLMQuery 등)
-- 로깅 설정
+- 공통 로깅 메서드 (`_setup_step_logging`, `_remove_step_logging`)
 
 **main.py** - 파이프라인 오케스트레이터
 - `Pipeline`: 전체 파이프라인을 관리하는 메인 클래스
@@ -97,18 +119,33 @@ tools/
 
 **steps/** - 각 단계별 모듈
 - `Step0Preprocessing`: 텍스트 전처리 (문장내 엔터 제거, 빈 챕터정보 채우기, 선지 텍스트 정규화)
+  - Output: `final_data_path/{cycle}/Lv2/` (원본 파일 수정)
 - `Step1ExtractBasic`: 기본 문제 추출 (Lv2, Lv3_4)
+  - Output: `workbook_data/{cycle}/Lv2/`, `workbook_data/{cycle}/Lv3_4/`
 - `Step2ExtractFull`: 전체 문제 추출 (Lv2, Lv3, Lv3_4, Lv5) - 태그 대치 포함, 덮어쓰기 저장
-  - `cycle` 파라미터가 `None`이면 `final_data_path`에서 모든 사이클의 원본 파일을 자동으로 찾아서 처리
-  - 특정 사이클만 처리하려면 `cycle=1, 2, 3` 중 하나 지정
+  - Output: `workbook_data/{cycle}/{level}/` 또는 `workbook_data/{level}/`
+  - `cycle` 파라미터가 `None`이면 모든 사이클의 원본 파일을 자동으로 찾아서 처리
 - `Step3Classify`: Q&A 타입별 분류 (multiple-choice/short-answer/essay/etc), 기존 파일 병합 지원
-  - `cycle` 파라미터가 `None`이면 `workbook_data` 전체에서 모든 사이클의 파일을 자동으로 찾아서 처리
-  - 특정 사이클만 처리하려면 `cycle=1, 2, 3` 중 하나 지정
-- `Step4DomainSubdomain`: Domain/Subdomain 분류 (실패 항목 재처리 포함, 기존 파일 병합 지원)
+  - Output: `eval_data/1_filter_with_tags/{qna_type}.json`
+  - `cycle` 파라미터가 `None`이면 모든 사이클의 파일을 자동으로 찾아서 처리
+- `Step4FillDomain`: Domain/Subdomain 분류 (실패 항목 재처리 포함, 기존 파일 병합 지원)
+  - Output: `eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json`
 - `Step5CreateExam`: 시험문제 만들기 (exam_config.json 참고)
+  - Output: `eval_data/4_multiple_exam/{set_name}/{exam_name}_exam.json`
+  - `ExamValidator`를 사용하여 시험지 검증 및 업데이트
 - `Step6Evaluate`: 시험지 평가 (모델별 답변 평가, 배치 처리, 시험지 경로 설정 가능)
+  - Output: `eval_data/4_multiple_exam/exam_result/` 또는 `eval_data/8_multiple_exam_+/exam_+_result/`
 - `Step7TransformMultipleChoice`: 객관식 문제 변형 (right/wrong/abcd 분류 및 변형)
+  - Output: `eval_data/7_multiple_rw/` (answer_type_classified.json, pick_wrong/, pick_right/, pick_abcd/)
+  - `MultipleChoiceTransformer`를 사용하여 변형 수행
 - `Step8CreateTransformedExam`: 변형 문제를 포함한 시험지 생성 (1st~5th 세트 처리, 변형 문제와 원본 문제 결합)
+  - Output: `eval_data/8_multiple_exam_+/{set_name}/` ({exam_name}_exam_transformed.json, {exam_name}_missing.json, STATS_{set_name}.md)
+  - `load_transformed_questions`, `create_transformed_exam` 유틸리티 사용
+- `Step9MultipleEssay`: 객관식 문제를 서술형 문제로 변환
+  - Output: `eval_data/9_multiple_to_essay/` (best_ans.json, questions/essay_questions_{set_name}.json)
+  - `create_essay_with_keywords.py`의 함수들을 사용하여 서술형 문제 변환
+  - `classify_essay_by_exam.py`를 사용하여 시험별로 분류
+  - `models` 옵션이 있으면 `multi_essay_answer.py`를 사용하여 모델 답변 생성
 
 ### 🔧 core/ - 핵심 유틸리티
 
@@ -144,6 +181,10 @@ tools/
 - `QnAExtractor`: JSON 파일에서 Q&A 추출 및 태그 처리
 - `TagProcessor`: 추가 태그 처리 및 데이터 채우기
 
+**formatting.py** - Q&A 데이터 포맷화 유틸리티
+- `format_qna_item()`: Q&A 항목을 표준 형식으로 포맷화
+- `should_include_qna_item()`: Q&A 항목이 필터링 조건을 만족하는지 확인
+
 #### extraction/ - 추출 (레거시)
 - **qna_extract.py**: Q&A 추출 메인 함수 (레거시)
 - **process_qna.py**: Q&A 도메인 분류 (레거시)
@@ -164,7 +205,53 @@ tools/
 - **check_real_duplicates.py**: 중복 Q&A 검사
 - **find_invalid_options.py**: 유효하지 않은 선지 찾기
 
+### 🔄 transformed/ - 문제 변형 관련 기능
+
+**transform_multiple_choice.py** - 객관식 문제 변형 클래스
+- `MultipleChoiceTransformer`: 객관식 문제 변형 클래스
+  - `transform_wrong_to_right()`: wrong -> right 변형
+  - `transform_right_to_wrong()`: right -> wrong 변형
+  - `transform_abcd()`: abcd 변형 (단일정답형 -> 복수정답형)
+  - 프롬프트 생성, API 호출, 결과 저장 로직 포함
+
+**load_transformed_questions.py** - 변형된 문제 로드 유틸리티
+- `load_transformed_questions()`: pick_right, pick_wrong, pick_abcd의 result.json 파일들을 로드하여 question_id를 키로 하는 딕셔너리로 반환
+
+**create_transformed_exam.py** - 변형된 시험지 생성 유틸리티
+- `create_transformed_exam()`: 원본 시험지의 각 문제에 대해 변형된 문제를 찾아서 새로운 시험지 생성
+
+**classify_essay_by_exam.py** - 서술형 문제 시험별 분류
+- 서술형 문제를 시험별로 분류
+
+**create_essay_with_keywords.py** - 키워드 포함 서술형 문제 생성
+- 키워드를 포함한 서술형 문제 생성
+
+**multi_essay_answer.py** - 서술형 문제 모델 답변 생성
+- 서술형 문제에 대한 모델 답변 생성
+
+### 📝 exam/ - 시험지 생성 및 검증
+
+**exam_validator.py** - 시험지 검증 및 업데이트 클래스
+- `ExamValidator`: 시험지 검증 및 업데이트 클래스
+  - `check_exam_meets_requirements()`: 기존 문제지가 exam_config 요구사항을 만족하는지 확인
+  - `update_existing_exam()`: 기존 문제지를 exam_config 요구사항에 맞게 업데이트 (부족한 문제 추가, 불필요한 문제 제거)
+
+### 📊 statistics/ - 통계 저장 및 집계
+- **StatisticsSaver**: 통계 저장 및 집계 유틸리티 클래스
+  - `save_statistics_markdown()`: 통계 정보를 마크다운 형식으로 저장
+  - `aggregate_set_statistics()`: 여러 시험지의 통계를 집계
+  - `log_statistics()`: 통계 정보를 로그로 출력
+
 ### 📈 evaluation/ - 평가
+
+**evaluate_essay_model.py** - 서술형 문제 평가 시스템
+- 서술형 문제에 대한 모델 평가
+- 키워드 기반 점수 계산
+- 통계 정보 생성
+
+**essay_utils.py** - 서술형 평가 유틸리티
+- `load_best_answers()`: 모범답안 로드
+- `setup_llm_with_api_key()`: API 키 설정 및 LLM 인스턴스 생성
 
 **multiple_eval_by_model.py**
 - LLM을 사용한 객관식 문제 평가
@@ -192,14 +279,25 @@ tools/
 ```
 main_pipeline.py → 전체 프로세스 실행
 ├── Step 0: 텍스트 전처리 (Lv2)
+│   └── Output: final_data_path/{cycle}/Lv2/ (원본 파일 수정)
 ├── Step 1: 기본 문제 추출 (Lv2, Lv3_4)
-├── Step 2: 전체 문제 추출 (Lv3, Lv3_4, Lv5) - 태그 대치
+│   └── Output: workbook_data/{cycle}/Lv2/, workbook_data/{cycle}/Lv3_4/
+├── Step 2: 전체 문제 추출 (Lv2, Lv3, Lv3_4, Lv5) - 태그 대치
+│   └── Output: workbook_data/{cycle}/{level}/ 또는 workbook_data/{level}/
 ├── Step 3: Q&A 타입별 분류
+│   └── Output: eval_data/1_filter_with_tags/{qna_type}.json
 ├── Step 4: Domain/Subdomain 분류 (실패 항목 재처리)
+│   └── Output: eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json
 ├── Step 5: 시험문제 만들기
+│   └── Output: eval_data/4_multiple_exam/{set_name}/{exam_name}_exam.json
 ├── Step 6: 시험지 평가
+│   └── Output: eval_data/4_multiple_exam/exam_result/ 또는 eval_data/8_multiple_exam_+/exam_+_result/
 ├── Step 7: 객관식 문제 변형 (right/wrong/abcd 분류 및 변형)
-└── Step 8: 변형 문제를 포함한 시험지 생성 (1st~5th 세트 처리)
+│   └── Output: eval_data/7_multiple_rw/ (answer_type_classified.json, pick_wrong/, pick_right/, pick_abcd/)
+├── Step 8: 변형 문제를 포함한 시험지 생성 (1st~5th 세트 처리)
+│   └── Output: eval_data/8_multiple_exam_+/{set_name}/ ({exam_name}_exam_transformed.json, {exam_name}_missing.json, STATS_{set_name}.md)
+└── Step 9: 객관식 문제를 서술형 문제로 변환
+    └── Output: eval_data/9_multiple_to_essay/ (best_ans.json, questions/essay_questions_{set_name}.json)
 ```
 
 ### 개별 단계 실행
@@ -223,7 +321,7 @@ pipeline/steps/step3_classify.py → Q&A 타입별 분류
 
 #### 3. Domain/Subdomain 분류
 ```
-pipeline/steps/step4_domain_subdomain.py → Domain/Subdomain 분류
+pipeline/steps/step4_fill_domain.py → Domain/Subdomain 분류
   ├── 기존 데이터로 빈칸 채우기
   ├── LLM을 통한 분류
   └── 실패 항목 재처리
@@ -239,6 +337,7 @@ pipeline/steps/step6_evaluate.py → 시험지 평가
 ```
 pipeline/steps/step7_transform_multiple_choice.py → 객관식 문제 변형
   ├── AnswerTypeClassifier로 문제 분류 (right/wrong/abcd)
+  ├── MultipleChoiceTransformer로 변형 수행
   ├── wrong -> right 변형
   ├── right -> wrong 변형
   └── abcd 변형 (단일정답형 -> 복수정답형)
@@ -247,12 +346,25 @@ pipeline/steps/step7_transform_multiple_choice.py → 객관식 문제 변형
 #### 6. 변형 문제를 포함한 시험지 생성
 ```
 pipeline/steps/step8_create_transformed_exam.py → 변형 문제를 포함한 시험지 생성
+  ├── load_transformed_questions()로 변형된 문제 로드
+  ├── create_transformed_exam()로 변형된 시험지 생성
   ├── 4_multiple_exam의 각 세트(1st~5th) 시험지 로드
   ├── pick_right, pick_wrong, pick_abcd의 변형 문제 매칭
   ├── 변형된 문제로 question, options, answer 교체
   ├── 원본 explanation을 original_explanation으로 저장
   ├── 변형된 explanation을 explanation으로 저장
   └── 변형되지 않은 문제는 별도 파일(_missing.json)로 저장
+```
+
+#### 7. 객관식 문제를 서술형 문제로 변환
+```
+pipeline/steps/step9_multiple_essay.py → 객관식 문제를 서술형 문제로 변환
+  ├── create_essay_with_keywords.py의 함수들 실행
+  │   ├── filter_full_explanation_questions: 해설이 완전한 문제 선별
+  │   ├── extract_keywords: 키워드 추출
+  │   └── create_best_answers: 모범답안 생성
+  ├── classify_essay_by_exam.py 실행: 시험별로 분류
+  └── models 옵션이 있으면 multi_essay_answer.py 실행: 모델 답변 생성
 ```
 
 ## 🎯 사용 방법
@@ -305,11 +417,44 @@ python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/ex
 # 6단계: 시험지 평가 (상대 경로로 시험지 경로 지정)
 python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir evaluation/custom_exam_dir
 
-# 6단계: 변형 시험지 평가 (--transformed 플래그 사용)
-python tools/main_pipeline.py --steps evaluate_exams --transformed
+# 6단계: 기본 시험지 평가
+python tools/main_pipeline.py --steps evaluate_exams
+
+# 6단계: 변형 시험지 평가 (--eval_transformed 플래그 사용)
+python tools/main_pipeline.py --steps evaluate_exams --eval_transformed
+
+# 6단계: 서술형 문제 평가 (--eval_essay 플래그 사용)
+python tools/main_pipeline.py --steps evaluate_exams --eval_essay
+
+# 6단계: 변형 시험지 평가 + 서술형 문제 평가
+python tools/main_pipeline.py --steps evaluate_exams --eval_transformed --eval_essay
 
 # 6단계: 변형 시험지 평가 (특정 세트만 평가)
-python tools/main_pipeline.py --steps evaluate_exams --transformed --eval_sets 1 2 3
+python tools/main_pipeline.py --steps evaluate_exams --eval_transformed --eval_sets 1 2 3
+
+# 7단계: 객관식 문제 변형 (기본 경로의 answer_type_classified.json 사용)
+python tools/main_pipeline.py --steps transform_multiple_choice --transform_wrong_to_right
+
+# 7단계: 객관식 문제 변형 (분류 단계 포함)
+python tools/main_pipeline.py --steps transform_multiple_choice --transform_classify --transform_input_data_path /path/to/data.json --transform_wrong_to_right
+
+# 7단계: 객관식 문제 변형 (여러 변형 수행)
+python tools/main_pipeline.py --steps transform_multiple_choice --transform_wrong_to_right --transform_right_to_wrong --transform_abcd
+
+# 8단계: 변형 문제를 포함한 시험지 생성 (1st~5th 모두 처리)
+python tools/main_pipeline.py --steps create_transformed_exam
+
+# 8단계: 변형 문제를 포함한 시험지 생성 (특정 세트만 처리: 1, 2, 3세트)
+python tools/main_pipeline.py --steps create_transformed_exam --create_transformed_exam_sets 1 2 3
+
+# 9단계: 객관식 문제를 서술형 문제로 변환
+python tools/main_pipeline.py --steps evaluate_essay
+
+# 9단계: 서술형 문제 변환 + 모델 답변 생성
+python tools/main_pipeline.py --steps evaluate_essay --essay_models google/gemini-2.5-pro openai/gpt-5 --essay_sets 1 2 3
+
+# 9단계: 서술형 문제 변환 + 모델 답변 생성
+python tools/main_pipeline.py --steps evaluate_essay --essay_models google/gemini-2.5-pro openai/gpt-5
 
 # 커스텀 경로 지정
 python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --project_root_path /path/to/project
@@ -323,7 +468,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 |------|------|--------|
 | `--cycle` | 사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리) | None |
 | `--steps` | 실행할 단계 목록 (공백으로 구분) | None (전체 실행) |
-| | | 가능한 값: `preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice`, `create_transformed_exam` |
+| | | 가능한 값: `preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice`, `create_transformed_exam`, `evaluate_essay` |
 | `--levels` | 처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4) | None (기본값: Lv2, Lv3_4, Lv5) |
 | `--base_path` | 기본 데이터 경로 | None (ONEDRIVE_PATH 사용) |
 | `--config_path` | LLM 설정 파일 경로 | None (PROJECT_ROOT_PATH/llm_config.ini 사용) |
@@ -363,7 +508,8 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 | `--eval_use_server_mode` | vLLM 서버 모드 사용 | False |
 | `--eval_exam_dir` | 시험지 디렉토리 경로 (단일 JSON 파일 또는 디렉토리) | None (기본 경로 사용) |
 | `--eval_sets` | 평가할 세트 번호 (1, 2, 3, 4, 5 중 선택, 공백으로 구분) | None (모든 세트 평가) |
-| `--transformed` | 변형 시험지 평가 모드 (True면 8_multiple_exam_+ 사용, False면 4_multiple_exam 사용) | False |
+| `--eval_transformed` | 변형 시험지 평가 모드 (True면 8_multiple_exam_+ 사용, False면 4_multiple_exam 사용) | False |
+| `--eval_essay` | 서술형 문제 평가 모드 (True면 9_multiple_to_essay 평가 수행) | False |
 
 **7단계 (객관식 문제 변형)**
 | 옵션 | 설명 | 기본값 |
@@ -383,6 +529,13 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 |------|------|--------|
 | `--create_transformed_exam_sets` | 변형 시험지 생성할 세트 번호 리스트 (공백으로 구분, 예: 1 2 3) | None (1~5 모두 처리) |
 
+**9단계 (객관식 문제를 서술형 문제로 변환)**
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--essay_models` | 모델 답변 생성할 모델 목록 (공백으로 구분, None이면 답변 생성 안 함) | None |
+| `--essay_sets` | 처리할 세트 번호 리스트 (공백으로 구분, 예: 1 2 3, models가 있을 때만 사용) | None (1~5 모두 처리) |
+| `--essay_use_server_mode` | vLLM 서버 모드 사용 (models가 있을 때만 사용) | False |
+
 **참고:**
 - `--transform_classify`가 False이고 `--transform_classified_data_path`가 None이면 기본 경로(`evaluation/eval_data/7_multiple_rw/answer_type_classified.json`)를 자동으로 사용합니다.
 - 변형 옵션(`--transform_wrong_to_right`, `--transform_right_to_wrong`, `--transform_abcd`)은 기본값이 False이므로, 원하는 변형을 명시적으로 활성화해야 합니다.
@@ -399,88 +552,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 - `evaluate_exams`: 6단계 - 시험지 평가
 - `transform_multiple_choice`: 7단계 - 객관식 문제 변형
 - `create_transformed_exam`: 8단계 - 변형 문제를 포함한 시험지 생성
-
-#### 사용 예제
-
-```bash
-# 전체 파이프라인 실행 (Cycle 1)
-python tools/main_pipeline.py --cycle 1
-
-# 특정 단계만 실행
-python tools/main_pipeline.py --cycle 1 --steps preprocess extract_basic
-
-# 2단계만 실행 (모든 사이클 자동 처리)
-python tools/main_pipeline.py --steps extract_full
-
-# 2단계만 실행 (특정 사이클만 처리)
-python tools/main_pipeline.py --cycle 1 --steps extract_full
-
-# 2단계만 실행 (Lv2, Lv3_4만 처리, workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
-python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full
-
-# 3단계만 실행 (모든 사이클 자동 처리)
-python tools/main_pipeline.py --steps classify
-
-# 3단계만 실행 (특정 사이클만 처리)
-python tools/main_pipeline.py --cycle 1 --steps classify
-
-# 2단계 + 3단계 + 4단계: 모든 사이클 자동 처리 후 분류 및 domain/subdomain 채우기
-python tools/main_pipeline.py --steps extract_full classify fill_domain --qna_type multiple --model x-ai/grok-4-fast
-
-# 2단계 + 3단계 + 4단계: Lv2, Lv3_4 처리 후 분류 및 domain/subdomain 채우기 (multiple_classification_Lv234.json 생성)
-python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full classify fill_domain --qna_type multiple --model x-ai/grok-4-fast
-
-# 4단계만 실행 (객관식 문제, 특정 모델 사용)
-python tools/main_pipeline.py --steps fill_domain --qna_type multiple --model openai/gpt-5
-
-# 5단계만 실행 (3세트 생성)
-python tools/main_pipeline.py --steps create_exam --num_sets 3
-
-# 6단계만 실행 (특정 모델들로 평가)
-python tools/main_pipeline.py --steps evaluate_exams --eval_models openai/gpt-5 google/gemini-2.5-pro
-
-# 6단계만 실행 (1세트만 평가, 배치 크기 20)
-python tools/main_pipeline.py --steps evaluate_exams --eval_sets 1 --eval_batch_size 20
-
-# 6단계만 실행 (여러 세트 지정: 1, 2, 3세트만 평가)
-python tools/main_pipeline.py --steps evaluate_exams --eval_sets 1 2 3
-
-# 6단계만 실행 (커스텀 시험지 경로 지정)
-python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/exam/directory
-
-# 6단계만 실행 (단일 JSON 파일 평가)
-python tools/main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/exam.json
-
-# 6단계만 실행 (vLLM 서버 모드 사용)
-python tools/main_pipeline.py --steps evaluate_exams --eval_use_server_mode
-
-# 6단계만 실행 (변형 시험지 평가 모드)
-python tools/main_pipeline.py --steps evaluate_exams --transformed
-
-# 6단계만 실행 (변형 시험지 평가, 특정 세트만 평가)
-python tools/main_pipeline.py --steps evaluate_exams --transformed --eval_sets 1 2 3
-
-# 7단계만 실행 (기본 경로의 answer_type_classified.json 사용)
-python tools/main_pipeline.py --steps transform_multiple_choice --transform_wrong_to_right
-
-# 7단계만 실행 (분류 단계 포함)
-python tools/main_pipeline.py --steps transform_multiple_choice --transform_classify --transform_input_data_path /path/to/data.json --transform_wrong_to_right
-
-# 7단계만 실행 (특정 분류된 파일 사용)
-python tools/main_pipeline.py --steps transform_multiple_choice --transform_classified_data_path /path/to/classified.json --transform_wrong_to_right
-
-# 7단계만 실행 (여러 변형 수행)
-python tools/main_pipeline.py --steps transform_multiple_choice --transform_wrong_to_right --transform_right_to_wrong --transform_abcd
-
-# 8단계만 실행 (1st~5th 모두 처리)
-python tools/main_pipeline.py --steps create_transformed_exam
-
-# 8단계만 실행 (특정 세트만 처리: 1, 2, 3세트)
-python tools/main_pipeline.py --steps create_transformed_exam --create_transformed_exam_sets 1 2 3
-
-# 디버그 모드로 실행
-python tools/main_pipeline.py --cycle 1 --debug
-```
+- `evaluate_essay`: 9단계 - 객관식 문제를 서술형 문제로 변환
 
 ### 파이프라인 모듈 직접 사용
 
@@ -499,124 +571,65 @@ results = pipeline.run_full_pipeline(
     steps=['preprocess', 'extract_basic', 'extract_full', 'classify']
 )
 
-# 2단계만 실행 (모든 사이클 자동 처리)
-result = pipeline.step2.execute(cycle=None, levels=['Lv2', 'Lv3_4'])
-
-# 2단계만 실행 (특정 사이클만 처리)
-result = pipeline.step2.execute(cycle=1, levels=['Lv2', 'Lv3_4'])
-
-# 3단계만 실행 (모든 사이클 자동 처리)
-result = pipeline.step3.execute(cycle=None)
-
-# 3단계만 실행 (특정 사이클만 처리)
-result = pipeline.step3.execute(cycle=1)
-
-# Lv2, Lv3_4만 처리
-results = pipeline.run_full_pipeline(
-    cycle=1,
-    levels=['Lv2', 'Lv3_4'],
-    steps=['extract_full', 'classify', 'fill_domain'],
-    qna_type='multiple',
-    model='x-ai/grok-4-fast'
-)
-
-# 6단계만 실행 (시험지 경로 지정)
-results = pipeline.run_full_pipeline(
-    steps=['evaluate_exams'],
-    eval_exam_dir="/path/to/exam/directory"
-)
-
-# 6단계만 실행 (1세트만 평가)
-results = pipeline.run_full_pipeline(
-    steps=['evaluate_exams'],
-    eval_sets=[1]
-)
-
-# 6단계만 실행 (여러 세트 지정: 1, 2, 3세트만 평가)
-results = pipeline.run_full_pipeline(
-    steps=['evaluate_exams'],
-    eval_sets=[1, 2, 3]
-)
-
 # 개별 단계 실행
 result = pipeline.step0.execute(cycle=1)
-result = pipeline.step2.execute(cycle=1, levels=['Lv2', 'Lv3_4'])  # Lv2, Lv3_4만 처리 (workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
+result = pipeline.step2.execute(cycle=1, levels=['Lv2', 'Lv3_4'])
 result = pipeline.step3.execute(cycle=None)  # 모든 사이클 자동 처리
-result = pipeline.step3.execute(cycle=1)  # 특정 사이클만 처리
 result = pipeline.step4.execute(qna_type='multiple', model='x-ai/grok-4-fast')
 result = pipeline.step5.execute(num_sets=5)
-result = pipeline.step6.execute(exam_dir="/path/to/exam/directory")  # 시험지 경로 지정
-result = pipeline.step6.execute(sets=[1])  # 1세트만 평가
-result = pipeline.step6.execute(sets=[1, 2, 3])  # 1, 2, 3세트만 평가
+result = pipeline.step6.execute(exam_dir="/path/to/exam/directory")
 result = pipeline.step7.execute(
-    classified_data_path="/path/to/classified.json",  # 또는 None (기본 경로 사용)
-    run_classify=False,  # True면 분류 단계 실행
+    classified_data_path=None,  # 기본 경로 사용
+    run_classify=False,
     transform_model='openai/o3',
     transform_wrong_to_right=True
-)  # 7단계: 객관식 문제 변형
-
-# 분류 단계 포함 실행
-result = pipeline.step7.execute(
-    input_data_path="/path/to/data.json",
-    run_classify=True,
-    classify_model='openai/gpt-5',
-    transform_model='openai/o3',
-    transform_wrong_to_right=True
-)  # 7단계: 객관식 문제 변형 (분류 포함)
-
-# 8단계만 실행 (1st~5th 모두 처리)
-result = pipeline.step8.execute()
-
-# 8단계만 실행 (특정 세트만 처리: 1, 2, 3세트)
+)
 result = pipeline.step8.execute(sets=[1, 2, 3])
+result = pipeline.step9.execute(
+    models=['google/gemini-2.5-pro', 'openai/gpt-5'],
+    sets=[1, 2, 3],
+    eval_model='google/gemini-2.5-flash'
+)
 ```
 
-### 개별 클래스 사용
+### 개별 모듈 사용
 
 ```python
-from core import FileManager, TextProcessor, JSONHandler, LLMQuery, ExamConfig
-from data_processing import JSONCleaner
-from qna import QnAExtractor, TagProcessor
-from qna.processing import AnswerTypeClassifier, QnASubdomainClassifier
+from transformed import MultipleChoiceTransformer, load_transformed_questions, create_transformed_exam
+from exam import ExamValidator
+from evaluation.essay_utils import load_best_answers, setup_llm_with_api_key
+from qna.formatting import format_qna_item, should_include_qna_item
 
-# 파일 관리
-file_manager = FileManager()
-json_files = file_manager.get_json_file_list(cycle=1)
-excel_data = file_manager.load_excel_metadata(cycle=1)
+# 객관식 문제 변형
+transformer = MultipleChoiceTransformer(llm_query, onedrive_path, logger)
+result = transformer.transform_wrong_to_right(questions, model, seed)
 
-# JSON 정리
-cleaner = JSONCleaner()
-result = cleaner.cleanup_directory(Path('/path/to/json/files'))
+# 변형된 문제 로드
+transformed_questions = load_transformed_questions(onedrive_path, json_handler, logger)
 
-# Q&A 추출
-extractor = QnAExtractor(file_manager)
-result = extractor.extract_from_file('/path/to/file.json', '/path/to/output.json')
+# 변형된 시험지 생성
+new_exam, missing, stats = create_transformed_exam(original_exam, transformed_questions)
 
-# 태그 처리
-tag_processor = TagProcessor()
-tags_added, tags_empty, tags_found = tag_processor.add_missing_tags(qna_data, source_data)
-filled_count, total_empty = tag_processor.fill_empty_tag_data(qna_data, source_data)
+# 시험지 검증
+meets_requirements, actual_counts = ExamValidator.check_exam_meets_requirements(
+    exam_data, exam_name, stats
+)
 
-# LLM 쿼리
-llm = LLMQuery()
-response = llm.query_openrouter(system_prompt, user_prompt, model_name='openai/gpt-5')
+# 시험지 업데이트
+updated_exam = ExamValidator.update_existing_exam(
+    existing_exam_data, exam_name, stats, all_data, used_questions, logger
+)
 
-# 시험 설정 로드
-config = ExamConfig()
-stats = config.get_exam_statistics()
-hierarchy = config.get_exam_hierarchy()
-domain_subdomain = config.get_domain_subdomain()
+# 모범답안 로드
+best_answers = load_best_answers(best_ans_file, logger)
 
-# Answer Type 분류
-classifier = AnswerTypeClassifier()
-classified = classifier.classify_questions(questions, model='openai/gpt-5')
+# LLM 설정
+llm = setup_llm_with_api_key(project_root_path, logger)
 
-# 도메인/서브도메인 분류
-subdomain_classifier = QnASubdomainClassifier(mode='multiple')
-classified = subdomain_classifier.classify_questions(questions, model='x-ai/grok-4-fast')
+# Q&A 포맷화
+formatted_item = format_qna_item(qna_item)
+should_include = should_include_qna_item(qna_item, qna_type)
 ```
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-read_file
 
 ## 📋 클래스 구조
 
@@ -650,25 +663,31 @@ read_file
   - `get_subdomain_count()`: 서브도메인 문제 개수 가져오기
   - `get_subdomain_description()`: 서브도메인 설명 가져오기
 
-### data_processing/ - 데이터 처리
-- **JSONCleaner**: JSON 파일에서 빈 페이지 제거
+### transformed/ - 문제 변형
+- **MultipleChoiceTransformer**: 객관식 문제 변형 클래스
+  - `transform_wrong_to_right()`: wrong -> right 변형
+  - `transform_right_to_wrong()`: right -> wrong 변형
+  - `transform_abcd()`: abcd 변형
+  - `_sample_questions_by_answer_count()`: 정답 개수별 문제 샘플링
+  - `_transform_batch()`: 배치 변형 처리
+  - `_call_api_and_save()`: API 호출 및 결과 저장
+  - `_create_wrong_to_right_prompt()`: wrong -> right 프롬프트 생성
+  - `_create_right_to_wrong_prompt()`: right -> wrong 프롬프트 생성
+
+### exam/ - 시험지 검증
+- **ExamValidator**: 시험지 검증 및 업데이트 클래스
+  - `check_exam_meets_requirements()`: 시험지 요구사항 검증
+  - `update_existing_exam()`: 시험지 업데이트 (부족한 문제 추가, 불필요한 문제 제거)
+
+### evaluation/ - 평가
+- **essay_utils**: 서술형 평가 유틸리티
+  - `load_best_answers()`: 모범답안 로드
+  - `setup_llm_with_api_key()`: API 키 설정 및 LLM 인스턴스 생성
 
 ### qna/ - Q&A 처리
-- **QnAExtractor**: Q&A 추출 및 태그 처리
-  - `extract_qna_from_json()`: JSON 데이터에서 Q&A 추출
-  - `extract_from_file()`: 파일에서 Q&A 추출
-- **TagProcessor**: 추가 태그 처리 및 데이터 채우기
-  - `extract_tags_from_qna_content()`: Q&A 내용에서 태그 추출
-  - `extract_page_from_tag()`: 태그에서 페이지 번호 추출
-  - `find_tag_data_in_add_info()`: add_info에서 태그 데이터 찾기
-  - `add_missing_tags()`: 누락된 태그 추가
-  - `fill_empty_tag_data()`: 빈 태그 데이터 채우기
-- **QnATypeClassifier**: Q&A 타입 분류
-  - `classify_qna_type()`: Q&A 타입 분류 (multiple-choice/short-answer/essay/etc)
-- **AnswerTypeClassifier**: 객관식 문제 Answer Type 분류 (qna/processing/)
-  - `classify_questions()`: 객관식 문제를 right/wrong/abcd로 분류
-- **QnASubdomainClassifier**: Q&A 도메인/서브도메인 분류 (qna/processing/)
-  - `classify_questions()`: Q&A 도메인/서브도메인 분류
+- **formatting**: Q&A 데이터 포맷화 유틸리티
+  - `format_qna_item()`: Q&A 항목 포맷화
+  - `should_include_qna_item()`: 필터링 조건 확인
 
 ## 📝 참고사항
 
@@ -676,6 +695,7 @@ read_file
 - **모듈화**: 각 단계가 독립적인 파일로 분리되어 유지보수가 용이합니다.
 - **재사용성**: 각 단계 클래스를 독립적으로 사용할 수 있습니다.
 - **확장성**: 새로운 단계를 추가하려면 `pipeline/steps/`에 새 파일을 추가하면 됩니다.
+- **코드 간소화**: 변형 로직, 검증 로직 등을 별도 모듈로 분리하여 각 step 파일이 간결해졌습니다.
 
 ### 경로 설정
 
@@ -721,6 +741,8 @@ read_file
 - 각 클래스는 독립적으로 사용 가능하지만, 일부 클래스는 다른 클래스에 의존할 수 있습니다.
 - `LLMQuery`는 LLM 관련 기능을 제공하므로 여러 모듈에서 공통으로 사용됩니다.
 - `PipelineBase`는 모든 단계 클래스의 기본 클래스입니다.
+- 변형 로직은 `transformed` 폴더에 모듈화되어 재사용 가능합니다.
+- 검증 로직은 `exam` 폴더에 모듈화되어 재사용 가능합니다.
 
 ### 파일 저장 방식
 - **Step 2 (전체 문제 추출)**: 기존 `_extracted_qna.json` 파일이 있으면 덮어쓰기합니다 (중복 체크 없음). 내용이 비어있으면 파일을 저장하지 않습니다.
@@ -745,9 +767,13 @@ read_file
 - `key_evaluate`가 설정 파일에 없으면 에러가 발생합니다.
 - vLLM 서버 모드(`--eval_use_server_mode`)를 사용할 때는 API 키가 필요 없습니다.
 
+**9단계 (서술형 문제 모델 평가)**
+- 9단계에서 OpenRouter API를 사용할 때는 `llm_config.ini`의 `key_evaluate`를 우선 사용하고, 없으면 `key`를 사용합니다.
+- `essay_utils.setup_llm_with_api_key()`를 통해 자동으로 설정됩니다.
+
 ### 6단계 (시험지 평가) 저장 경로 및 파일명
 
-**기본 모드 (`--transformed` 없음)**
+**기본 객관식 평가 모드 (`--eval_transformed` 없음)**
 - 입력 디렉토리: `evaluation/eval_data/4_multiple_exam/`
 - 출력 디렉토리: `evaluation/eval_data/4_multiple_exam/exam_result/`
 - 저장 구조:
@@ -757,7 +783,7 @@ read_file
   - `timing_stats`: `exam_result/timing_stats/`
   - `invalid_responses`: `exam_result/invalid_responses/`
 
-**변형 모드 (`--transformed` 있음)**
+**변형 객관식 평가 모드 (`--eval_transformed` 있음)**
 - 입력 디렉토리: `evaluation/eval_data/8_multiple_exam_+/`
 - 출력 디렉토리: `evaluation/eval_data/8_multiple_exam_+/exam_+_result/`
 - 저장 구조:
@@ -772,8 +798,17 @@ read_file
 - 변형 모드는 `exam_+_result/` 폴더에 직접 파일을 저장합니다 (폴더 구조 없음).
 - 변형 모드의 파일명은 기본 모드와 동일하지만 `_transformed` 접미사가 추가됩니다.
 
+**서술형 평가 모드 (`--eval_essay` 있음)**
+- 입력: `9_multiple_to_essay/questions/essay_questions_{세트명}.json`
+- 평가 함수: `evaluate_essay_model.evaluate_single_model()`
+- 출력 경로: `9_multiple_to_essay/evaluation_results/`
+- 출력 파일:
+  - `{모델명}_set{세트번호}_detailed_results.json`: 상세 평가 결과
+  - `{모델명}_set{세트번호}_statistics.json`: 통계 정보
+- 서술형 평가는 객관식 평가와 독립적으로 실행되며, `--eval_transformed`와 함께 사용할 수 있습니다.
+
 **7단계 (객관식 문제 변형)**
-- 7단계는 `AnswerTypeClassifier`를 사용하여 문제를 분류하고, LLM을 사용하여 문제를 변형합니다.
+- 7단계는 `AnswerTypeClassifier`를 사용하여 문제를 분류하고, `MultipleChoiceTransformer`를 사용하여 문제를 변형합니다.
 - `--transform_classify` 옵션을 사용하여 분류 단계를 실행할 수 있습니다 (기본값: False).
 - `--transform_classify`가 False일 때:
   - `--transform_classified_data_path`를 지정하면 해당 파일을 사용합니다.
@@ -783,7 +818,8 @@ read_file
 
 **8단계 (변형 문제를 포함한 시험지 생성)**
 - 8단계는 4_multiple_exam의 각 세트(1st~5th) 시험지에서 변형된 문제를 찾아 새로운 시험지를 생성합니다.
-- `pick_right`, `pick_wrong`, `pick_abcd`의 result.json 파일에서 변형된 문제를 로드합니다.
+- `load_transformed_questions()`를 사용하여 `pick_right`, `pick_wrong`, `pick_abcd`의 result.json 파일에서 변형된 문제를 로드합니다.
+- `create_transformed_exam()`를 사용하여 변형된 시험지를 생성합니다.
 - 변형 규칙:
   - 기존 시험지의 `question`, `options`, `answer`를 변형된 문제의 것으로 교체
   - 기존 시험지의 `explanation`을 `original_explanation`으로 키 이름 변경
@@ -792,3 +828,14 @@ read_file
 - 결과는 `evaluation/eval_data/8_multiple_exam_+/{세트명}/` 폴더에 저장됩니다.
 - `--create_transformed_exam_sets` 옵션으로 특정 세트만 처리할 수 있습니다 (None이면 1~5 모두 처리).
 
+**9단계 (객관식 문제를 서술형 문제로 변환)**
+- 9단계는 옳지 않은 객관식 문제를 서술형 문제로 변환합니다.
+- `create_essay_with_keywords.py`의 함수들을 사용하여:
+  - 해설이 완전한 문제 선별
+  - 키워드 추출
+  - 모범답안 생성
+- `classify_essay_by_exam.py`를 사용하여 시험별로 분류합니다.
+- `--essay_models` 옵션을 사용하면 `multi_essay_answer.py`를 실행하여 모델 답변을 생성합니다.
+- 결과는 `evaluation/eval_data/9_multiple_to_essay/` 디렉토리에 저장됩니다.
+- 서술형 문제 평가는 6단계에서 `--eval_essay` 옵션을 사용할 때 수행됩니다.
+- `--eval_essay`는 `--eval_transformed`와 독립적으로 사용할 수 있으며, 함께 사용할 수도 있습니다.
