@@ -294,7 +294,8 @@ class Step7TransformMultipleChoice(PipelineBase):
         self.logger.info("1단계: 문제 분류 중...")
         classifier = AnswerTypeClassifier(
             config_path=os.path.join(self.project_root_path, 'llm_config.ini') if self.llm_query else None,
-            onedrive_path=self.onedrive_path
+            onedrive_path=self.onedrive_path,
+            logger=self.logger  # step 로거 전달
         )
         
         classified_questions = classifier.process_all_questions(

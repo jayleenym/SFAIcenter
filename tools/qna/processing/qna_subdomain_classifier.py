@@ -37,15 +37,25 @@ from core.llm_query import LLMQuery
 from core.exam_config import ExamConfig
 
 class QnASubdomainClassifier:
-    def __init__(self, config_path: str = None, mode: str = 'multiple', onedrive_path: str = None):
-        """Q&A 도메인/서브도메인 분류기 초기화"""
+    def __init__(self, config_path: str = None, mode: str = 'multiple', onedrive_path: str = None, logger=None):
+        """Q&A 도메인/서브도메인 분류기 초기화
+        
+        Args:
+            config_path: 설정 파일 경로
+            mode: 처리할 문제 유형 (multiple/short/essay 등)
+            onedrive_path: OneDrive 경로
+            logger: 사용할 로거 (None이면 자체 로거 사용)
+        """
+        # 로거 설정 (step에서 호출될 때는 step 로거 사용)
+        self.logger = logger if logger is not None else globals().get('logger', logging.getLogger(__name__))
+        
         # LLMQuery 초기화
         self.llm_query = LLMQuery(config_path=config_path)
         
         # mode 검증
         valid_modes = ['multiple', 'short', 'essay', 'multiple-fail', 'multiple-re', 'short-fail']
         if mode not in valid_modes:
-            logger.warning(f"mode '{mode}'가 표준 모드가 아닙니다. 계속 진행합니다.")
+            self.logger.warning(f"mode '{mode}'가 표준 모드가 아닙니다. 계속 진행합니다.")
         
         self.mode = mode
         
@@ -70,18 +80,18 @@ class QnASubdomainClassifier:
         # 결과 저장 디렉토리
         self.output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '2_subdomain')
         os.makedirs(self.output_dir, exist_ok=True)
-        logger.info(f"출력 디렉토리: {self.output_dir}")
+        self.logger.info(f"출력 디렉토리: {self.output_dir}")
         
     def load_domain_subdomain(self) -> Dict[str, List[str]]:
         """도메인-서브도메인 매핑 로드 (exam_config.json 사용)"""
         try:
             exam_config = ExamConfig(onedrive_path=self.onedrive_path)
             domain_subdomain = exam_config.get_domain_subdomain()
-            logger.info("exam_config.json에서 도메인-서브도메인 매핑 로드 완료")
+            self.logger.info("exam_config.json에서 도메인-서브도메인 매핑 로드 완료")
             return domain_subdomain
         except FileNotFoundError:
             # fallback: 기존 방식으로 시도 (하위 호환성)
-            logger.warning("exam_config.json을 찾을 수 없어 기존 domain_subdomain.json을 시도합니다.")
+            self.logger.warning("exam_config.json을 찾을 수 없어 기존 domain_subdomain.json을 시도합니다.")
             domain_subdomain_path = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '_old', 'domain_subdomain.json')
             
             if not os.path.exists(domain_subdomain_path):
@@ -90,12 +100,12 @@ class QnASubdomainClassifier:
             with open(domain_subdomain_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except Exception as e:
-            logger.error(f"도메인-서브도메인 매핑 로드 실패: {e}")
+            self.logger.error(f"도메인-서브도메인 매핑 로드 실패: {e}")
             raise
     
     def load_multiple_choice_data(self, data_path: str) -> List[Dict[str, Any]]:
         """문제 데이터 로드"""
-        logger.info(f"데이터 로딩 중: {data_path}")
+        self.logger.info(f"데이터 로딩 중: {data_path}")
         
         with open(data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -186,7 +196,7 @@ class QnASubdomainClassifier:
             response = self.llm_query.query_openrouter(system_prompt, user_prompt, model)
             return response
         except Exception as e:
-            logger.error(f"API 호출 실패: {e}")
+            self.logger.error(f"API 호출 실패: {e}")
             return None
     
     def parse_api_response(self, response: str) -> List[Dict[str, Any]]:
@@ -194,8 +204,8 @@ class QnASubdomainClassifier:
         parsed_data = self.llm_query.parse_api_response(response)
         
         if parsed_data is None:
-            logger.error("JSON 배열을 찾을 수 없거나 파싱에 실패했습니다.")
-            logger.error(f"응답 내용: {response[:500]}...")
+            self.logger.error("JSON 배열을 찾을 수 없거나 파싱에 실패했습니다.")
+            self.logger.error(f"응답 내용: {response[:500]}...")
             return None
         
         return parsed_data
@@ -217,7 +227,7 @@ class QnASubdomainClassifier:
                 qna['classification_reason'] = classification_dict[unique_id]['reason']
                 qna['is_calculation'] = classification_dict[unique_id]['is_calculation']
             else:
-                logger.warning(f"분류 결과를 찾을 수 없음: {unique_id}")
+                self.logger.warning(f"분류 결과를 찾을 수 없음: {unique_id}")
                 qna['domain'] = "분류실패"
                 qna['subdomain'] = "분류실패"
                 qna['classification_reason'] = "API 응답에서 해당 문제를 찾을 수 없음"
@@ -246,9 +256,9 @@ class QnASubdomainClassifier:
                 - failed_questions: 실패한 문제 리스트
         """
         if is_retry:
-            logger.info(f"재시도 처리 시작 - 총 {len(questions)}개 문제")
+            self.logger.info(f"재시도 처리 시작 - 총 {len(questions)}개 문제")
         else:
-            logger.info(f"처리 시작 - 총 {len(questions)}개 문제")
+            self.logger.info(f"처리 시작 - 총 {len(questions)}개 문제")
         
         # 기존 파일에서 이미 분류된 항목 키 추출 (재시도 모드가 아닐 때만)
         existing_keys = set()
@@ -269,9 +279,9 @@ class QnASubdomainClassifier:
                                     domain not in ['', '분류실패', 'API호출실패', '파싱실패'] and
                                     subdomain not in ['', '분류실패', 'API호출실패', '파싱실패']):
                                     existing_keys.add((file_id, tag))
-                            logger.info(f"기존 파일에서 이미 분류된 항목: {len(existing_keys)}개")
+                            self.logger.info(f"기존 파일에서 이미 분류된 항목: {len(existing_keys)}개")
                 except Exception as e:
-                    logger.warning(f"기존 파일 로드 실패: {e}")
+                    self.logger.warning(f"기존 파일 로드 실패: {e}")
         
         # 새로운 항목만 필터링 (기존 파일에 없는 항목)
         needs_classification = []
@@ -283,7 +293,7 @@ class QnASubdomainClassifier:
                 needs_classification.append(qna)
         
         if not is_retry:
-            logger.info(f"입력: {len(questions)}개, 이미 분류됨: {len(existing_keys)}개, 분류 필요: {len(needs_classification)}개")
+            self.logger.info(f"입력: {len(questions)}개, 이미 분류됨: {len(existing_keys)}개, 분류 필요: {len(needs_classification)}개")
         
         all_updated_questions = []
         failed_questions = []
@@ -291,16 +301,16 @@ class QnASubdomainClassifier:
         # 분류가 필요한 항목만 배치 단위로 처리
         if not needs_classification:
             if is_retry:
-                logger.info("재시도할 항목이 없습니다.")
+                self.logger.info("재시도할 항목이 없습니다.")
             else:
-                logger.info("모든 항목이 이미 분류되어 있습니다. API 호출을 건너뜁니다.")
+                self.logger.info("모든 항목이 이미 분류되어 있습니다. API 호출을 건너뜁니다.")
             return all_updated_questions, failed_questions
         
         for i in tqdm(range(0, len(needs_classification), batch_size), desc="처리 중"):
             batch = needs_classification[i:i + batch_size]
             batch_num = i // batch_size + 1
             
-            logger.info(f"배치 {batch_num} 처리 중... ({len(batch)}개 문제)")
+            self.logger.info(f"배치 {batch_num} 처리 중... ({len(batch)}개 문제)")
             
             # 사용자 프롬프트 생성
             user_prompt = self.create_user_prompt(batch)
@@ -309,7 +319,7 @@ class QnASubdomainClassifier:
             try:
                 response = self.call_api(self.system_prompt, user_prompt, model)
             except Exception as e:
-                logger.error(f"배치 {batch_num} API 호출 실패: {e}")
+                self.logger.error(f"배치 {batch_num} API 호출 실패: {e}")
                 # 실패한 경우 기본값으로 설정
                 for qna in batch:
                     qna['domain'] = "API호출실패"
@@ -336,7 +346,7 @@ class QnASubdomainClassifier:
             try:
                 classifications = self.parse_api_response(response)
             except Exception as e:
-                logger.error(f"배치 {batch_num} 응답 파싱 실패: {e}")
+                self.logger.error(f"배치 {batch_num} 응답 파싱 실패: {e}")
                 # 파싱 실패한 경우 기본값으로 설정
                 for qna in batch:
                     qna['domain'] = "파싱실패"
@@ -365,7 +375,7 @@ class QnASubdomainClassifier:
                 all_updated_questions.extend(updated_batch)
                 failed_questions.extend(fail_batch)  # 분류 실패한 항목도 추가
             except Exception as e:
-                logger.error(f"배치 {batch_num} 업데이트 실패: {e}")
+                self.logger.error(f"배치 {batch_num} 업데이트 실패: {e}")
                 # 예외 발생 시 전체 배치를 실패로 처리
                 for qna in batch:
                     qna['domain'] = "파싱실패"
@@ -385,12 +395,12 @@ class QnASubdomainClassifier:
         # 전체 문제수 검증
         total_processed = len(all_updated_questions)
         if total_processed != len(questions):
-            logger.warning(f"문제수 불일치: 원본 {len(questions)}개, 처리된 {total_processed}개")
+            self.logger.warning(f"문제수 불일치: 원본 {len(questions)}개, 처리된 {total_processed}개")
         
         if is_retry:
-            logger.info(f"재시도 처리 완료 - 성공: {len(all_updated_questions) - len(failed_questions)}개, 실패: {len(failed_questions)}개")
+            self.logger.info(f"재시도 처리 완료 - 성공: {len(all_updated_questions) - len(failed_questions)}개, 실패: {len(failed_questions)}개")
         else:
-            logger.info(f"처리 완료 - 새로 분류: {len(needs_classification)}개, 실패: {len(failed_questions)}개")
+            self.logger.info(f"처리 완료 - 새로 분류: {len(needs_classification)}개, 실패: {len(failed_questions)}개")
         
         return all_updated_questions, failed_questions
     
@@ -435,7 +445,7 @@ class QnASubdomainClassifier:
                     if isinstance(existing_data, list):
                         existing_questions = existing_data
             except Exception as e:
-                logger.warning(f"기존 파일 로드 실패: {e}")
+                self.logger.warning(f"기존 파일 로드 실패: {e}")
                 existing_questions = []
         
         # 중복 제거: file_id와 tag 기준
@@ -463,7 +473,7 @@ class QnASubdomainClassifier:
             json.dump(existing_questions, f, ensure_ascii=False, indent=2)
         
         if new_count > 0:
-            logger.info(f"새 항목 {new_count}개 추가 (기존 {len(existing_questions) - new_count}개 + 새 {new_count}개 = 총 {len(existing_questions)}개)")
+            self.logger.info(f"새 항목 {new_count}개 추가 (기존 {len(existing_questions) - new_count}개 + 새 {new_count}개 = 총 {len(existing_questions)}개)")
     
     def _save_results(self, questions: List[Dict[str, Any]], 
                      fail_response: List, fail_question: List[Dict[str, Any]]):
@@ -479,7 +489,7 @@ class QnASubdomainClassifier:
                     if isinstance(existing_data, list):
                         existing_questions = existing_data
             except Exception as e:
-                logger.warning(f"기존 파일 로드 실패: {e}")
+                self.logger.warning(f"기존 파일 로드 실패: {e}")
                 existing_questions = []
         
         # 중복 제거: file_id와 tag 기준
@@ -507,9 +517,9 @@ class QnASubdomainClassifier:
             json.dump(existing_questions, f, ensure_ascii=False, indent=2)
         
         if new_count > 0:
-            logger.info(f"최종 저장: 새 항목 {new_count}개 추가 (기존 {len(existing_questions) - new_count}개 + 새 {new_count}개 = 총 {len(existing_questions)}개)")
+            self.logger.info(f"최종 저장: 새 항목 {new_count}개 추가 (기존 {len(existing_questions) - new_count}개 + 새 {new_count}개 = 총 {len(existing_questions)}개)")
         else:
-            logger.info(f"최종 저장: 기존 {len(existing_questions)}개 유지 (새 항목 없음)")
+            self.logger.info(f"최종 저장: 기존 {len(existing_questions)}개 유지 (새 항목 없음)")
     
     def process_all_questions(self, data_path: str = None, questions: List[Dict[str, Any]] = None,
                               model: str = "x-ai/grok-4-fast", batch_size: int = 10) -> List[Dict[str, Any]]:
@@ -529,14 +539,14 @@ class QnASubdomainClassifier:
             
             questions = self.load_multiple_choice_data(data_path)
         
-        logger.info(f"총 문제 수: {len(questions)}")
+        self.logger.info(f"총 문제 수: {len(questions)}")
         
         # 1차 처리
         updated_questions, failed_questions = self.process_questions(questions, batch_size, model, is_retry=False)
         
         # 실패한 항목이 있으면 재시도
         if failed_questions:
-            logger.info(f"실패한 항목 {len(failed_questions)}개 재시도 시작...")
+            self.logger.info(f"실패한 항목 {len(failed_questions)}개 재시도 시작...")
             retry_updated, retry_failed = self.process_questions(failed_questions, batch_size, model, is_retry=True)
             
             # 재시도 결과를 원본 결과에 반영
@@ -564,13 +574,13 @@ class QnASubdomainClassifier:
             twice_failed = [item for item in retry_failed]
             
             if twice_failed:
-                logger.warning(f"2번 실패한 항목 {len(twice_failed)}개를 multiple_failed.json에 저장합니다.")
+                self.logger.warning(f"2번 실패한 항목 {len(twice_failed)}개를 multiple_failed.json에 저장합니다.")
                 failed_filepath = os.path.join(self.output_dir, f"{self.mode}_failed.json")
                 with open(failed_filepath, 'w', encoding='utf-8') as f:
                     json.dump(twice_failed, f, ensure_ascii=False, indent=2)
-                logger.info(f"2번 실패한 항목 저장 완료: {failed_filepath}")
+                self.logger.info(f"2번 실패한 항목 저장 완료: {failed_filepath}")
         else:
-            logger.info("실패한 항목이 없어 재시도를 건너뜁니다.")
+            self.logger.info("실패한 항목이 없어 재시도를 건너뜁니다.")
         
         # 최종 결과 저장 (모든 항목 포함: 성공 + 실패)
         self._save_results(updated_questions, [], [])
@@ -647,7 +657,7 @@ class QnASubdomainClassifier:
                     f.write(f"| {subdomain} | {count:,}개 | {percentage:.2f}% |\n")
                 f.write("\n")
         
-        logger.info(f"통계 정보 저장 완료: {stats_filepath}")
+        self.logger.info(f"통계 정보 저장 완료: {stats_filepath}")
 
 
 def main():

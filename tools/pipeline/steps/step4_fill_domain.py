@@ -180,7 +180,8 @@ class Step4FillDomain(PipelineBase):
                 classifier = QnASubdomainClassifier(
                     config_path=None, 
                     mode=qna_type, 
-                    onedrive_path=self.onedrive_path
+                    onedrive_path=self.onedrive_path,
+                    logger=self.logger  # step 로거 전달
                 )
                 
                 self.logger.info(f"   API 호출 시작 (모델: {model})...")

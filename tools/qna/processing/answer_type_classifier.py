@@ -20,31 +20,34 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 tools_dir = os.path.dirname(os.path.dirname(current_dir))  # processing -> qna -> tools
 project_root = os.path.dirname(tools_dir)  # tools -> project_root
 
-# 로깅 설정
-log_dir = os.path.join(project_root, 'logs')
-os.makedirs(log_dir, exist_ok=True)
-log_file = os.path.join(log_dir, 'multiple_answer_classify.log')
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(log_file, encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
-
 # llm_query 모듈 import
 sys.path.insert(0, tools_dir)
+
+# 중앙화된 로깅 유틸리티 사용
+from core.logger import setup_logger
+logger = setup_logger(
+    name=__name__,
+    log_file='multiple_answer_classify.log',
+    use_console=True,
+    use_file=True
+)
 from core.llm_query import LLMQuery
 
 
 class AnswerTypeClassifier:
     """Q&A Answer Type 분류기 (right/wrong/abcd)"""
     
-    def __init__(self, config_path: str = None, onedrive_path: str = None):
-        """Answer Type 분류기 초기화"""
+    def __init__(self, config_path: str = None, onedrive_path: str = None, logger=None):
+        """Answer Type 분류기 초기화
+        
+        Args:
+            config_path: 설정 파일 경로
+            onedrive_path: OneDrive 경로
+            logger: 사용할 로거 (None이면 자체 로거 사용)
+        """
+        # 로거 설정 (step에서 호출될 때는 step 로거 사용)
+        self.logger = logger if logger is not None else globals().get('logger', logging.getLogger(__name__))
+        
         # LLMQuery 초기화
         self.llm_query = LLMQuery(config_path=config_path)
         
@@ -66,7 +69,7 @@ class AnswerTypeClassifier:
         # 결과 저장 디렉토리
         self.output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw')
         os.makedirs(self.output_dir, exist_ok=True)
-        logger.info(f"출력 디렉토리: {self.output_dir}")
+        self.logger.info(f"출력 디렉토리: {self.output_dir}")
     
     def create_system_prompt(self) -> str:
         """시스템 프롬프트 생성"""
@@ -114,7 +117,7 @@ class AnswerTypeClassifier:
     
     def load_questions(self, data_path: str) -> List[Dict[str, Any]]:
         """문제 데이터 로드"""
-        logger.info(f"데이터 로딩 중: {data_path}")
+        self.logger.info(f"데이터 로딩 중: {data_path}")
         
         with open(data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -146,7 +149,7 @@ class AnswerTypeClassifier:
             response = self.llm_query.query_openrouter(system_prompt, user_prompt, model)
             return response
         except Exception as e:
-            logger.error(f"API 호출 실패: {e}")
+            self.logger.error(f"API 호출 실패: {e}")
             return None
     
     def parse_response(self, response: str, batch_size: int) -> List[str]:
@@ -202,7 +205,7 @@ class AnswerTypeClassifier:
     def process_questions(self, questions: List[Dict[str, Any]], 
                          batch_size: int = 10, model: str = "x-ai/grok-4-fast") -> Tuple[List[Dict[str, Any]], List, List[Dict[str, Any]]]:
         """문제들을 배치 단위로 처리"""
-        logger.info(f"처리 시작 - 총 {len(questions)}개 문제")
+        self.logger.info(f"처리 시작 - 총 {len(questions)}개 문제")
         
         all_updated_questions = []
         fail_response = []
@@ -213,7 +216,7 @@ class AnswerTypeClassifier:
             batch = questions[i:i + batch_size]
             batch_num = i // batch_size + 1
             
-            logger.info(f"배치 {batch_num} 처리 중... ({len(batch)}개 문제)")
+            self.logger.info(f"배치 {batch_num} 처리 중... ({len(batch)}개 문제)")
             
             # 사용자 프롬프트 생성
             user_prompt = self.create_user_prompt(batch)
@@ -222,7 +225,7 @@ class AnswerTypeClassifier:
             try:
                 response = self.call_api(self.system_prompt, user_prompt, model)
             except Exception as e:
-                logger.error(f"배치 {batch_num} API 호출 실패: {e}")
+                self.logger.error(f"배치 {batch_num} API 호출 실패: {e}")
                 fail_response.append(None)
                 # 실패한 경우 기본값으로 설정 (빈 문자열)
                 for qna in batch:
@@ -231,7 +234,7 @@ class AnswerTypeClassifier:
                 continue
             
             if response is None:
-                logger.error(f"배치 {batch_num} API 호출 실패")
+                self.logger.error(f"배치 {batch_num} API 호출 실패")
                 fail_response.append(None)
                 # 실패한 경우 기본값으로 설정 (빈 문자열)
                 for qna in batch:
@@ -243,7 +246,7 @@ class AnswerTypeClassifier:
             try:
                 answer_types = self.parse_response(response, len(batch))
             except Exception as e:
-                logger.error(f"배치 {batch_num} 응답 파싱 실패: {e}")
+                self.logger.error(f"배치 {batch_num} 응답 파싱 실패: {e}")
                 fail_response.append(response)
                 # 파싱 실패한 경우 기본값으로 설정 (빈 문자열)
                 for qna in batch:
@@ -252,7 +255,7 @@ class AnswerTypeClassifier:
                 continue
             
             if answer_types is None:
-                logger.error(f"배치 {batch_num} 응답 파싱 실패")
+                self.logger.error(f"배치 {batch_num} 응답 파싱 실패")
                 fail_response.append(response)
                 # 파싱 실패한 경우 기본값으로 설정 (빈 문자열)
                 for qna in batch:
@@ -266,7 +269,7 @@ class AnswerTypeClassifier:
                 all_updated_questions.extend(updated_batch)
                 fail_question.extend(fail_batch)
             except Exception as e:
-                logger.error(f"배치 {batch_num} 업데이트 실패: {e}")
+                self.logger.error(f"배치 {batch_num} 업데이트 실패: {e}")
                 fail_response.append(response)
             
             # API 호출 간격 조절
@@ -278,9 +281,9 @@ class AnswerTypeClassifier:
         
         # 전체 문제수 검증
         if len(all_updated_questions) != len(questions):
-            logger.warning(f"문제수 불일치: 원본 {len(questions)}개, 처리된 {len(all_updated_questions)}개")
+            self.logger.warning(f"문제수 불일치: 원본 {len(questions)}개, 처리된 {len(all_updated_questions)}개")
         
-        logger.info(f"처리 완료 - {len(all_updated_questions)}개 문제")
+        self.logger.info(f"처리 완료 - {len(all_updated_questions)}개 문제")
         return all_updated_questions, fail_response, fail_question
     
     def _save_results(self, questions: List[Dict[str, Any]], 
@@ -306,45 +309,45 @@ class AnswerTypeClassifier:
         if os.path.exists(intermediate_file):
             try:
                 os.remove(intermediate_file)
-                logger.info("중간 결과 파일 삭제 완료: answer_type_classified_intermediate.json")
+                self.logger.info("중간 결과 파일 삭제 완료: answer_type_classified_intermediate.json")
             except Exception as e:
-                logger.warning(f"중간 결과 파일 삭제 실패: {e}")
+                self.logger.warning(f"중간 결과 파일 삭제 실패: {e}")
         
         # intermediate fail_response 파일 삭제
         intermediate_fail_response = os.path.join(self.output_dir, "answer_type_classified_intermediate_fail_response.json")
         if os.path.exists(intermediate_fail_response):
             try:
                 os.remove(intermediate_fail_response)
-                logger.info("중간 fail_response 파일 삭제 완료")
+                self.logger.info("중간 fail_response 파일 삭제 완료")
             except Exception as e:
-                logger.warning(f"중간 fail_response 파일 삭제 실패: {e}")
+                self.logger.warning(f"중간 fail_response 파일 삭제 실패: {e}")
         
         # intermediate fail_q 파일 삭제
         intermediate_fail_q = os.path.join(self.output_dir, "answer_type_classified_intermediate_fail_q.json")
         if os.path.exists(intermediate_fail_q):
             try:
                 os.remove(intermediate_fail_q)
-                logger.info("중간 fail_q 파일 삭제 완료")
+                self.logger.info("중간 fail_q 파일 삭제 완료")
             except Exception as e:
-                logger.warning(f"중간 fail_q 파일 삭제 실패: {e}")
+                self.logger.warning(f"중간 fail_q 파일 삭제 실패: {e}")
         
         # 최종 fail_response 파일이 비어있으면 삭제
         final_fail_response = os.path.join(self.output_dir, "answer_type_classified_fail_response.json")
         if not fail_response and os.path.exists(final_fail_response):
             try:
                 os.remove(final_fail_response)
-                logger.info("빈 fail_response 파일 삭제 완료")
+                self.logger.info("빈 fail_response 파일 삭제 완료")
             except Exception as e:
-                logger.warning(f"fail_response 파일 삭제 실패: {e}")
+                self.logger.warning(f"fail_response 파일 삭제 실패: {e}")
         
         # 최종 fail_q 파일이 비어있으면 삭제
         final_fail_q = os.path.join(self.output_dir, "answer_type_classified_fail_q.json")
         if not fail_question and os.path.exists(final_fail_q):
             try:
                 os.remove(final_fail_q)
-                logger.info("빈 fail_q 파일 삭제 완료")
+                self.logger.info("빈 fail_q 파일 삭제 완료")
             except Exception as e:
-                logger.warning(f"fail_q 파일 삭제 실패: {e}")
+                self.logger.warning(f"fail_q 파일 삭제 실패: {e}")
     
     def process_all_questions(self, data_path: str = None, questions: List[Dict[str, Any]] = None,
                               model: str = "x-ai/grok-4-fast", batch_size: int = 10) -> List[Dict[str, Any]]:
@@ -355,7 +358,7 @@ class AnswerTypeClassifier:
                 raise ValueError("data_path 또는 questions를 제공해야 합니다.")
             questions = self.load_questions(data_path)
         
-        logger.info(f"총 문제 수: {len(questions)}")
+        self.logger.info(f"총 문제 수: {len(questions)}")
         
         # 문제 처리
         updated_questions, fail_response, fail_question = self.process_questions(questions, batch_size, model)
@@ -369,9 +372,9 @@ class AnswerTypeClassifier:
             answer_type = item.get('answer_type', 'unknown')
             answer_type_counts[answer_type] = answer_type_counts.get(answer_type, 0) + 1
         
-        logger.info("분류 결과 통계:")
+        self.logger.info("분류 결과 통계:")
         for answer_type, count in sorted(answer_type_counts.items()):
-            logger.info(f"  {answer_type}: {count}")
+            self.logger.info(f"  {answer_type}: {count}")
         
         # 처리 완료 후 파일 정리
         self._cleanup_files(fail_response, fail_question)
