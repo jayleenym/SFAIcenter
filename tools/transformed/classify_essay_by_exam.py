@@ -86,7 +86,8 @@ def load_exam_questions(exam_dir, exam_set_name):
 
 def main():
     
-    essay_file = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', 'best_ans.json')
+    # essay_file = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', 'best_ans.json')
+    essay_file = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', 'full_explanation.json')
     exam_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '4_multiple_exam')
     output_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', 'questions')
     
@@ -94,7 +95,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
     
     # best_ans.json 파일 읽기
-    print(f"best_ans.json 파일 읽는 중...")
+    print(f"full_explanation.json 파일 읽는 중...")
     print(f"파일 경로: {essay_file}")
     if not os.path.exists(essay_file):
         print(f"오류: {essay_file} 파일이 존재하지 않습니다.")
