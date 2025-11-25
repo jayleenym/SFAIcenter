@@ -20,18 +20,12 @@ tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> p
 sys.path.insert(0, tools_dir)
 
 try:
-    from transformed.create_essay_with_keywords import (
-        filter_full_explanation_questions,
-        extract_keywords,
-        create_best_answers
-    )
+    from transformed.create_essay_with_keywords import main as create_essay_main
     from transformed.classify_essay_by_exam import main as classify_essay_by_exam_main
     from transformed.multi_essay_answer import process_essay_questions, get_api_key
     from core.llm_query import LLMQuery
 except ImportError as e:
-    filter_full_explanation_questions = None
-    extract_keywords = None
-    create_best_answers = None
+    create_essay_main = None
     classify_essay_by_exam_main = None
     process_essay_questions = None
     get_api_key = None
@@ -69,76 +63,40 @@ class Step9MultipleEssay(PipelineBase):
                 self.logger.error("LLMQuery가 초기화되지 않았습니다.")
                 return {'success': False, 'error': 'LLMQuery 초기화 실패'}
             
-            if filter_full_explanation_questions is None:
+            if create_essay_main is None:
                 self.logger.error("transformed.create_essay_with_keywords 모듈을 import할 수 없습니다.")
                 return {'success': False, 'error': '필수 모듈 import 실패'}
             
             # 경로 설정
-            classified_dir = os.path.join(
-                self.onedrive_path,
-                'evaluation', 'eval_data', '7_multiple_rw'
-            )
             essay_dir = os.path.join(
                 self.onedrive_path,
                 'evaluation', 'eval_data', '9_multiple_to_essay'
             )
-            
-            classified_file = os.path.join(classified_dir, 'answer_type_classified.json')
-            full_explanation_file = os.path.join(essay_dir, 'full_explanation.json')
-            intermediate_file = os.path.join(essay_dir, 'essay_w_keyword.json')
             output_file = os.path.join(essay_dir, 'best_ans.json')
             
-            # 디렉토리 생성
-            os.makedirs(essay_dir, exist_ok=True)
-            
-            # 0단계: 옳지 않은 문제 중 해설이 많은 문제 선별
-            self.logger.info("0단계: 옳지 않은 문제 중 해설이 많은 문제 선별 중...")
-            if not os.path.exists(classified_file):
-                self.logger.error(f"분류된 파일을 찾을 수 없습니다: {classified_file}")
-                return {'success': False, 'error': f'분류된 파일 없음: {classified_file}'}
-            
-            with open(classified_file, 'r', encoding='utf-8') as f:
-                classified_data = json.load(f)
-            
-            # answer_type이 'wrong'인 문제만 필터링
-            wrong_questions = [p for p in classified_data if p.get('answer_type') == 'wrong']
-            self.logger.info(f"옳지 않은 문제: {len(wrong_questions)}개")
-            
-            # 해설이 모든 선지를 포함하는 문제만 선별
-            questions = filter_full_explanation_questions(self.llm_query, wrong_questions)
-            self.logger.info(f"해설이 완전한 문제: {len(questions)}개")
-            
-            # 선별 결과 저장 (안전장치)
-            self.logger.info(f"선별 결과 저장: {full_explanation_file}")
-            self.json_handler.save(questions, full_explanation_file)
-            
-            # 1단계: 키워드 추출
-            self.logger.info("1단계: 키워드 추출 중...")
-            extract_keywords(self.llm_query, questions)
-            
-            # 중간 저장 (안전장치)
-            self.logger.info(f"중간 저장: {intermediate_file}")
-            self.json_handler.save(questions, intermediate_file)
-            
-            # 2단계: 모범답안 생성
-            self.logger.info("2단계: 모범답안 생성 중...")
-            create_best_answers(self.llm_query, questions)
-            
-            # 최종 저장
-            self.logger.info(f"최종 저장: {output_file}")
-            self.json_handler.save(questions, output_file)
-            
-            # 중간 파일 삭제
-            if os.path.exists(intermediate_file):
-                os.remove(intermediate_file)
-                self.logger.info(f"중간 파일 삭제 완료: {intermediate_file}")
-            
-            # 선별 결과 파일도 삭제 (이미 best_ans.json에 포함되어 있음)
-            if os.path.exists(full_explanation_file):
-                os.remove(full_explanation_file)
-                self.logger.info(f"선별 결과 파일 삭제 완료: {full_explanation_file}")
-            
-            self.logger.info(f"총 {len(questions)}개의 문제가 {output_file}에 저장되었습니다.")
+            # create_essay_with_keywords.py의 main() 함수 호출
+            self.logger.info("객관식 문제를 서술형 문제로 변환 중...")
+            try:
+                create_essay_main(
+                    llm=self.llm_query,
+                    onedrive_path=self.onedrive_path,
+                    log_func=self.logger.info
+                )
+                
+                # 결과 파일 확인
+                if not os.path.exists(output_file):
+                    self.logger.error(f"출력 파일이 생성되지 않았습니다: {output_file}")
+                    return {'success': False, 'error': '출력 파일 생성 실패'}
+                
+                # 문제 개수 확인
+                with open(output_file, 'r', encoding='utf-8') as f:
+                    questions = json.load(f)
+                self.logger.info(f"총 {len(questions)}개의 문제가 {output_file}에 저장되었습니다.")
+            except Exception as e:
+                self.logger.error(f"서술형 문제 변환 중 오류: {e}")
+                import traceback
+                self.logger.error(traceback.format_exc())
+                return {'success': False, 'error': f'변환 오류: {str(e)}'}
             
             # 3단계: 시험별로 분류
             self.logger.info("3단계: 시험별로 분류 중...")
@@ -234,9 +192,17 @@ class Step9MultipleEssay(PipelineBase):
                             continue
             
             self.logger.info("=== 9단계 완료 ===")
+            
+            # 문제 개수 확인
+            total_questions = 0
+            if os.path.exists(output_file):
+                with open(output_file, 'r', encoding='utf-8') as f:
+                    questions = json.load(f)
+                    total_questions = len(questions)
+            
             return {
                 'success': True,
-                'total_questions': len(questions),
+                'total_questions': total_questions,
                 'output_file': output_file
             }
             
