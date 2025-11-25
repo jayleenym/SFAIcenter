@@ -54,8 +54,8 @@ class FileManager:
         if base_path is None:
             base_path = self.base_path
         
-        analysis = {1: '1차 분석', 2: '2차 분석', 3: '3차 분석'}
-        buy = {1: '1차 구매', 2: '2차 구매', 3: '3차 구매'}
+        analysis = {1: '1차 분석', 2: '2차 분석', 3: '3차 분석', 4: '4차 분석'}
+        buy = {1: '1차 구매', 2: '2차 구매', 3: '3차 구매', 4: '4차 구매'}
         
         excel_analy = pd.read_excel(
             os.path.join(base_path, 'book_list_ALL.xlsx'), 
