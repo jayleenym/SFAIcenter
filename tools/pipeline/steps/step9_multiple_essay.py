@@ -247,3 +247,4 @@ class Step9MultipleEssay(PipelineBase):
             return {'success': False, 'error': f'변환 오류: {str(e)}'}
         finally:
             self._remove_step_logging()
+

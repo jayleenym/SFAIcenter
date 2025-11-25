@@ -54,9 +54,20 @@ except ImportError:
 
 # 중앙화된 로깅 유틸리티 사용
 from core.logger import setup_logger
+
+# 독립 실행 시 파일명 기반 로그 파일명 생성
+_log_file = None
+if __name__ == "__main__":
+    # 독립 실행 시: 파일명.log
+    script_name = os.path.splitext(os.path.basename(__file__))[0]
+    _log_file = f'{script_name}.log'
+else:
+    # 모듈로 import 시: 기존 이름 유지
+    _log_file = 'multiple_eval_by_model.log'
+
 logger = setup_logger(
     name=__name__,
-    log_file='multiple_eval_by_model.log',
+    log_file=_log_file,
     use_console=True,
     use_file=True
 )

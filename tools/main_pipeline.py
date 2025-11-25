@@ -24,6 +24,17 @@ from pathlib import Path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
+# 독립 실행 시 파일명.log로 로깅 설정
+if __name__ == "__main__":
+    from core.logger import setup_logger
+    script_name = os.path.splitext(os.path.basename(__file__))[0]
+    logger = setup_logger(
+        name=__name__,
+        log_file=f'{script_name}.log',
+        use_console=True,
+        use_file=True
+    )
+
 from pipeline import Pipeline
 
 

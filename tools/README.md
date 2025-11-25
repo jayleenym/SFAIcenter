@@ -101,6 +101,7 @@ tools/
 ### 🔄 pipeline/ - 파이프라인 모듈
 
 **config.py** - 경로 설정
+
 - `ONEDRIVE_PATH`: OneDrive 데이터 경로 설정 (플랫폼별 자동 감지)
 - `PROJECT_ROOT_PATH`: 프로젝트 루트 경로 설정 (자동 감지)
 - `SFAICENTER_PATH`: SFAICenter 디렉토리 경로 (자동 감지)
@@ -108,16 +109,19 @@ tools/
 - 환경 변수로 오버라이드 가능 (`ONEDRIVE_PATH`, `PROJECT_ROOT_PATH`, `SFAICENTER_PATH`)
 
 **base.py** - 파이프라인 기본 클래스
+
 - `PipelineBase`: 모든 파이프라인 단계의 기본 클래스
 - 공통 유틸리티 초기화 (FileManager, TextProcessor, JSONHandler, LLMQuery 등)
 - 공통 로깅 메서드 (`_setup_step_logging`, `_remove_step_logging`)
 
 **main.py** - 파이프라인 오케스트레이터
+
 - `Pipeline`: 전체 파이프라인을 관리하는 메인 클래스
 - 각 단계 인스턴스 생성 및 관리
 - `run_full_pipeline()`: 전체 파이프라인 실행
 
 **steps/** - 각 단계별 모듈
+
 - `Step0Preprocessing`: 텍스트 전처리 (문장내 엔터 제거, 빈 챕터정보 채우기, 선지 텍스트 정규화)
   - Output: `final_data_path/{cycle}/Lv2/` (원본 파일 수정)
 - `Step1ExtractBasic`: 기본 문제 추출 (Lv2, Lv3_4)
@@ -150,14 +154,17 @@ tools/
 ### 🔧 core/ - 핵심 유틸리티
 
 **utils.py** - 통합된 유틸리티 클래스
+
 - `FileManager`: Excel 데이터 읽기 및 병합, 파일 리스트 관리, 사이클별 데이터 경로 관리
 - `TextProcessor`: 텍스트 처리 유틸리티 (엔터 제거, 옵션 추출, 챕터 정보 채우기, 문단 병합 등)
 - `JSONHandler`: JSON 파일 읽기/쓰기, 포맷 변환
 
 **llm_query.py** - LLM 쿼리 클래스
+
 - `LLMQuery`: OpenRouter API를 통한 LLM 쿼리, vLLM을 통한 로컬 모델 쿼리, 설정 파일 관리
 
 **exam_config.py** - 시험 설정 파일 로더
+
 - `ExamConfig`: exam_config.json 파일을 로드하고 기존 코드와의 호환성을 제공
 - `get_exam_statistics()`: exam_statistics.json 형태로 가져오기
 - `get_exam_hierarchy()`: exam_hierarchy.json 형태로 가져오기
@@ -167,9 +174,11 @@ tools/
 ### 📊 data_processing/ - 데이터 처리
 
 **json_cleaner.py** - JSON 정리 클래스
+
 - `JSONCleaner`: JSON 파일에서 빈 페이지 제거, 백업 파일 생성, 통계 정보 제공
 
 **epubstats.py**
+
 - EPUB을 PDF로 변환
 - PDF 페이지 수 확인
 - Excel 파일에 통계 저장
@@ -177,15 +186,18 @@ tools/
 ### ❓ qna/ - Q&A 처리
 
 **qna_processor.py** - 통합된 Q&A 처리 클래스
+
 - `QnATypeClassifier`: Q&A 타입 분류 (multiple-choice/short-answer/essay/etc)
 - `QnAExtractor`: JSON 파일에서 Q&A 추출 및 태그 처리
 - `TagProcessor`: 추가 태그 처리 및 데이터 채우기
 
 **formatting.py** - Q&A 데이터 포맷화 유틸리티
+
 - `format_qna_item()`: Q&A 항목을 표준 형식으로 포맷화
 - `should_include_qna_item()`: Q&A 항목이 필터링 조건을 만족하는지 확인
 
 #### extraction/ - 추출 (레거시)
+
 - **qna_extract.py**: Q&A 추출 메인 함수 (레거시)
 - **process_qna.py**: Q&A 도메인 분류 (레거시)
   - ⚠️ **주의**: 이 파일의 일부 함수는 `qna_processor.py`에 통합되었습니다:
@@ -193,6 +205,7 @@ tools/
     - `replace_tags_in_text()`, `replace_tags_in_qna_data()` → `TagProcessor.replace_tags_in_text()`, `TagProcessor.replace_tags_in_qna_data()`
 
 #### processing/ - 처리
+
 - **answer_type_classifier.py**: AnswerTypeClassifier 클래스 - 객관식 문제를 right/wrong/abcd로 분류
 - **qna_subdomain_classifier.py**: QnASubdomainClassifier 클래스 - Q&A 도메인/서브도메인 분류
 - **process_additional_tags.py**: 추가 태그 처리 (레거시)
@@ -200,6 +213,7 @@ tools/
 - **verify_reclassification.py**: 재분류 결과 검증 (레거시)
 
 #### analysis/ - 분석
+
 - **analyze_additional_tags_grouped.py**: 추가 태그 그룹 분석
 - **analyze_qna_statistics.py**: Q&A 통계 분석 (도메인별, 타입별)
 - **check_real_duplicates.py**: 중복 Q&A 검사
@@ -208,6 +222,7 @@ tools/
 ### 🔄 transformed/ - 문제 변형 관련 기능
 
 **transform_multiple_choice.py** - 객관식 문제 변형 클래스
+
 - `MultipleChoiceTransformer`: 객관식 문제 변형 클래스
   - `transform_wrong_to_right()`: wrong -> right 변형
   - `transform_right_to_wrong()`: right -> wrong 변형
@@ -215,28 +230,35 @@ tools/
   - 프롬프트 생성, API 호출, 결과 저장 로직 포함
 
 **load_transformed_questions.py** - 변형된 문제 로드 유틸리티
+
 - `load_transformed_questions()`: pick_right, pick_wrong, pick_abcd의 result.json 파일들을 로드하여 question_id를 키로 하는 딕셔너리로 반환
 
 **create_transformed_exam.py** - 변형된 시험지 생성 유틸리티
+
 - `create_transformed_exam()`: 원본 시험지의 각 문제에 대해 변형된 문제를 찾아서 새로운 시험지 생성
 
 **classify_essay_by_exam.py** - 서술형 문제 시험별 분류
+
 - 서술형 문제를 시험별로 분류
 
 **create_essay_with_keywords.py** - 키워드 포함 서술형 문제 생성
+
 - 키워드를 포함한 서술형 문제 생성
 
 **multi_essay_answer.py** - 서술형 문제 모델 답변 생성
+
 - 서술형 문제에 대한 모델 답변 생성
 
 ### 📝 exam/ - 시험지 생성 및 검증
 
 **exam_validator.py** - 시험지 검증 및 업데이트 클래스
+
 - `ExamValidator`: 시험지 검증 및 업데이트 클래스
   - `check_exam_meets_requirements()`: 기존 문제지가 exam_config 요구사항을 만족하는지 확인
   - `update_existing_exam()`: 기존 문제지를 exam_config 요구사항에 맞게 업데이트 (부족한 문제 추가, 불필요한 문제 제거)
 
 ### 📊 statistics/ - 통계 저장 및 집계
+
 - **StatisticsSaver**: 통계 저장 및 집계 유틸리티 클래스
   - `save_statistics_markdown()`: 통계 정보를 마크다운 형식으로 저장
   - `aggregate_set_statistics()`: 여러 시험지의 통계를 집계
@@ -245,30 +267,36 @@ tools/
 ### 📈 evaluation/ - 평가
 
 **evaluate_essay_model.py** - 서술형 문제 평가 시스템
+
 - 서술형 문제에 대한 모델 평가
 - 키워드 기반 점수 계산
 - 통계 정보 생성
 
 **essay_utils.py** - 서술형 평가 유틸리티
+
 - `load_best_answers()`: 모범답안 로드
 - `setup_llm_with_api_key()`: API 키 설정 및 LLM 인스턴스 생성
 
 **multiple_eval_by_model.py**
+
 - LLM을 사용한 객관식 문제 평가
 - O, X 문제 지원
 - 태그 대치 기능
 - 모델별 정확도 분석
 
 **qna_subdomain_classifier.py**
+
 - Q&A 서브도메인 자동 분류
 - 50문제 단위 배치 처리
 - 도메인별 결과 저장
 
 **fill_multiple_choice_data.py**
+
 - 객관식 데이터에 서브도메인 정보 채우기
 - file_id와 tag 기준 매칭
 
 **workbook_groupby_qtype.py**
+
 - 문제 타입별 그룹화 (multiple-choice/short-answer/essay)
 - 필터링 및 정제
 
@@ -303,12 +331,14 @@ main_pipeline.py → 전체 프로세스 실행
 ### 개별 단계 실행
 
 #### 1. 데이터 준비
+
 ```
 pipeline/steps/step0_preprocessing.py → 텍스트 전처리
 data_processing/json_cleaner.py → 빈 페이지 제거
 ```
 
 #### 2. Q&A 추출 및 분류
+
 ```
 pipeline/steps/step1_extract_basic.py → 기본 문제 추출
 pipeline/steps/step2_extract_full.py → 전체 문제 추출 (태그 대치)
@@ -320,6 +350,7 @@ pipeline/steps/step3_classify.py → Q&A 타입별 분류
 ```
 
 #### 3. Domain/Subdomain 분류
+
 ```
 pipeline/steps/step4_fill_domain.py → Domain/Subdomain 분류
   ├── 기존 데이터로 빈칸 채우기
@@ -328,12 +359,14 @@ pipeline/steps/step4_fill_domain.py → Domain/Subdomain 분류
 ```
 
 #### 4. 시험문제 생성 및 평가
+
 ```
 pipeline/steps/step5_create_exam.py → 시험문제 만들기
 pipeline/steps/step6_evaluate.py → 시험지 평가
 ```
 
 #### 5. 객관식 문제 변형
+
 ```
 pipeline/steps/step7_transform_multiple_choice.py → 객관식 문제 변형
   ├── AnswerTypeClassifier로 문제 분류 (right/wrong/abcd)
@@ -344,6 +377,7 @@ pipeline/steps/step7_transform_multiple_choice.py → 객관식 문제 변형
 ```
 
 #### 6. 변형 문제를 포함한 시험지 생성
+
 ```
 pipeline/steps/step8_create_transformed_exam.py → 변형 문제를 포함한 시험지 생성
   ├── load_transformed_questions()로 변형된 문제 로드
@@ -357,6 +391,7 @@ pipeline/steps/step8_create_transformed_exam.py → 변형 문제를 포함한 �
 ```
 
 #### 7. 객관식 문제를 서술형 문제로 변환
+
 ```
 pipeline/steps/step9_multiple_essay.py → 객관식 문제를 서술형 문제로 변환
   ├── create_essay_with_keywords.py의 함수들 실행
@@ -464,85 +499,95 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 
 #### 기본 옵션
 
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--cycle` | 사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리) | None |
-| `--steps` | 실행할 단계 목록 (공백으로 구분) | None (전체 실행) |
-| | | 가능한 값: `preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice`, `create_transformed_exam`, `evaluate_essay` |
-| `--levels` | 처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4) | None (기본값: Lv2, Lv3_4, Lv5) |
-| `--base_path` | 기본 데이터 경로 | None (ONEDRIVE_PATH 사용) |
-| `--config_path` | LLM 설정 파일 경로 | None (PROJECT_ROOT_PATH/llm_config.ini 사용) |
-| `--onedrive_path` | OneDrive 경로 | None (자동 감지) |
-| `--project_root_path` | 프로젝트 루트 경로 | None (자동 감지) |
-| `--debug` | 디버그 로그 활성화 | False |
+| 옵션                    | 설명                                                                                                | 기본값                                                                                                                                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--cycle`             | 사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리) | None                                                                                                                                                                                                              |
+| `--steps`             | 실행할 단계 목록 (공백으로 구분)                                                                    | None (전체 실행)                                                                                                                                                                                                  |
+|                         |                                                                                                     | 가능한 값:`preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice`, `create_transformed_exam`, `evaluate_essay` |
+| `--levels`            | 처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4)                                                    | None (기본값: Lv2, Lv3_4, Lv5)                                                                                                                                                                                    |
+| `--base_path`         | 기본 데이터 경로                                                                                    | None (ONEDRIVE_PATH 사용)                                                                                                                                                                                         |
+| `--config_path`       | LLM 설정 파일 경로                                                                                  | None (PROJECT_ROOT_PATH/llm_config.ini 사용)                                                                                                                                                                      |
+| `--onedrive_path`     | OneDrive 경로                                                                                       | None (자동 감지)                                                                                                                                                                                                  |
+| `--project_root_path` | 프로젝트 루트 경로                                                                                  | None (자동 감지)                                                                                                                                                                                                  |
+| `--debug`             | 디버그 로그 활성화                                                                                  | False                                                                                                                                                                                                             |
 
 #### 단계별 옵션
 
 **2단계 (전체 문제 추출)**
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
+
+| 옵션         | 설명                                            | 기본값                         |
+| ------------ | ----------------------------------------------- | ------------------------------ |
 | `--levels` | 처리할 레벨 목록 (공백으로 구분, 예: Lv2 Lv3_4) | None (기본값: Lv2, Lv3_4, Lv5) |
 
 **참고:**
+
 - `--cycle`과 `--levels`를 함께 사용하면 `evaluation/workbook_data/{cycle_path}/{level}/` 경로에 저장됩니다 (예: `--cycle 1 --levels Lv2 Lv3_4` → `workbook_data/1C/Lv2/`, `workbook_data/1C/Lv3_4/`).
 - 기존 파일이 있으면 덮어쓰기됩니다 (중복 체크 없음).
 - 내용이 비어있으면 파일을 저장하지 않습니다.
 
 **4단계 (Domain/Subdomain 분류)**
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--qna_type` | QnA 타입 (multiple, short, essay) | 'multiple' |
-| `--model` | 사용할 모델 | 'x-ai/grok-4-fast' |
+
+| 옵션           | 설명                              | 기본값             |
+| -------------- | --------------------------------- | ------------------ |
+| `--qna_type` | QnA 타입 (multiple, short, essay) | 'multiple'         |
+| `--model`    | 사용할 모델                       | 'x-ai/grok-4-fast' |
 
 **5단계 (시험문제 만들기)**
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--num_sets` | 시험 세트 개수 | 5 |
+
+| 옵션           | 설명           | 기본값 |
+| -------------- | -------------- | ------ |
+| `--num_sets` | 시험 세트 개수 | 5      |
 
 **6단계 (시험지 평가)**
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--eval_models` | 평가할 모델 목록 (공백으로 구분) | None (자동 설정) |
-| `--eval_batch_size` | 평가 배치 크기 | 10 |
-| `--eval_use_ox_support` | O, X 문제 지원 활성화 | True |
-| `--eval_use_server_mode` | vLLM 서버 모드 사용 | False |
-| `--eval_exam_dir` | 시험지 디렉토리 경로 (단일 JSON 파일 또는 디렉토리) | None (기본 경로 사용) |
-| `--eval_sets` | 평가할 세트 번호 (1, 2, 3, 4, 5 중 선택, 공백으로 구분) | None (모든 세트 평가) |
-| `--eval_transformed` | 변형 시험지 평가 모드 (True면 8_multiple_exam_+ 사용, False면 4_multiple_exam 사용) | False |
-| `--eval_essay` | 서술형 문제 평가 모드 (True면 9_multiple_to_essay 평가 수행) | False |
+
+| 옵션                       | 설명                                                                                | 기본값                |
+| -------------------------- | ----------------------------------------------------------------------------------- | --------------------- |
+| `--eval_models`          | 평가할 모델 목록 (공백으로 구분)                                                    | None (자동 설정)      |
+| `--eval_batch_size`      | 평가 배치 크기                                                                      | 10                    |
+| `--eval_use_ox_support`  | O, X 문제 지원 활성화                                                               | True                  |
+| `--eval_use_server_mode` | vLLM 서버 모드 사용                                                                 | False                 |
+| `--eval_exam_dir`        | 시험지 디렉토리 경로 (단일 JSON 파일 또는 디렉토리)                                 | None (기본 경로 사용) |
+| `--eval_sets`            | 평가할 세트 번호 (1, 2, 3, 4, 5 중 선택, 공백으로 구분)                             | None (모든 세트 평가) |
+| `--eval_transformed`     | 변형 시험지 평가 모드 (True면 8_multiple_exam_+ 사용, False면 4_multiple_exam 사용) | False                 |
+| `--eval_essay`           | 서술형 문제 평가 모드 (True면 9_multiple_to_essay 평가 수행)                        | False                 |
 
 **7단계 (객관식 문제 변형)**
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--transform_classify` | 분류 단계 실행 여부 | False |
-| `--transform_classified_data_path` | 이미 분류된 데이터 파일 경로 (--transform_classify가 False일 때, None이면 기본 경로 사용) | None |
-| `--transform_input_data_path` | 입력 데이터 파일 경로 (--transform_classify가 True일 때만 사용) | None |
-| `--transform_classify_model` | 분류에 사용할 모델 (--transform_classify가 True일 때만 사용) | 'openai/gpt-5' |
-| `--transform_classify_batch_size` | 분류 배치 크기 (--transform_classify가 True일 때만 사용) | 10 |
-| `--transform_model` | 변형에 사용할 모델 | 'openai/o3' |
-| `--transform_wrong_to_right` | wrong -> right 변형 수행 여부 | False |
-| `--transform_right_to_wrong` | right -> wrong 변형 수행 여부 | False |
-| `--transform_abcd` | abcd 변형 수행 여부 | False |
+
+| 옵션                                 | 설명                                                                                      | 기본값         |
+| ------------------------------------ | ----------------------------------------------------------------------------------------- | -------------- |
+| `--transform_classify`             | 분류 단계 실행 여부                                                                       | False          |
+| `--transform_classified_data_path` | 이미 분류된 데이터 파일 경로 (--transform_classify가 False일 때, None이면 기본 경로 사용) | None           |
+| `--transform_input_data_path`      | 입력 데이터 파일 경로 (--transform_classify가 True일 때만 사용)                           | None           |
+| `--transform_classify_model`       | 분류에 사용할 모델 (--transform_classify가 True일 때만 사용)                              | 'openai/gpt-5' |
+| `--transform_classify_batch_size`  | 분류 배치 크기 (--transform_classify가 True일 때만 사용)                                  | 10             |
+| `--transform_model`                | 변형에 사용할 모델                                                                        | 'openai/o3'    |
+| `--transform_wrong_to_right`       | wrong -> right 변형 수행 여부                                                             | False          |
+| `--transform_right_to_wrong`       | right -> wrong 변형 수행 여부                                                             | False          |
+| `--transform_abcd`                 | abcd 변형 수행 여부                                                                       | False          |
 
 **8단계 (변형 문제를 포함한 시험지 생성)**
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
+
+| 옵션                               | 설명                                                           | 기본값               |
+| ---------------------------------- | -------------------------------------------------------------- | -------------------- |
 | `--create_transformed_exam_sets` | 변형 시험지 생성할 세트 번호 리스트 (공백으로 구분, 예: 1 2 3) | None (1~5 모두 처리) |
 
 **9단계 (객관식 문제를 서술형 문제로 변환)**
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--essay_models` | 모델 답변 생성할 모델 목록 (공백으로 구분, None이면 답변 생성 안 함) | None |
-| `--essay_sets` | 처리할 세트 번호 리스트 (공백으로 구분, 예: 1 2 3, models가 있을 때만 사용) | None (1~5 모두 처리) |
-| `--essay_use_server_mode` | vLLM 서버 모드 사용 (models가 있을 때만 사용) | False |
+
+| 옵션                        | 설명                                                                        | 기본값               |
+| --------------------------- | --------------------------------------------------------------------------- | -------------------- |
+| `--essay_models`          | 모델 답변 생성할 모델 목록 (공백으로 구분, None이면 답변 생성 안 함)        | None                 |
+| `--essay_sets`            | 처리할 세트 번호 리스트 (공백으로 구분, 예: 1 2 3, models가 있을 때만 사용) | None (1~5 모두 처리) |
+| `--essay_use_server_mode` | vLLM 서버 모드 사용 (models가 있을 때만 사용)                               | False                |
 
 **참고:**
+
 - `--transform_classify`가 False이고 `--transform_classified_data_path`가 None이면 기본 경로(`evaluation/eval_data/7_multiple_rw/answer_type_classified.json`)를 자동으로 사용합니다.
 - 변형 옵션(`--transform_wrong_to_right`, `--transform_right_to_wrong`, `--transform_abcd`)은 기본값이 False이므로, 원하는 변형을 명시적으로 활성화해야 합니다.
 
 #### 실행 가능한 단계 목록
 
 `--steps` 옵션에 사용할 수 있는 단계 이름:
+
 - `preprocess`: 0단계 - 텍스트 전처리
 - `extract_basic`: 1단계 - 기본 문제 추출
 - `extract_full`: 2단계 - 전체 문제 추출 (태그 대치)
@@ -634,6 +679,7 @@ should_include = should_include_qna_item(qna_item, qna_type)
 ## 📋 클래스 구조
 
 ### core/ - 핵심 유틸리티
+
 - **FileManager**: 파일 및 경로 관리, Excel 메타데이터 로드, 파일 리스트 관리
   - `load_excel_metadata()`: Excel에서 도서 메타데이터 읽기
   - `get_json_file_list()`: JSON 파일 리스트 가져오기
@@ -664,6 +710,7 @@ should_include = should_include_qna_item(qna_item, qna_type)
   - `get_subdomain_description()`: 서브도메인 설명 가져오기
 
 ### transformed/ - 문제 변형
+
 - **MultipleChoiceTransformer**: 객관식 문제 변형 클래스
   - `transform_wrong_to_right()`: wrong -> right 변형
   - `transform_right_to_wrong()`: right -> wrong 변형
@@ -675,16 +722,19 @@ should_include = should_include_qna_item(qna_item, qna_type)
   - `_create_right_to_wrong_prompt()`: right -> wrong 프롬프트 생성
 
 ### exam/ - 시험지 검증
+
 - **ExamValidator**: 시험지 검증 및 업데이트 클래스
   - `check_exam_meets_requirements()`: 시험지 요구사항 검증
   - `update_existing_exam()`: 시험지 업데이트 (부족한 문제 추가, 불필요한 문제 제거)
 
 ### evaluation/ - 평가
+
 - **essay_utils**: 서술형 평가 유틸리티
   - `load_best_answers()`: 모범답안 로드
   - `setup_llm_with_api_key()`: API 키 설정 및 LLM 인스턴스 생성
 
 ### qna/ - Q&A 처리
+
 - **formatting**: Q&A 데이터 포맷화 유틸리티
   - `format_qna_item()`: Q&A 항목 포맷화
   - `should_include_qna_item()`: 필터링 조건 확인
@@ -692,6 +742,7 @@ should_include = should_include_qna_item(qna_item, qna_type)
 ## 📝 참고사항
 
 ### 파이프라인 구조
+
 - **모듈화**: 각 단계가 독립적인 파일로 분리되어 유지보수가 용이합니다.
 - **재사용성**: 각 단계 클래스를 독립적으로 사용할 수 있습니다.
 - **확장성**: 새로운 단계를 추가하려면 `pipeline/steps/`에 새 파일을 추가하면 됩니다.
@@ -705,26 +756,27 @@ should_include = should_include_qna_item(qna_item, qna_type)
 
 시스템이 자동으로 플랫폼을 감지하여 올바른 OneDrive 경로를 찾습니다:
 
-- **Windows**: 
+- **Windows**:
+
   - `C:\Users\<username>\OneDrive\데이터L\selectstar`
   - `C:\Users\<username>\OneDrive - 개인\데이터L\selectstar`
   - 환경 변수 `OneDrive` 또는 `OneDriveConsumer`에서 경로 확인
-  
-- **macOS**: 
+- **macOS**:
+
   - `~/Library/CloudStorage/OneDrive-개인/데이터L/selectstar`
   - `~/Library/CloudStorage/OneDrive/데이터L/selectstar`
+- **Linux**:
 
-- **Linux**: 
   - `~/OneDrive/데이터L/selectstar`
 
 #### 경로 설정 방법
 
 1. **자동 감지 (권장)**: 별도 설정 없이 자동으로 올바른 경로를 찾습니다.
-2. **환경 변수로 오버라이드**: 
+2. **환경 변수로 오버라이드**:
    ```bash
    # Windows (PowerShell)
    $env:ONEDRIVE_PATH="C:\Users\Jin\OneDrive\데이터L\selectstar"
-   
+
    # macOS/Linux
    export ONEDRIVE_PATH="/path/to/onedrive/데이터L/selectstar"
    ```
@@ -738,6 +790,7 @@ should_include = should_include_qna_item(qna_item, qna_type)
 - ✅ **환경 변수 지원**: 환경 변수로 경로를 오버라이드할 수 있습니다.
 
 ### 의존성
+
 - 각 클래스는 독립적으로 사용 가능하지만, 일부 클래스는 다른 클래스에 의존할 수 있습니다.
 - `LLMQuery`는 LLM 관련 기능을 제공하므로 여러 모듈에서 공통으로 사용됩니다.
 - `PipelineBase`는 모든 단계 클래스의 기본 클래스입니다.
@@ -745,35 +798,41 @@ should_include = should_include_qna_item(qna_item, qna_type)
 - 검증 로직은 `exam` 폴더에 모듈화되어 재사용 가능합니다.
 
 ### 파일 저장 방식
+
 - **Step 2 (전체 문제 추출)**: 기존 `_extracted_qna.json` 파일이 있으면 덮어쓰기합니다 (중복 체크 없음). 내용이 비어있으면 파일을 저장하지 않습니다.
 - **Step 3 (타입별 분류)**: 기존 분류 파일(`multiple-choice.json` 등)이 있으면 자동으로 병합합니다. `file_id`와 `tag` 기준으로 중복을 제거하고 새 항목만 추가합니다.
-- **Step 4 (Domain/Subdomain 분류)**: 
+- **Step 4 (Domain/Subdomain 분류)**:
   - 기존 파일이 있으면 `.bak` 파일로 백업한 후 새 결과와 병합합니다.
   - `multiple_classification_Lv234.json` 저장 시에도 기존 파일이 있으면 병합합니다.
   - 모든 병합은 `file_id`와 `tag` 기준으로 중복을 제거합니다.
 
 ### 특수 경로 처리
+
 - **2단계 (전체 문제 추출)**: `--cycle`과 `--levels`를 함께 사용하면 `evaluation/workbook_data/{cycle_path}/{level}/` 경로에 저장됩니다 (예: `--cycle 1 --levels Lv2 Lv3_4` → `workbook_data/1C/Lv2/`, `workbook_data/1C/Lv3_4/`).
 - **multiple_classification_Lv234.json**: Step 4에서 `qna_type=multiple`이고 Lv2 또는 Lv3_4 경로가 존재하면 자동으로 `evaluation/eval_data/2_subdomain/multiple_classification_Lv234.json`에도 저장합니다.
 
 ### 실패 항목 재처리
+
 - 4단계(Domain/Subdomain 분류)에서 실패한 항목은 자동으로 감지되어 재처리됩니다.
 - 실패 항목은 `evaluation/eval_data/2_subdomain/{qna_type}_failed_items.json`에 저장됩니다.
 
 ### API 키 설정
 
 **6단계 (시험지 평가)**
+
 - 6단계에서 OpenRouter API를 사용할 때는 `llm_config.ini`의 `key_evaluate`를 사용합니다.
 - `key_evaluate`가 설정 파일에 없으면 에러가 발생합니다.
 - vLLM 서버 모드(`--eval_use_server_mode`)를 사용할 때는 API 키가 필요 없습니다.
 
 **9단계 (서술형 문제 모델 평가)**
+
 - 9단계에서 OpenRouter API를 사용할 때는 `llm_config.ini`의 `key_evaluate`를 우선 사용하고, 없으면 `key`를 사용합니다.
 - `essay_utils.setup_llm_with_api_key()`를 통해 자동으로 설정됩니다.
 
 ### 6단계 (시험지 평가) 저장 경로 및 파일명
 
 **기본 객관식 평가 모드 (`--eval_transformed` 없음)**
+
 - 입력 디렉토리: `evaluation/eval_data/4_multiple_exam/`
 - 출력 디렉토리: `evaluation/eval_data/4_multiple_exam/exam_result/`
 - 저장 구조:
@@ -784,6 +843,7 @@ should_include = should_include_qna_item(qna_item, qna_type)
   - `invalid_responses`: `exam_result/invalid_responses/`
 
 **변형 객관식 평가 모드 (`--eval_transformed` 있음)**
+
 - 입력 디렉토리: `evaluation/eval_data/8_multiple_exam_+/`
 - 출력 디렉토리: `evaluation/eval_data/8_multiple_exam_+/exam_+_result/`
 - 저장 구조:
@@ -794,11 +854,13 @@ should_include = should_include_qna_item(qna_item, qna_type)
   - `invalid_responses`: `exam_+_result/invalid_responses/`
 
 **참고:**
+
 - 기본 모드는 세트별로 폴더를 생성하여 저장합니다 (`exam_result/1st/`, `exam_result/2nd/`, ...).
 - 변형 모드는 `exam_+_result/` 폴더에 직접 파일을 저장합니다 (폴더 구조 없음).
 - 변형 모드의 파일명은 기본 모드와 동일하지만 `_transformed` 접미사가 추가됩니다.
 
 **서술형 평가 모드 (`--eval_essay` 있음)**
+
 - 입력: `9_multiple_to_essay/questions/essay_questions_{세트명}.json`
 - 평가 함수: `evaluate_essay_model.evaluate_single_model()`
 - 출력 경로: `9_multiple_to_essay/evaluation_results/`
@@ -808,6 +870,7 @@ should_include = should_include_qna_item(qna_item, qna_type)
 - 서술형 평가는 객관식 평가와 독립적으로 실행되며, `--eval_transformed`와 함께 사용할 수 있습니다.
 
 **7단계 (객관식 문제 변형)**
+
 - 7단계는 `AnswerTypeClassifier`를 사용하여 문제를 분류하고, `MultipleChoiceTransformer`를 사용하여 문제를 변형합니다.
 - `--transform_classify` 옵션을 사용하여 분류 단계를 실행할 수 있습니다 (기본값: False).
 - `--transform_classify`가 False일 때:
@@ -817,6 +880,7 @@ should_include = should_include_qna_item(qna_item, qna_type)
 - 변형 옵션: `wrong -> right`, `right -> wrong`, `abcd` 변형을 개별적으로 활성화/비활성화할 수 있습니다 (기본값: 모두 False).
 
 **8단계 (변형 문제를 포함한 시험지 생성)**
+
 - 8단계는 4_multiple_exam의 각 세트(1st~5th) 시험지에서 변형된 문제를 찾아 새로운 시험지를 생성합니다.
 - `load_transformed_questions()`를 사용하여 `pick_right`, `pick_wrong`, `pick_abcd`의 result.json 파일에서 변형된 문제를 로드합니다.
 - `create_transformed_exam()`를 사용하여 변형된 시험지를 생성합니다.
@@ -829,6 +893,7 @@ should_include = should_include_qna_item(qna_item, qna_type)
 - `--create_transformed_exam_sets` 옵션으로 특정 세트만 처리할 수 있습니다 (None이면 1~5 모두 처리).
 
 **9단계 (객관식 문제를 서술형 문제로 변환)**
+
 - 9단계는 옳지 않은 객관식 문제를 서술형 문제로 변환합니다.
 - `create_essay_with_keywords.py`의 함수들을 사용하여:
   - 해설이 완전한 문제 선별

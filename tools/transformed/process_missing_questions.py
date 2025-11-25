@@ -22,6 +22,17 @@ project_root = os.path.dirname(tools_dir)  # tools -> project root
 sys.path.insert(0, tools_dir)
 sys.path.insert(0, project_root)
 
+# 독립 실행 시 파일명.log로 로깅 설정
+if __name__ == "__main__":
+    from core.logger import setup_logger
+    script_name = os.path.splitext(os.path.basename(__file__))[0]
+    _standalone_logger = setup_logger(
+        name=__name__,
+        log_file=f'{script_name}.log',
+        use_console=True,
+        use_file=True
+    )
+
 # 상대 import 시도, 실패 시 절대 import
 try:
     from ..pipeline.base import PipelineBase
