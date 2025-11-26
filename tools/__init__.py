@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-경로 설정 - 여기서만 수정하면 됩니다
+Tools 모듈 초기화
+tools_dir 경로 및 전역 설정을 제공
 """
 
 import os
 import subprocess
 import platform
+
+# tools 디렉토리 경로 (이 파일이 있는 디렉토리)
+tools_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 def _find_onedrive_path():
     """플랫폼별 OneDrive 경로를 자동으로 찾는 함수"""
@@ -50,10 +55,11 @@ def _find_onedrive_path():
         # macOS 기본 경로
         return os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
 
-# 외부에서 사용할 수 있도록 함수 export
+
 def get_default_onedrive_path():
     """플랫폼별 기본 OneDrive 경로 반환 (외부 모듈에서 사용)"""
     return _find_onedrive_path()
+
 
 def _find_sfaicenter_path():
     """SFAICenter 디렉토리를 찾는 함수 (find 명령어 사용)"""
@@ -61,7 +67,7 @@ def _find_sfaicenter_path():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
     # 프로젝트 루트 경로 계산
-    project_root = os.path.dirname(os.path.dirname(current_dir))
+    project_root = os.path.dirname(current_dir)
     
     # 먼저 현재 경로에서 상위로 올라가면서 SFAICenter 찾기
     search_paths = [
@@ -112,12 +118,12 @@ def _find_sfaicenter_path():
     # 찾지 못한 경우 프로젝트 루트 반환 (fallback)
     return project_root
 
+
 # ONEDRIVE_PATH: OneDrive 데이터 경로 (플랫폼별 자동 감지)
 ONEDRIVE_PATH = _find_onedrive_path()
 
 # PROJECT_ROOT_PATH: 프로젝트 루트 경로 (기본값: 자동 감지)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(current_dir))
+PROJECT_ROOT_PATH = os.path.dirname(tools_dir)
 
 # SFAICENTER_PATH: SFAICenter 디렉토리 경로 (find로 자동 감지)
 SFAICENTER_PATH = _find_sfaicenter_path()
@@ -129,4 +135,12 @@ if 'PROJECT_ROOT_PATH' in os.environ:
     PROJECT_ROOT_PATH = os.environ['PROJECT_ROOT_PATH']
 if 'SFAICENTER_PATH' in os.environ:
     SFAICENTER_PATH = os.environ['SFAICENTER_PATH']
+
+__all__ = [
+    'tools_dir',
+    'ONEDRIVE_PATH',
+    'PROJECT_ROOT_PATH',
+    'SFAICENTER_PATH',
+    'get_default_onedrive_path'
+]
 

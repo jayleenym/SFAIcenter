@@ -133,7 +133,7 @@ def main(file_path: str=None):
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
             sys.path.insert(0, project_root)
-            from pipeline.config import ONEDRIVE_PATH
+            from tools import ONEDRIVE_PATH
             pattern = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', '*', 'Lv5', '*_extracted_qna.json')
         except ImportError:
             # fallback: pipeline이 없는 경우 기본값 사용
@@ -170,7 +170,7 @@ def main(file_path: str=None):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
         sys.path.insert(0, project_root)
-        from pipeline.config import ONEDRIVE_PATH
+        from tools import ONEDRIVE_PATH
         output_base = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', 'invalid_options')
     except ImportError:
         # fallback: 현재 디렉토리 기준
@@ -243,7 +243,7 @@ if __name__ == "__main__":
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
         sys.path.insert(0, project_root)
-        from pipeline.config import ONEDRIVE_PATH
+        from tools import ONEDRIVE_PATH
         file_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '2_subdomain', 'multiple_subdomain_classified_ALL.json')
     except ImportError:
         # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용

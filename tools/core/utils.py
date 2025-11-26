@@ -28,7 +28,7 @@ class FileManager:
                 current_dir = os.path.dirname(os.path.abspath(__file__))
                 project_root = os.path.dirname(os.path.dirname(current_dir))
                 sys.path.insert(0, project_root)
-                from pipeline.config import ONEDRIVE_PATH
+                from tools import ONEDRIVE_PATH
                 self.base_path = ONEDRIVE_PATH
             except ImportError:
                 # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용

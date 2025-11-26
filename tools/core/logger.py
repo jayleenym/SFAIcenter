@@ -47,7 +47,7 @@ def setup_logger(
     # 경로 설정
     if log_dir is None:
         try:
-            from pipeline.config import SFAICENTER_PATH
+            from tools import SFAICENTER_PATH
             log_dir = os.path.join(SFAICENTER_PATH, 'logs')
         except ImportError:
             # fallback: 현재 파일 기준으로 프로젝트 루트 찾기
@@ -165,7 +165,7 @@ def setup_step_logger(
     # 경로 설정
     if log_dir is None:
         try:
-            from pipeline.config import SFAICENTER_PATH
+            from tools import SFAICENTER_PATH
             log_dir = os.path.join(SFAICENTER_PATH, 'logs')
         except ImportError:
             current_dir = os.path.dirname(os.path.abspath(__file__))

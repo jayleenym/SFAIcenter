@@ -23,7 +23,7 @@ from tqdm import tqdm
 from collections import defaultdict
 import pandas as pd
 
-from tools.pipeline.config import ONEDRIVE_PATH
+from tools import ONEDRIVE_PATH
 from tools.core.llm_query import LLMQuery
 
 

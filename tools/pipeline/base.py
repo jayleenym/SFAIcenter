@@ -9,7 +9,7 @@ import sys
 import logging
 from typing import Optional
 
-from .config import ONEDRIVE_PATH, PROJECT_ROOT_PATH, SFAICENTER_PATH
+from tools import ONEDRIVE_PATH, PROJECT_ROOT_PATH, SFAICENTER_PATH
 
 # 프로젝트 루트 경로 추가
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +23,10 @@ from data_processing.json_cleaner import JSONCleaner
 
 # qna processing 및 evaluation 모듈 import (tools 폴더에서 우선 시도)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_dir = os.path.dirname(current_dir)  # pipeline -> tools
+# tools 모듈 import를 위한 경로 설정
+_temp_tools_dir = os.path.dirname(current_dir)  # pipeline -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
 sys.path.insert(0, tools_dir)
 
 # 전역 변수로 export (steps에서 사용)
@@ -39,9 +42,8 @@ try:
         print_evaluation_summary
     )
 except ImportError:
-    # fallback: tools 폴더에서 시도
-    tools_dir = os.path.dirname(current_dir)  # pipeline -> tools
-    sys.path.insert(0, tools_dir)
+    # fallback: tools 폴더에서 시도 (이미 tools_dir는 위에서 import됨)
+    pass
     try:
         from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
         from tools.qna.fill_multiple_choice_data import (

@@ -6,25 +6,11 @@ import shutil
 import re
 import glob
 
-# 상위 디렉토리를 Python path에 추가
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-# pipeline/config에서 ONEDRIVE_PATH import
-try:
-    from pipeline.config import ONEDRIVE_PATH
-except ImportError:
-    # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
-    import platform
-    system = platform.system()
-    home_dir = os.path.expanduser("~")
-    if system == "Windows":
-        ONEDRIVE_PATH = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
-    else:
-        ONEDRIVE_PATH = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
-
-# tools/core/utils.py에서 FileManager import
+# tools 모듈 import를 위한 경로 설정
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))  # qna/extraction -> qna -> tools
+_temp_tools_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))  # qna/extraction -> qna -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir, ONEDRIVE_PATH
 sys.path.insert(0, tools_dir)
 from core.utils import FileManager
 

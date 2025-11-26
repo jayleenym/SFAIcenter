@@ -18,7 +18,10 @@ from ..base import PipelineBase
 
 # statistics 및 transformed 모듈 import
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_dir = os.path.dirname(os.path.dirname(current_dir))  # steps -> pipeline -> tools
+# tools 모듈 import를 위한 경로 설정
+_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # steps -> pipeline -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
 sys.path.insert(0, tools_dir)
 
 from statistics import StatisticsSaver

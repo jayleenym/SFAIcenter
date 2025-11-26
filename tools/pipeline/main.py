@@ -63,7 +63,8 @@ class Pipeline(PipelineBase):
                          transform_seed: int = 42,
                          create_transformed_exam_sets: List[int] = None,
             essay_models: List[str] = None, essay_sets: List[int] = None,
-            essay_use_server_mode: bool = False) -> Dict[str, Any]:
+            essay_use_server_mode: bool = False,
+            essay_steps: List[int] = None) -> Dict[str, Any]:
         """
         전체 파이프라인 실행
         
@@ -97,6 +98,7 @@ class Pipeline(PipelineBase):
             essay_models: 모델 답변 생성할 모델 목록 (9단계에서 사용, None이면 답변 생성 안 함)
             essay_sets: 처리할 세트 번호 리스트 (9단계에서 사용, models가 있을 때만 사용, None이면 1~5 모두 처리)
             essay_use_server_mode: vLLM 서버 모드 사용 (9단계에서 사용, models가 있을 때만 사용)
+            essay_steps: 실행할 단계 리스트 (9단계에서 사용, 예: [0, 1, 2] 또는 [3] 등). None이면 모든 단계 실행 (0-4)
         
         Returns:
             실행 결과
@@ -177,7 +179,8 @@ class Pipeline(PipelineBase):
                 results['evaluate_essay'] = self.step9.execute(
                     models=essay_models,
                     sets=essay_sets,
-                    use_server_mode=essay_use_server_mode
+                    use_server_mode=essay_use_server_mode,
+                    steps=essay_steps
                 )
             
             results['success'] = True

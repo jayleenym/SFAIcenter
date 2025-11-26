@@ -19,7 +19,10 @@ from tqdm import tqdm
 
 # 프로젝트 루트 경로 찾기 (로깅과 import에 사용)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_dir = os.path.dirname(os.path.dirname(current_dir))  # processing -> qna -> tools
+# tools 모듈 import를 위한 경로 설정
+_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # processing -> qna -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
 project_root = os.path.dirname(tools_dir)  # tools -> project_root
 
 # llm_query 모듈 import

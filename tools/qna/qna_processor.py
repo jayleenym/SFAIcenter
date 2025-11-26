@@ -11,7 +11,12 @@ import sys
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# tools 모듈 import를 위한 경로 설정
+current_dir = os.path.dirname(os.path.abspath(__file__))
+_temp_tools_dir = os.path.dirname(current_dir)  # qna -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
+sys.path.insert(0, tools_dir)
 
 from core.utils import FileManager, TextProcessor, JSONHandler
 from core.llm_query import LLMQuery

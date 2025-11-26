@@ -1,5 +1,5 @@
 # pipeline 패키지
-from .config import ONEDRIVE_PATH, PROJECT_ROOT_PATH
+from tools import ONEDRIVE_PATH, PROJECT_ROOT_PATH
 from .base import PipelineBase
 from .main import Pipeline
 

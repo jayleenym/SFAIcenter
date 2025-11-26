@@ -18,7 +18,10 @@ from ..base import PipelineBase
 
 # qna processing 모듈 import (tools 폴더에서)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_dir = os.path.dirname(os.path.dirname(current_dir))  # steps -> pipeline -> tools
+# tools 모듈 import를 위한 경로 설정
+_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # steps -> pipeline -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
 sys.path.insert(0, tools_dir)
 try:
     from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier

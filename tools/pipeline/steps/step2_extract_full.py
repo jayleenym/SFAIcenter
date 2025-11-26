@@ -12,7 +12,10 @@ from qna.qna_processor import QnAExtractor, TagProcessor
 
 # 포맷화 유틸리티 import
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools
+# tools 모듈 import를 위한 경로 설정
+_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
 sys.path.insert(0, tools_dir)
 from qna.formatting import format_qna_item
 

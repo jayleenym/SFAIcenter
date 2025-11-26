@@ -35,7 +35,7 @@ try:
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root_dir = os.path.dirname(current_dir)  # tools
     sys.path.insert(0, project_root_dir)
-    from pipeline.config import PROJECT_ROOT_PATH, ONEDRIVE_PATH, SFAICENTER_PATH
+    from tools import PROJECT_ROOT_PATH, ONEDRIVE_PATH, SFAICENTER_PATH
     project_root = PROJECT_ROOT_PATH
     onedrive_path = ONEDRIVE_PATH
     sfaicenter_path = SFAICENTER_PATH
@@ -344,7 +344,10 @@ def _load_query_models(api_key: str = None):
         import os
         # tools/core/llm_query.py에서 LLMQuery 클래스 import
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        tools_dir = os.path.dirname(current_dir)  # evaluation -> tools
+        # tools 모듈 import를 위한 경로 설정
+        _temp_tools_dir = os.path.dirname(current_dir)  # evaluation -> tools
+        sys.path.insert(0, _temp_tools_dir)
+        from tools import tools_dir
         sys.path.insert(0, tools_dir)
         
         try:
@@ -657,7 +660,7 @@ def run_eval_pipeline(
                     else:
                         # 기본 경로 사용
                         try:
-                            from pipeline.config import ONEDRIVE_PATH
+                            from tools import ONEDRIVE_PATH
                             base_path = ONEDRIVE_PATH
                         except ImportError:
                             import platform
@@ -962,7 +965,7 @@ def save_timing_statistics(
     else:
         # 기본 경로 사용
         try:
-            from pipeline.config import ONEDRIVE_PATH
+            from tools import ONEDRIVE_PATH
             base_path = ONEDRIVE_PATH
         except ImportError:
             import platform
@@ -1068,7 +1071,7 @@ def save_invalid_responses(invalid_responses: List[Dict], filename_prefix: str =
     else:
         # 기본 경로 사용
         try:
-            from pipeline.config import ONEDRIVE_PATH
+            from tools import ONEDRIVE_PATH
             base_path = ONEDRIVE_PATH
         except ImportError:
             import platform
@@ -1118,7 +1121,7 @@ def save_detailed_logs(pred_long_df: pd.DataFrame, filename_prefix: str = "evalu
     """상세한 로그를 CSV로 저장"""
     # SFAICENTER_PATH 기반 경로 사용
     try:
-        from pipeline.config import SFAICENTER_PATH
+        from tools import SFAICENTER_PATH
         log_base_path = SFAICENTER_PATH
     except ImportError:
         # fallback: pipeline이 없는 경우 현재 스크립트 기준으로 설정
@@ -1440,7 +1443,7 @@ def save_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, acc: pd
     
     # ONEDRIVE_PATH 기반 경로 사용
     try:
-        from pipeline.config import ONEDRIVE_PATH
+        from tools import ONEDRIVE_PATH
         default_base_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'result')
     except ImportError:
         import platform

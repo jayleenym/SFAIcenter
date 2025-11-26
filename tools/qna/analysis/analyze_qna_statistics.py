@@ -328,7 +328,7 @@ def main():
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
         sys.path.insert(0, project_root)
-        from pipeline.config import ONEDRIVE_PATH, PROJECT_ROOT_PATH
+        from tools import ONEDRIVE_PATH, PROJECT_ROOT_PATH
         base_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data')
         txt_output_file = os.path.join(PROJECT_ROOT_PATH, 'STATS_qna.md')
     except ImportError:

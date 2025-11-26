@@ -14,8 +14,10 @@ from typing import List, Dict, Any, Set
 
 # 경로 설정 (직접 실행 시에도 작동하도록)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-pipeline_dir = os.path.dirname(current_dir)  # pipeline/steps -> pipeline
-tools_dir = os.path.dirname(pipeline_dir)  # pipeline -> tools
+# tools 모듈 import를 위한 경로 설정
+_temp_tools_dir = os.path.dirname(current_dir)  # transformed -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
 project_root = os.path.dirname(tools_dir)  # tools -> project root
 
 # 경로 추가
@@ -36,11 +38,11 @@ if __name__ == "__main__":
 # 상대 import 시도, 실패 시 절대 import
 try:
     from ..pipeline.base import PipelineBase
-    from ..pipeline.config import SFAICENTER_PATH
+    from tools import SFAICENTER_PATH
 except ImportError:
     # 직접 실행 시 절대 import
     from pipeline.base import PipelineBase
-    from pipeline.config import SFAICENTER_PATH
+    from tools import SFAICENTER_PATH
 
 # AnswerTypeClassifier import
 try:

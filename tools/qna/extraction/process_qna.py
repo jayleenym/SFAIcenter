@@ -9,7 +9,10 @@ from typing import List, Dict, Any
 # tools/core/utils.py에서 FileManager import
 # tools/qna/qna_processor.py에서 TagProcessor import
 current_dir = os.path.dirname(os.path.abspath(__file__))
-tools_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))  # qna/extraction -> qna -> tools
+# tools 모듈 import를 위한 경로 설정
+_temp_tools_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))  # qna/extraction -> qna -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
 sys.path.insert(0, tools_dir)
 from core.llm_query import LLMQuery
 from core.utils import FileManager
