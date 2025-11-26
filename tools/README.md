@@ -146,7 +146,12 @@ tools/
   - Output: `eval_data/8_multiple_exam_+/{set_name}/` ({exam_name}_exam_transformed.json, {exam_name}_missing.json, STATS_{set_name}.md)
   - `load_transformed_questions`, `create_transformed_exam` 유틸리티 사용
 - `Step9MultipleEssay`: 객관식 문제를 서술형 문제로 변환
-  - Output: `eval_data/9_multiple_to_essay/` (best_ans.json, questions/essay_questions_{set_name}.json)
+  - 0단계: 해설이 많은 문제 선별 → `full_explanation.json`
+  - 1단계: 시험별로 분류 → `questions/essay_questions_{round_folder}.json`
+  - 2단계: 키워드 추출 → `questions/essay_questions_w_keyword_{round_folder}.json`
+  - 3단계: 모범답안 생성 → `answers/best_ans_{round_folder}.json`
+  - 4단계: 모델 답변 생성 → `answers/{round_folder}/{model_name}_{round_number}.json`
+  - `steps` 파라미터로 특정 단계만 선택 실행 가능 (예: [0, 1, 2] 또는 [3])
   - `create_essay_with_keywords.py`의 함수들을 사용하여 서술형 문제 변환
   - `classify_essay_by_exam.py`를 사용하여 시험별로 분류
   - `models` 옵션이 있으면 `multi_essay_answer.py`를 사용하여 모델 답변 생성
@@ -325,7 +330,11 @@ main_pipeline.py → 전체 프로세스 실행
 ├── Step 8: 변형 문제를 포함한 시험지 생성 (1st~5th 세트 처리)
 │   └── Output: eval_data/8_multiple_exam_+/{set_name}/ ({exam_name}_exam_transformed.json, {exam_name}_missing.json, STATS_{set_name}.md)
 └── Step 9: 객관식 문제를 서술형 문제로 변환
-    └── Output: eval_data/9_multiple_to_essay/ (best_ans.json, questions/essay_questions_{set_name}.json)
+    ├── 0단계: 해설이 많은 문제 선별 → full_explanation.json
+    ├── 1단계: 시험별로 분류 → questions/essay_questions_{round_folder}.json
+    ├── 2단계: 키워드 추출 → questions/essay_questions_w_keyword_{round_folder}.json
+    ├── 3단계: 모범답안 생성 → answers/best_ans_{round_folder}.json
+    └── 4단계: 모델 답변 생성 → answers/{round_folder}/{model_name}_{round_number}.json
 ```
 
 ### 개별 단계 실행
@@ -394,12 +403,16 @@ pipeline/steps/step8_create_transformed_exam.py → 변형 문제를 포함한 �
 
 ```
 pipeline/steps/step9_multiple_essay.py → 객관식 문제를 서술형 문제로 변환
-  ├── create_essay_with_keywords.py의 함수들 실행
-  │   ├── filter_full_explanation_questions: 해설이 완전한 문제 선별
-  │   ├── extract_keywords: 키워드 추출
-  │   └── create_best_answers: 모범답안 생성
-  ├── classify_essay_by_exam.py 실행: 시험별로 분류
-  └── models 옵션이 있으면 multi_essay_answer.py 실행: 모델 답변 생성
+  ├── 0단계: filter_full_explanation - 해설이 많은 문제 선별
+  │   └── Output: full_explanation.json
+  ├── 1단계: classify_essay_by_exam - 시험별로 분류
+  │   └── Output: questions/essay_questions_{round_folder}.json
+  ├── 2단계: extract_keywords - 키워드 추출
+  │   └── Output: questions/essay_questions_w_keyword_{round_folder}.json
+  ├── 3단계: create_best_answers - 모범답안 생성
+  │   └── Output: answers/best_ans_{round_folder}.json
+  └── 4단계: process_essay_questions - 모델 답변 생성 (models 옵션이 있을 때만)
+      └── Output: answers/{round_folder}/{model_name}_{round_number}.json
 ```
 
 ## 🎯 사용 방법
@@ -482,13 +495,19 @@ python tools/main_pipeline.py --steps create_transformed_exam
 # 8단계: 변형 문제를 포함한 시험지 생성 (특정 세트만 처리: 1, 2, 3세트)
 python tools/main_pipeline.py --steps create_transformed_exam --create_transformed_exam_sets 1 2 3
 
-# 9단계: 객관식 문제를 서술형 문제로 변환
+# 9단계: 객관식 문제를 서술형 문제로 변환 (모든 단계 실행)
 python tools/main_pipeline.py --steps evaluate_essay
 
-# 9단계: 서술형 문제 변환 + 모델 답변 생성
+# 9단계: 0-2단계만 실행 (해설 선별, 시험별 분류, 키워드 추출)
+python tools/main_pipeline.py --steps evaluate_essay --essay_steps 0 1 2
+
+# 9단계: 3단계만 실행 (모범답안 생성)
+python tools/main_pipeline.py --steps evaluate_essay --essay_steps 3
+
+# 9단계: 서술형 문제 변환 + 모델 답변 생성 (모든 단계)
 python tools/main_pipeline.py --steps evaluate_essay --essay_models google/gemini-2.5-pro openai/gpt-5 --essay_sets 1 2 3
 
-# 9단계: 서술형 문제 변환 + 모델 답변 생성
+# 9단계: 서술형 문제 변환 + 모델 답변 생성 (특정 세트만)
 python tools/main_pipeline.py --steps evaluate_essay --essay_models google/gemini-2.5-pro openai/gpt-5
 
 # 커스텀 경로 지정
@@ -578,6 +597,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 | `--essay_models`          | 모델 답변 생성할 모델 목록 (공백으로 구분, None이면 답변 생성 안 함)        | None                 |
 | `--essay_sets`            | 처리할 세트 번호 리스트 (공백으로 구분, 예: 1 2 3, models가 있을 때만 사용) | None (1~5 모두 처리) |
 | `--essay_use_server_mode` | vLLM 서버 모드 사용 (models가 있을 때만 사용)                               | False                |
+| `--essay_steps`            | 실행할 단계 리스트 (공백으로 구분, 예: 0 1 2 또는 3). None이면 모든 단계 실행 (0-4) | None (모든 단계 실행) |
 
 **참고:**
 
@@ -633,7 +653,8 @@ result = pipeline.step8.execute(sets=[1, 2, 3])
 result = pipeline.step9.execute(
     models=['google/gemini-2.5-pro', 'openai/gpt-5'],
     sets=[1, 2, 3],
-    eval_model='google/gemini-2.5-flash'
+    use_server_mode=False,
+    steps=[0, 1, 2, 3, 4]  # None이면 모든 단계 실행
 )
 ```
 
@@ -895,12 +916,22 @@ should_include = should_include_qna_item(qna_item, qna_type)
 **9단계 (객관식 문제를 서술형 문제로 변환)**
 
 - 9단계는 옳지 않은 객관식 문제를 서술형 문제로 변환합니다.
-- `create_essay_with_keywords.py`의 함수들을 사용하여:
-  - 해설이 완전한 문제 선별
-  - 키워드 추출
-  - 모범답안 생성
-- `classify_essay_by_exam.py`를 사용하여 시험별로 분류합니다.
-- `--essay_models` 옵션을 사용하면 `multi_essay_answer.py`를 실행하여 모델 답변을 생성합니다.
+- **0단계**: `filter_full_explanation()` - 해설이 모든 선지를 포함하는 문제만 선별
+  - 입력: `7_multiple_rw/answer_type_classified.json` (answer_type='wrong'인 문제)
+  - 출력: `9_multiple_to_essay/full_explanation.json`
+- **1단계**: `classify_essay_by_exam.py` - 시험별로 분류
+  - 입력: `9_multiple_to_essay/full_explanation.json`
+  - 출력: `9_multiple_to_essay/questions/essay_questions_{round_folder}.json` (1st, 2nd, 3rd, 4th, 5th)
+- **2단계**: `extract_keywords()` - 키워드 추출
+  - 입력: `9_multiple_to_essay/questions/essay_questions_{round_folder}.json`
+  - 출력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}.json`
+- **3단계**: `create_best_answers()` - 모범답안 생성
+  - 입력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}.json`
+  - 출력: `9_multiple_to_essay/answers/best_ans_{round_folder}.json`
+- **4단계**: `process_essay_questions()` - 모델 답변 생성 (`--essay_models` 옵션이 있을 때만)
+  - 입력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}.json`
+  - 출력: `9_multiple_to_essay/answers/{round_folder}/{model_name}_{round_number}.json`
+- `--essay_steps` 옵션으로 특정 단계만 선택 실행 가능 (예: `--essay_steps 0 1 2` 또는 `--essay_steps 3`)
 - 결과는 `evaluation/eval_data/9_multiple_to_essay/` 디렉토리에 저장됩니다.
 - 서술형 문제 평가는 6단계에서 `--eval_essay` 옵션을 사용할 때 수행됩니다.
 - `--eval_essay`는 `--eval_transformed`와 독립적으로 사용할 수 있으며, 함께 사용할 수도 있습니다.

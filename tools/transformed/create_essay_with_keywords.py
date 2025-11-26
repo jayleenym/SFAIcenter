@@ -13,11 +13,19 @@ import json
 import sys
 from tqdm import tqdm
 
+# tools 모듈 import를 위한 경로 설정 (모듈로 사용될 때를 대비)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+_temp_tools_dir = os.path.dirname(current_dir)  # transformed -> tools
+if _temp_tools_dir not in sys.path:
+    sys.path.insert(0, _temp_tools_dir)
+
 # 독립 실행 시와 모듈로 사용 시 import 처리
 if __name__ == '__main__':
     # 독립 실행 시: 절대 경로 import
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-    from tools.pipeline.config import ONEDRIVE_PATH
+    project_root = os.path.dirname(_temp_tools_dir)  # tools -> project_root
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    from tools import ONEDRIVE_PATH
     from tools.core.llm_query import LLMQuery
     from tools.core.logger import setup_logger
     
@@ -30,9 +38,18 @@ if __name__ == '__main__':
         use_file=True
     )
 else:
-    # 모듈로 사용 시: 상대 경로 import
-    from ..pipeline.config import ONEDRIVE_PATH
-    from ..core.llm_query import LLMQuery
+    # 모듈로 사용 시: tools 경로가 이미 설정되어 있다고 가정
+    try:
+        from tools import ONEDRIVE_PATH
+        from tools.core.llm_query import LLMQuery
+    except ImportError:
+        # fallback: 상대 경로 import 시도
+        from ..core.llm_query import LLMQuery
+        # ONEDRIVE_PATH는 tools.__init__에서 가져와야 하므로 경로 설정 필요
+        from tools import tools_dir
+        if tools_dir not in sys.path:
+            sys.path.insert(0, tools_dir)
+        from tools import ONEDRIVE_PATH
     logger = None
 
 
@@ -51,14 +68,47 @@ def is_full_explanation(llm, question, answer, options, explanation):
     return response.strip()
 
 
-def filter_full_explanation_questions(llm, wrong_questions):
-    """옳지 않은 문제 중 해설이 모든 선지를 포함하는 문제만 선별"""
+def filter_full_explanation(llm=None, onedrive_path=None, log_func=None):
+    """
+    0단계: 옳지 않은 문제 중 해설이 많은 문제 선별
+    
+    Args:
+        llm: LLMQuery 인스턴스 (None이면 새로 생성)
+        onedrive_path: OneDrive 경로 (None이면 ONEDRIVE_PATH 사용)
+        log_func: 로깅 함수 (None이면 logger.info 또는 print 사용)
+    
+    Returns:
+        int: 선별된 문제 개수
+    """
+    llm, onedrive_path, log_func = _init_common(llm, onedrive_path, log_func)
+    
+    classified_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw')
+    essay_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '9_multiple_to_essay')
+    
+    classified_file = os.path.join(classified_dir, 'answer_type_classified.json')
+    output_file = os.path.join(essay_dir, 'full_explanation.json')
+    
+    os.makedirs(essay_dir, exist_ok=True)
+    
+    # 입력 파일 확인
+    if not os.path.exists(classified_file):
+        log_func(f"오류: 입력 파일이 존재하지 않습니다: {classified_file}")
+        return 0
+    
+    # 입력 파일 읽기
+    log_func(f"0단계 입력 파일 읽기: {classified_file}")
+    with open(classified_file, 'r', encoding='utf-8') as f:
+        classified_data = json.load(f)
+    
+    # answer_type이 'wrong'인 문제만 필터링
+    wrong_questions = [p for p in classified_data if p.get('answer_type') == 'wrong']
+    log_func(f"옳지 않은 문제: {len(wrong_questions)}개")
+    
+    # 해설이 모든 선지를 포함하는 문제만 선별
     full_explanation = []
     notfull_explanation = []
     fail = []
     
-    # 로거 사용 (독립 실행 시)
-    log_func = logger.info if logger else print
     log_func("해설이 많은 문제 선별 중...")
     for wd in tqdm(wrong_questions, desc="해설 검증"):
         if wd['explanation'] == '':
@@ -79,39 +129,74 @@ def filter_full_explanation_questions(llm, wrong_questions):
             else:
                 fail.append(wd)
     
-    log_func = logger.info if logger else print
     log_func(f"\n선별 결과:")
     log_func(f"  - full (해설 완전): {len(full_explanation)}개")
     log_func(f"  - notfull (해설 불완전): {len(notfull_explanation)}개")
     log_func(f"  - fail (분류 실패): {len(fail)}개")
     log_func(f"  - 총합: {len(full_explanation) + len(notfull_explanation) + len(fail)}개")
     
-    return full_explanation
+    questions = full_explanation
+    
+    # 결과 저장
+    log_func(f"0단계 저장: {output_file}")
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(questions, f, ensure_ascii=False, indent=4)
+    
+    log_func(f"0단계 완료! 총 {len(questions)}개의 문제가 {output_file}에 저장되었습니다.")
+    return len(questions)
 
 
-def extract_keywords(llm, questions):
-    """키워드 추출 및 서술형 문제 변환"""
-#     system_prompt = """
-# 아래 #요청사항#을 정확하게 이해한 후 #입력#에 틀림없이, 정교하게 적용하여 #출력#을 도출하시오.
-# #요청사항#
-# 1. 주어진 questions 키 값이 가진 주요 주제를 먼저 식별하라.
-# 2. 주어진 options은 questions 키 값을 설명하는 contents이다. '옳지 않은' 선지(answer 1개)의 해설과 옳은' 선지(answer외 3~4개)에서 문제의 주요 주제를 설명하기에 핵심적인 의미라고 판단되는 명사형 단어 또는 파생 명사 1개씩 추출하라. 
-# 조사를 반드시 제외하고 순수한 명사 또는 핵심 명사구만 추출하라.
-# 3. 키워드는 주제와 겹치지 않도록 추출하라. 중복된 키워드는 제거하라. 총 5개 이내로 추출하라.
-# 4. 단, 단어,표현 추출은 원문이 가진 텍스트 원본을 그대로 유지하라. 반드시 유지해서 추출하라
-# 예1) 재화가격의 인상을 통해서
-# 올바른 추출 예시 : 재화가격의 인상
-# 틀린 추출 예시 : 재화가격 인상, 재화가격의 인상을 통해서,
-# 예2) 소비자에게 전가될 수 있다
-# 올바른 추출 예시 : 소비자에게 전가
-# 틀린 추출 예시 : 소비자 전가
+# 공통 상수
+ROUND_NUMBER_TO_FOLDER = {'1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th'}
 
-# #출력 형식#
-# - 서술형 문제: 다음 키워드를 활용하여 [주제]에 관해 서술하시오.
-# - 키워드: [키워드1], [키워드2], [키워드3], [키워드4], [키워드5]
 
-# #입력#
-# """
+def _init_common(llm, onedrive_path, log_func):
+    """공통 초기화 함수"""
+    if onedrive_path is None:
+        onedrive_path = ONEDRIVE_PATH
+    if llm is None:
+        llm = LLMQuery()
+    if log_func is None:
+        log_func = logger.info if logger else print
+    return llm, onedrive_path, log_func
+
+
+def extract_keywords(llm=None, onedrive_path=None, log_func=None, round_number=None):
+    """
+    2단계: 키워드 추출만 수행
+    
+    Args:
+        llm: LLMQuery 인스턴스 (None이면 새로 생성)
+        onedrive_path: OneDrive 경로 (None이면 ONEDRIVE_PATH 사용)
+        log_func: 로깅 함수 (None이면 logger.info 또는 print 사용)
+        round_number: 회차 번호 (예: '1', '2', '3', '4', '5')
+    
+    Returns:
+        int: 처리된 문제 개수
+    """
+    llm, onedrive_path, log_func = _init_common(llm, onedrive_path, log_func)
+    
+    if not round_number:
+        log_func("오류: round_number가 필요합니다.")
+        return 0
+    
+    essay_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '9_multiple_to_essay')
+    round_folder = ROUND_NUMBER_TO_FOLDER.get(round_number, '1st')
+    input_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}.json')
+    output_file = os.path.join(essay_dir, 'questions', f'essay_questions_w_keyword_{round_folder}.json')
+    
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    
+    if not os.path.exists(input_file):
+        log_func(f"오류: 입력 파일이 존재하지 않습니다: {input_file}")
+        return 0
+    
+    log_func(f"2단계 입력 파일 읽기: {input_file}")
+    with open(input_file, 'r', encoding='utf-8') as f:
+        questions = json.load(f)
+    log_func(f"총 {len(questions)}개의 문제 처리 시작")
+    
+    # 키워드 추출
     system_prompt = """
 아래 #요청사항#을 정확하게 이해한 후, 틀림없이 #입력#에 적용하여 #출력#을 도출하시오.
 #요청사항#
@@ -120,6 +205,13 @@ def extract_keywords(llm, questions):
 3. explanation을 참고하여 '옳지 않은' 선지(answer 1개)의 해설과 '옳은' 선지(answer외 3~4개)에서 문제의 주요 주제를 설명하기에 핵심적인 의미라고 판단되는 명사형 단어 또는 파생 명사 1개씩 추출하라. 조사를 반드시 제외하고 순수한 명사 또는 핵심 명사구만 추출하라.
 4. 키워드는 주제와 겹치지 않도록 추출하라. 중복된 키워드는 제거하라. 총 5개 이내로 추출하라.
 5. 단, 단어,표현 추출은 원문이 가진 텍스트 원본을 그대로 유지하라. 반드시 유지해서 추출하라
+    - 예1) 재화가격의 인상을 통해서
+    - 올바른 추출 예시 : 재화가격의 인상
+    - 틀린 추출 예시 : 재화가격 인상, 재화가격의 인상을 통해서,
+    - 예2) 소비자에게 전가될 수 있다
+    - 올바른 추출 예시 : 소비자에게 전가
+    - 틀린 추출 예시 : 소비자 전가
+    
 #출력 형식#
 - 서술형 문제: 다음 키워드를 활용하여 [주제]에 관해 서술하시오.
 - 키워드: [키워드1], [키워드2], [키워드3], [키워드4], [키워드5]
@@ -127,7 +219,6 @@ def extract_keywords(llm, questions):
 #입력#
     """
     
-    log_func = logger.info if logger else print
     log_func("키워드 추출 중...")
     for q in tqdm(questions, desc="키워드 추출"):
         user_prompt = f"""
@@ -139,13 +230,62 @@ def extract_keywords(llm, questions):
 #출력#
 """
         response = llm.query_openrouter(system_prompt, user_prompt, model_name='google/gemini-2.5-flash')
-        q['essay_question'], q['essay_keyword'] = response.strip().split('\n')
-        q['essay_question'] = q['essay_question'].replace('서술형 문제: ', '').replace("[", "").replace("]", "").replace("-", "").strip()
-        q['essay_keyword'] = q['essay_keyword'].replace('키워드: ', '').replace("[", "").replace("]", "").replace("-", "").strip()
-    return questions
+        try:
+            q['essay_question'], q['essay_keyword'] = response.strip().split('\n')
+            q['essay_question'] = q['essay_question'].replace('서술형 문제: ', '').replace("[", "").replace("]", "").replace("-", "").strip()
+            q['essay_keyword'] = q['essay_keyword'].replace('키워드: ', '').replace("[", "").replace("]", "").replace("-", "").strip()
+        except Exception as e:
+            log_func(f"오류: 키워드 추출 실패 - {e}")
+            q['essay_question'] = response.strip()
+            q['essay_keyword'] = ''
+            continue
+        
+    
+    # 출력 저장
+    log_func(f"2단계 저장: {output_file}")
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(questions, f, ensure_ascii=False, indent=4)
+    
+    log_func(f"2단계 완료! 총 {len(questions)}개의 문제가 {output_file}에 저장되었습니다.")
+    return len(questions)
 
-def create_best_answers(llm, questions):
-    """모범답안 생성"""
+
+def create_best_answers(llm=None, onedrive_path=None, log_func=None, round_number=None):
+    """
+    3단계: 모범답안 생성만 수행
+    
+    Args:
+        llm: LLMQuery 인스턴스 (None이면 새로 생성)
+        onedrive_path: OneDrive 경로 (None이면 ONEDRIVE_PATH 사용)
+        log_func: 로깅 함수 (None이면 logger.info 또는 print 사용)
+        round_number: 회차 번호 (예: '1', '2', '3', '4', '5')
+    
+    Returns:
+        int: 처리된 문제 개수
+    """
+    llm, onedrive_path, log_func = _init_common(llm, onedrive_path, log_func)
+    
+    if not round_number:
+        log_func("오류: round_number가 필요합니다.")
+        return 0
+    
+    essay_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '9_multiple_to_essay')
+    round_folder = ROUND_NUMBER_TO_FOLDER.get(round_number, '1st')
+    input_file = os.path.join(essay_dir, 'questions', f'essay_questions_w_keyword_{round_folder}.json')
+    output_file = os.path.join(essay_dir, 'answers', f'best_ans_{round_folder}.json')
+    
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    
+    if not os.path.exists(input_file):
+        log_func(f"오류: 입력 파일이 존재하지 않습니다: {input_file}")
+        return 0
+    
+    log_func(f"3단계 입력 파일 읽기: {input_file}")
+    with open(input_file, 'r', encoding='utf-8') as f:
+        questions = json.load(f)
+    log_func(f"총 {len(questions)}개의 문제 처리 시작")
+    
+    # 모범답안 생성
     system_prompt = """
 당신은 주어진 여러 정보를 조합하여 서술형 문제에 대한 '모범답안'을 생성하는 AI입니다.
 
@@ -166,7 +306,6 @@ def create_best_answers(llm, questions):
 - 최종 결과물은 "모범답안:"으로 시작하는 완성된 형태의 글이어야 합니다.
 """
     
-    log_func = logger.info if logger else print
     log_func("모범답안 생성 중...")
     for q in tqdm(questions, desc="모범답안 생성"):
         user_prompt = f"""
@@ -180,93 +319,60 @@ def create_best_answers(llm, questions):
 """
         response = llm.query_openrouter(system_prompt, user_prompt, model_name='google/gemini-3-pro-preview')
         q['essay_answer'] = response.replace('모범답안:', '').strip()
+    
+    # 출력 저장
+    log_func(f"3단계 저장: {output_file}")
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(questions, f, ensure_ascii=False, indent=4)
+    
+    log_func(f"3단계 완료! 총 {len(questions)}개의 문제가 {output_file}에 저장되었습니다.")
+    return len(questions)
 
 
-def main(llm=None, onedrive_path=None, log_func=None):
+def main(llm=None, onedrive_path=None, log_func=None, round_number=None):
     """
-    메인 함수
+    메인 함수 (2단계와 3단계를 모두 수행)
     
     Args:
         llm: LLMQuery 인스턴스 (None이면 새로 생성)
         onedrive_path: OneDrive 경로 (None이면 ONEDRIVE_PATH 사용)
         log_func: 로깅 함수 (None이면 logger.info 또는 print 사용)
+        round_number: 회차 번호 (예: '1', '2', '3', '4', '5'). None이면 '1' 사용
     """
-    # 경로 설정
-    if onedrive_path is None:
-        onedrive_path = ONEDRIVE_PATH
+    llm, onedrive_path, log_func = _init_common(llm, onedrive_path, log_func)
     
-    classified_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw')
+    if not round_number:
+        round_number = '1'
+    
+    # 2단계: 키워드 추출
+    extract_keywords(
+        llm=llm,
+        onedrive_path=onedrive_path,
+        log_func=log_func,
+        round_number=round_number
+    )
+    
+    # 3단계: 모범답안 생성
+    create_best_answers(
+        llm=llm,
+        onedrive_path=onedrive_path,
+        log_func=log_func,
+        round_number=round_number
+    )
+    
+    # 결과 파일 확인
     essay_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '9_multiple_to_essay')
+    round_folder = ROUND_NUMBER_TO_FOLDER.get(round_number, '1st')
+    output_file = os.path.join(essay_dir, 'answers', f'best_ans_{round_folder}.json')
     
-    classified_file = os.path.join(classified_dir, 'answer_type_classified.json')
-    full_explanation_file = os.path.join(essay_dir, 'full_explanation.json')
-    intermediate_file = os.path.join(essay_dir, 'essay_w_keyword.json')
-    output_file = os.path.join(essay_dir, 'best_ans.json')
-    
-    # 디렉토리 생성
-    os.makedirs(essay_dir, exist_ok=True)
-    
-    # LLM 초기화
-    if llm is None:
-        llm = LLMQuery()
-    
-    # 로거 사용 (독립 실행 시 또는 파라미터로 전달된 경우)
-    if log_func is None:
-        log_func = logger.info if logger else print
-    
-    # # 0단계: 옳지 않은 문제 중 해설이 많은 문제 선별
-    # log_func(f"입력 파일 읽기: {classified_file}")
-    # with open(classified_file, 'r', encoding='utf-8') as f:
-    #     classified_data = json.load(f)
-    
-    # # answer_type이 'wrong'인 문제만 필터링
-    # wrong_questions = [p for p in classified_data if p.get('answer_type') == 'wrong']
-    # log_func(f"옳지 않은 문제: {len(wrong_questions)}개")
-    
-    # # 해설이 모든 선지를 포함하는 문제만 선별
-    # questions = filter_full_explanation_questions(llm, wrong_questions)
-    
-    # # 선별 결과 저장 (안전장치)
-    # log_func(f"\n선별 결과 저장: {full_explanation_file}")
-    # with open(full_explanation_file, 'w', encoding='utf-8') as f:
-    #     json.dump(questions, f, ensure_ascii=False, indent=4)
-    # questions = json.load(open(full_explanation_file, 'r', encoding='utf-8'))
-    questions = json.load(open(os.path.join(essay_dir, 'questions', 'essay_questions_1st.json'), 'r', encoding='utf-8'))
-    # exit()
-    log_func(f"\n총 {len(questions)}개의 문제 처리 시작")
-
-    
-    # 1단계: 키워드 추출
-    questions = extract_keywords(llm, questions[:10])
-    
-    # 중간 저장 (안전장치)
-    log_func(f"중간 저장: {intermediate_file}")
-    with open(intermediate_file, 'w', encoding='utf-8') as f:
-        json.dump(questions, f, ensure_ascii=False, indent=4)
-    exit()
-    
-    # 2단계: 모범답안 생성
-    create_best_answers(llm, questions)
-    
-    # 최종 저장
-    log_func(f"최종 저장: {output_file}")
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(questions, f, ensure_ascii=False, indent=4)
-    
-    # 중간 파일 삭제
-    if os.path.exists(intermediate_file):
-        os.remove(intermediate_file)
-        log_func(f"중간 파일 삭제 완료: {intermediate_file}")
-    
-    # 선별 결과 파일도 삭제 (이미 best_ans.json에 포함되어 있음)
-    if os.path.exists(full_explanation_file):
-        os.remove(full_explanation_file)
-        log_func(f"선별 결과 파일 삭제 완료: {full_explanation_file}")
-    
-    log_func(f"\n처리 완료! 총 {len(questions)}개의 문제가 {output_file}에 저장되었습니다.")
-    
-    return len(questions)
-
+    if os.path.exists(output_file):
+        with open(output_file, 'r', encoding='utf-8') as f:
+            questions = json.load(f)
+        log_func(f"\n처리 완료! 총 {len(questions)}개의 문제가 {output_file}에 저장되었습니다.")
+        return len(questions)
+    else:
+        log_func(f"오류: 출력 파일이 생성되지 않았습니다: {output_file}")
+        return 0
 
 if __name__ == '__main__':
     main()

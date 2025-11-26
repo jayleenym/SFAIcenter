@@ -11,49 +11,14 @@ import json
 import random
 from collections import defaultdict
 
-# 프로젝트 루트를 sys.path에 추가
-# 방법 1: 스크립트 파일 위치 기준
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root_from_script = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
-
-# 방법 2: 현재 작업 디렉토리 기준
-cwd = os.getcwd()
-project_root_from_cwd = None
-current = cwd
-for _ in range(10):  # 최대 10단계 상위로 검색
-    if os.path.exists(os.path.join(current, 'tools', 'pipeline', 'config.py')):
-        project_root_from_cwd = current
-        break
-    parent = os.path.dirname(current)
-    if parent == current:  # 루트에 도달
-        break
-    current = parent
-
-# 프로젝트 루트 선택 (우선순위: cwd 기준 > 스크립트 기준)
-project_root = None
-if project_root_from_cwd and os.path.exists(os.path.join(project_root_from_cwd, 'tools', 'pipeline', 'config.py')):
-    project_root = project_root_from_cwd
-elif os.path.exists(os.path.join(project_root_from_script, 'tools', 'pipeline', 'config.py')):
-    project_root = project_root_from_script
-
-if project_root and project_root not in sys.path:
-    sys.path.insert(0, project_root)
-else:
-    # 프로젝트 루트를 찾지 못한 경우
-    print("경고: 프로젝트 루트를 찾을 수 없습니다.")
-    print(f"스크립트 위치: {script_dir}")
-    print(f"현재 작업 디렉토리: {cwd}")
-    print(f"스크립트 기준 프로젝트 루트: {project_root_from_script}")
-    print(f"CWD 기준 프로젝트 루트: {project_root_from_cwd}")
-    print("\n프로젝트 루트 디렉토리에서 실행하거나, 다음 명령을 사용하세요:")
-    print("  python -m tools.transformed.classify_essay_by_exam")
-
-try:
-    from tools.pipeline.config import ONEDRIVE_PATH
-except ImportError as e:
-    print(f"\n오류: tools 모듈을 import할 수 없습니다: {e}")
-    print(f"현재 sys.path: {sys.path}")
-    sys.exit(1)
+# tools 모듈 import를 위한 경로 설정
+current_dir = os.path.dirname(os.path.abspath(__file__))
+_temp_tools_dir = os.path.dirname(current_dir)  # transformed -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir, ONEDRIVE_PATH
+project_root = os.path.dirname(tools_dir)  # tools -> project_root
+sys.path.insert(0, tools_dir)
+sys.path.insert(0, project_root)
     
 def load_exam_questions(exam_dir, exam_set_name):
     """

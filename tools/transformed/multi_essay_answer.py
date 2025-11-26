@@ -1,6 +1,19 @@
-from tools.pipeline.config import ONEDRIVE_PATH, PROJECT_ROOT_PATH
-import os, json, argparse, random, configparser
+import os
+import sys
+import json
+import argparse
+import random
+import configparser
 from tqdm import tqdm
+
+# tools 모듈 import를 위한 경로 설정 (모듈로 사용될 때를 대비)
+if __name__ != '__main__' or 'tools' not in sys.modules:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    _temp_tools_dir = os.path.dirname(current_dir)  # transformed -> tools
+    if _temp_tools_dir not in sys.path:
+        sys.path.insert(0, _temp_tools_dir)
+
+from tools import ONEDRIVE_PATH, PROJECT_ROOT_PATH
 from tools.core.llm_query import LLMQuery
 
 def get_api_key():
@@ -21,7 +34,16 @@ def get_api_key():
     return None
 
 def process_essay_questions(model, round_number, round_folder, selected_questions, api_key=None, use_server_mode=False):
-    """특정 모델과 회차에 대해 서술형 문제를 처리하는 함수"""
+    """특정 모델과 회차에 대해 서술형 문제를 처리하는 함수
+    
+    Args:
+        model: 모델 이름
+        round_number: 회차 번호 (예: '1', '2', '3', '4', '5')
+        round_folder: 회차 폴더명 (예: '1st', '2nd', '3rd', '4th', '5th') - 파일명에 사용
+        selected_questions: 선택된 문제 리스트
+        api_key: API 키
+        use_server_mode: 서버 모드 사용 여부
+    """
     llm = LLMQuery(api_key=api_key)
     
     # 서버 모드일 때 모델 로드
@@ -32,9 +54,9 @@ def process_essay_questions(model, round_number, round_folder, selected_question
     
     eval_model_answer = []
     mode_str = "[VLLM]" if use_server_mode else "[API]"
-    print(f"\n{mode_str} 답변 모델: {model}, 회차: {round_number} ({round_folder}), 선택된 문제 수: {len(selected_questions)}")
+    print(f"\n{mode_str} 답변 모델: {model}, 회차: {round_number}, 선택된 문제 수: {len(selected_questions)}")
     
-    for q in tqdm(selected_questions, desc=f"{model} - {round_folder}"):
+    for q in tqdm(selected_questions, desc=f"{model} - {round_number}"):
         user_prompt = f"""
 서술형 질문: {q['essay_question']}
 키워드: {q['essay_keyword']}
@@ -57,10 +79,11 @@ def process_essay_questions(model, round_number, round_folder, selected_question
     
     # 모델 이름에서 슬래시를 언더스코어로 변경하여 파일명에 사용
     model_name_for_file = model.replace('/', '_')
-    output_filename = f'{model_name_for_file}_answer.json'
+    # 4단계 출력: {model_name}_{round_number}.json
+    output_filename = f'{model_name_for_file}_{round_number}.json'
     
-    # 저장 경로: 9_multiple_to_essay/{round_folder}/
-    output_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', round_folder)
+    # 저장 경로: 9_multiple_to_essay/answers/{round_folder}/
+    output_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '9_multiple_to_essay', 'answers', round_folder)
     os.makedirs(output_dir, exist_ok=True)
     
     output_path = os.path.join(output_dir, output_filename)
