@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Domain/Subdomain 채우기 모듈
-- 1_filter_with_tags의 파일들을 읽어서 domain/subdomain/is_calculation 채우기
+- 2_subdomain의 파일들을 읽어서 domain/subdomain/is_calculation 채우기
 - 기존 분류 데이터 활용 또는 API 호출
 """
 
@@ -79,7 +79,7 @@ class DomainFiller:
         # 1. {qna_type}.json 파일 읽기
         input_file = os.path.join(
             onedrive_path,
-            'evaluation', 'eval_data', '1_filter_with_tags', f'{input_file_name}.json'
+            'evaluation', 'eval_data', '2_subdomain', f'{input_file_name}.json'
         )
         
         if not os.path.exists(input_file):

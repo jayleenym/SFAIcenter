@@ -450,6 +450,36 @@ class QnASubdomainClassifier:
             filename = f"{self.mode}_subdomain_classified_ALL.json"
         return os.path.join(self.output_dir, filename)
     
+    def _delete_qna_type_file(self):
+        """~_classified_ALL.json 파일이 생성되면 {qna_type}.json 파일 삭제"""
+        # mode에 따른 파일명 매핑
+        qna_type_file_map = {
+            'multiple': 'multiple-choice.json',
+            'short': 'short-answer.json',
+            'essay': 'essay.json',
+            'etc': 'etc.json'
+        }
+        
+        # multiple-fail, multiple-re, short-fail 등의 특수 모드는 건너뛰기
+        if self.mode not in qna_type_file_map:
+            return
+        
+        # ~_classified_ALL.json 파일이 존재하는지 확인
+        all_file_path = self._get_output_filepath()
+        if not os.path.exists(all_file_path):
+            return
+        
+        # {qna_type}.json 파일 경로
+        qna_type_file = os.path.join(self.output_dir, qna_type_file_map[self.mode])
+        
+        # 파일이 존재하면 삭제
+        if os.path.exists(qna_type_file):
+            try:
+                os.remove(qna_type_file)
+                self.logger.info(f"{qna_type_file_map[self.mode]} 파일 삭제 완료 (~_classified_ALL.json 파일 생성됨)")
+            except Exception as e:
+                self.logger.warning(f"{qna_type_file_map[self.mode]} 파일 삭제 실패: {e}")
+    
     def _append_results(self, new_questions: List[Dict[str, Any]], 
                        fail_response: List, fail_question: List[Dict[str, Any]]):
         """새로운 결과를 기존 파일에 추가 (중복 체크)"""
@@ -539,6 +569,9 @@ class QnASubdomainClassifier:
             self.logger.info(f"최종 저장: 새 항목 {new_count}개 추가 (기존 {len(existing_questions) - new_count}개 + 새 {new_count}개 = 총 {len(existing_questions)}개)")
         else:
             self.logger.info(f"최종 저장: 기존 {len(existing_questions)}개 유지 (새 항목 없음)")
+        
+        # ~_classified_ALL.json 파일이 생성되면 {qna_type}.json 파일 삭제
+        self._delete_qna_type_file()
     
     def process_all_questions(self, data_path: str = None, questions: List[Dict[str, Any]] = None,
                               model: str = "x-ai/grok-4-fast", batch_size: int = 10) -> List[Dict[str, Any]]:

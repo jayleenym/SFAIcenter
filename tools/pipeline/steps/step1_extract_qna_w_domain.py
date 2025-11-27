@@ -5,9 +5,9 @@
 - 기존 step2, step3, step4를 통합
 1. ~_extracted_qna 파일들을 만들고 (qna/make_extracted_qna.py)
 2. 거기에서 필터링 조건에 따라 multiple/short-answer/essay/etc 로 구분하고 (qna/classify_qna_type.py)
-3. 각각 1_filter_with_tags에 저장해서 (qna/classify_qna_type.py)
+3. 각각 2_subdomain에 저장해서 (qna/classify_qna_type.py)
 4. domain/subdomain/is_calculation 을 채워서 (qna/fill_domain.py)
-5. 2_subdomain 폴더에 저장할거야. (qna/fill_domain.py)
+5. 2_subdomain 폴더에 ~_classified_ALL.json으로 저장할거야. (qna/fill_domain.py)
 """
 
 import os

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Q&A 타입 분류 모듈
-- _extracted_qna.json 파일들을 읽어서 타입별로 분류하여 1_filter_with_tags에 저장
+- _extracted_qna.json 파일들을 읽어서 타입별로 분류하여 2_subdomain에 저장
 """
 
 import os
@@ -55,7 +55,7 @@ class QnAClassifier:
             else:
                 extracted_dir = os.path.join(workbook_base, cycle_path_name)
         
-        output_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '1_filter_with_tags')
+        output_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '2_subdomain')
         os.makedirs(output_dir, exist_ok=True)
         
         # 모든 extracted_qna 파일 찾기

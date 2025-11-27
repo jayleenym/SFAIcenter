@@ -169,7 +169,7 @@ def main():
     if args.multiple_choice:
         multiple_choice_path = args.multiple_choice
     else:
-        multiple_choice_path = os.path.join(eval_dir, '1_filter_with_tags', 'multiple-choice.json')
+        multiple_choice_path = os.path.join(eval_dir, '2_subdomain', 'multiple-choice.json')
     
     # 출력 파일 경로 생성 (타임스탬프 포함)
     if args.output:

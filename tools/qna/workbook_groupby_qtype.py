@@ -150,7 +150,7 @@ def rearrange_data(data_path: list or str = None, qtype: str = None):
                 }
         rearranged_data.append(qna)
     print(f"정제된 {qtype} 수: ", len(rearranged_data))
-    with open(os.path.join(BRONZE_LAYER_1_DIR, f'{qtype}.json'), "w", encoding="utf-8") as f:
+    with open(os.path.join(BRONZE_LAYER_2_DIR, f'{qtype}.json'), "w", encoding="utf-8") as f:
         json.dump(rearranged_data, f, ensure_ascii=False, indent=4)
 
 
