@@ -46,9 +46,12 @@ tools/
 │   ├── transform_multiple_choice.py    # MultipleChoiceTransformer 클래스 (객관식 변형)
 │   ├── load_transformed_questions.py    # 변형된 문제 로드 유틸리티
 │   ├── create_transformed_exam.py      # 변형된 시험지 생성 유틸리티
-│   ├── classify_essay_by_exam.py       # 서술형 문제 시험별 분류
-│   ├── create_essay_with_keywords.py   # 키워드 포함 서술형 문제 생성
-│   └── multi_essay_answer.py           # 서술형 문제 모델 답변 생성
+│   ├── essay_filter_full_explanation.py    # 1단계: 해설이 많은 문제 선별
+│   ├── essay_classify_by_exam.py          # 2단계: 서술형 문제 시험별 분류
+│   ├── essay_change_question_to_essay.py  # 3단계: 서술형 문제로 변환
+│   ├── essay_extract_keywords.py          # 4단계: 키워드 추출
+│   ├── essay_create_best_answers.py       # 5단계: 모범답안 생성
+│   └── essay_create_model_answers.py      # 모델 답변 생성
 │
 ├── exam/                    # 시험지 생성 및 검증
 │   ├── __init__.py
@@ -147,14 +150,15 @@ tools/
   - `load_transformed_questions`, `create_transformed_exam` 유틸리티 사용
 - `Step9MultipleEssay`: 객관식 문제를 서술형 문제로 변환
   - 0단계: 해설이 많은 문제 선별 → `full_explanation.json`
-  - 1단계: 시험별로 분류 → `questions/essay_questions_{round_folder}.json`
-  - 2단계: 키워드 추출 → `questions/essay_questions_w_keyword_{round_folder}.json`
-  - 3단계: 모범답안 생성 → `answers/best_ans_{round_folder}.json`
-  - 4단계: 모델 답변 생성 → `answers/{round_folder}/{model_name}_{round_number}.json`
-  - `steps` 파라미터로 특정 단계만 선택 실행 가능 (예: [0, 1, 2] 또는 [3])
-  - `create_essay_with_keywords.py`의 함수들을 사용하여 서술형 문제 변환
-  - `classify_essay_by_exam.py`를 사용하여 시험별로 분류
-  - `models` 옵션이 있으면 `multi_essay_answer.py`를 사용하여 모델 답변 생성
+  - 1단계: 해설이 많은 문제 선별 → `full_explanation.json`
+  - 2단계: 시험별로 분류 → `questions/essay_questions_{round_folder}.json`
+  - 3단계: 서술형 문제로 변환 → `questions/essay_questions_{round_folder}_서술형문제로변환.json`
+  - 4단계: 키워드 추출 → `questions/essay_questions_w_keyword_{round_folder}_서술형답변에서키워드추출.json`
+  - 5단계: 모범답안 생성 → `answers/best_ans_{round_folder}.json`
+  - 모델 답변 생성 → `answers/{round_folder}/{model_name}_{round_number}.json`
+  - `steps` 파라미터로 특정 단계만 선택 실행 가능 (예: [1, 2, 3] 또는 [4, 5])
+  - 각 단계별로 독립적인 파일로 분리되어 있음
+  - `models` 옵션이 있으면 `essay_create_model_answers.py`를 사용하여 모델 답변 생성
 
 ### 🔧 core/ - 핵심 유틸리티
 
@@ -242,15 +246,27 @@ tools/
 
 - `create_transformed_exam()`: 원본 시험지의 각 문제에 대해 변형된 문제를 찾아서 새로운 시험지 생성
 
-**classify_essay_by_exam.py** - 서술형 문제 시험별 분류
+**essay_filter_full_explanation.py** - 1단계: 해설이 많은 문제 선별
 
-- 서술형 문제를 시험별로 분류
+- 옳지 않은 문제 중 해설이 모든 선지를 포함하는 문제 선별
 
-**create_essay_with_keywords.py** - 키워드 포함 서술형 문제 생성
+**essay_classify_by_exam.py** - 2단계: 서술형 문제 시험별 분류
 
-- 키워드를 포함한 서술형 문제 생성
+- 서술형 문제를 시험별로 분류하여 회차별 파일 생성
 
-**multi_essay_answer.py** - 서술형 문제 모델 답변 생성
+**essay_change_question_to_essay.py** - 3단계: 서술형 문제로 변환
+
+- 객관식 문제를 서술형 문제로 변환
+
+**essay_extract_keywords.py** - 4단계: 키워드 추출
+
+- 서술형 답변 작성에 필요한 키워드 추출
+
+**essay_create_best_answers.py** - 5단계: 모범답안 생성
+
+- 키워드를 포함한 모범답안 생성
+
+**essay_create_model_answers.py** - 모델 답변 생성
 
 - 서술형 문제에 대한 모델 답변 생성
 
@@ -403,15 +419,17 @@ pipeline/steps/step8_create_transformed_exam.py → 변형 문제를 포함한 �
 
 ```
 pipeline/steps/step9_multiple_essay.py → 객관식 문제를 서술형 문제로 변환
-  ├── 0단계: filter_full_explanation - 해설이 많은 문제 선별
+  ├── 1단계: filter_full_explanation - 해설이 많은 문제 선별
   │   └── Output: full_explanation.json
-  ├── 1단계: classify_essay_by_exam - 시험별로 분류
+  ├── 2단계: classify_essay_by_exam - 시험별로 분류
   │   └── Output: questions/essay_questions_{round_folder}.json
-  ├── 2단계: extract_keywords - 키워드 추출
-  │   └── Output: questions/essay_questions_w_keyword_{round_folder}.json
-  ├── 3단계: create_best_answers - 모범답안 생성
+  ├── 3단계: change_question_to_essay - 서술형 문제로 변환
+  │   └── Output: questions/essay_questions_{round_folder}_서술형문제로변환.json
+  ├── 4단계: extract_keywords - 키워드 추출
+  │   └── Output: questions/essay_questions_w_keyword_{round_folder}_서술형답변에서키워드추출.json
+  ├── 5단계: create_best_answers - 모범답안 생성
   │   └── Output: answers/best_ans_{round_folder}.json
-  └── 4단계: process_essay_questions - 모델 답변 생성 (models 옵션이 있을 때만)
+  └── 모델 답변 생성: process_essay_questions (models 옵션이 있을 때만)
       └── Output: answers/{round_folder}/{model_name}_{round_number}.json
 ```
 
@@ -916,22 +934,25 @@ should_include = should_include_qna_item(qna_item, qna_type)
 **9단계 (객관식 문제를 서술형 문제로 변환)**
 
 - 9단계는 옳지 않은 객관식 문제를 서술형 문제로 변환합니다.
-- **0단계**: `filter_full_explanation()` - 해설이 모든 선지를 포함하는 문제만 선별
+- **1단계**: `essay_filter_full_explanation.py` - 해설이 모든 선지를 포함하는 문제만 선별
   - 입력: `7_multiple_rw/answer_type_classified.json` (answer_type='wrong'인 문제)
   - 출력: `9_multiple_to_essay/full_explanation.json`
-- **1단계**: `classify_essay_by_exam.py` - 시험별로 분류
+- **2단계**: `essay_classify_by_exam.py` - 시험별로 분류
   - 입력: `9_multiple_to_essay/full_explanation.json`
   - 출력: `9_multiple_to_essay/questions/essay_questions_{round_folder}.json` (1st, 2nd, 3rd, 4th, 5th)
-- **2단계**: `extract_keywords()` - 키워드 추출
+- **3단계**: `essay_change_question_to_essay.py` - 서술형 문제로 변환
   - 입력: `9_multiple_to_essay/questions/essay_questions_{round_folder}.json`
-  - 출력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}.json`
-- **3단계**: `create_best_answers()` - 모범답안 생성
-  - 입력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}.json`
+  - 출력: `9_multiple_to_essay/questions/essay_questions_{round_folder}_서술형문제로변환.json`
+- **4단계**: `essay_extract_keywords.py` - 키워드 추출
+  - 입력: `9_multiple_to_essay/questions/essay_questions_{round_folder}_서술형문제로변환.json`
+  - 출력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}_서술형답변에서키워드추출.json`
+- **5단계**: `essay_create_best_answers.py` - 모범답안 생성
+  - 입력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}_서술형답변에서키워드추출.json`
   - 출력: `9_multiple_to_essay/answers/best_ans_{round_folder}.json`
-- **4단계**: `process_essay_questions()` - 모델 답변 생성 (`--essay_models` 옵션이 있을 때만)
-  - 입력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}.json`
+- **모델 답변 생성**: `essay_create_model_answers.py` - 모델 답변 생성 (`--essay_models` 옵션이 있을 때만)
+  - 입력: `9_multiple_to_essay/questions/essay_questions_w_keyword_{round_folder}_서술형답변에서키워드추출.json`
   - 출력: `9_multiple_to_essay/answers/{round_folder}/{model_name}_{round_number}.json`
-- `--essay_steps` 옵션으로 특정 단계만 선택 실행 가능 (예: `--essay_steps 0 1 2` 또는 `--essay_steps 3`)
+- `--essay_steps` 옵션으로 특정 단계만 선택 실행 가능 (예: `--essay_steps 1 2 3` 또는 `--essay_steps 4 5`)
 - 결과는 `evaluation/eval_data/9_multiple_to_essay/` 디렉토리에 저장됩니다.
 - 서술형 문제 평가는 6단계에서 `--eval_essay` 옵션을 사용할 때 수행됩니다.
 - `--eval_essay`는 `--eval_transformed`와 독립적으로 사용할 수 있으며, 함께 사용할 수도 있습니다.

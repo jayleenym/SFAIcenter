@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 9단계: 객관식 문제를 서술형 문제로 변환
-- 옳지 않은 문제 중 해설이 많은 문제 선별
-- 키워드 추출 및 모범답안 생성
-- 시험별로 분류
+- 1단계: 해설이 많은 문제 선별
+- 2단계: 시험별로 분류
+- 3단계: 서술형 문제로 변환
+- 4단계: 키워드 추출
+- 5단계: 모범답안 생성
 - 모델 답변 생성 (선택적)
 """
 
@@ -24,26 +26,22 @@ sys.path.insert(0, tools_dir)
 
 try:
     # tools.transformed를 통해 import 시도
-    from tools.transformed.create_essay_with_keywords import (
-        main as create_essay_main,
-        extract_keywords,
-        create_best_answers,
-        filter_full_explanation
-    )
-    from tools.transformed.classify_essay_by_exam import main as classify_essay_by_exam_main
-    from tools.transformed.multi_essay_answer import process_essay_questions, get_api_key
+    from tools.transformed.essay_filter_full_explanation import filter_full_explanation
+    from tools.transformed.essay_change_question_to_essay import change_question_to_essay
+    from tools.transformed.essay_extract_keywords import extract_keywords
+    from tools.transformed.essay_create_best_answers import create_best_answers
+    from tools.transformed.essay_classify_by_exam import main as classify_essay_by_exam_main
+    from tools.transformed.essay_create_model_answers import process_essay_questions, get_api_key
     from tools.core.llm_query import LLMQuery
 except ImportError:
     try:
         # fallback: transformed를 직접 import 시도
-        from transformed.create_essay_with_keywords import (
-            main as create_essay_main,
-            extract_keywords,
-            create_best_answers,
-            filter_full_explanation
-        )
-        from transformed.classify_essay_by_exam import main as classify_essay_by_exam_main
-        from transformed.multi_essay_answer import process_essay_questions, get_api_key
+        from transformed.essay_filter_full_explanation import filter_full_explanation
+        from transformed.essay_change_question_to_essay import change_question_to_essay
+        from transformed.essay_extract_keywords import extract_keywords
+        from transformed.essay_create_best_answers import create_best_answers
+        from transformed.essay_classify_by_exam import main as classify_essay_by_exam_main
+        from tools.transformed.essay_create_model_answers import process_essay_questions, get_api_key
         from core.llm_query import LLMQuery
     except ImportError as e:
         import traceback
@@ -52,10 +50,10 @@ except ImportError:
         logger = logging.getLogger(__name__)
         logger.error(f"Import error: {e}")
         logger.error(traceback.format_exc())
-        create_essay_main = None
+        filter_full_explanation = None
+        change_question_to_essay = None
         extract_keywords = None
         create_best_answers = None
-        filter_full_explanation = None
         classify_essay_by_exam_main = None
         process_essay_questions = None
         get_api_key = None
@@ -79,7 +77,12 @@ class Step9MultipleEssay(PipelineBase):
             models: 모델 답변 생성할 모델 목록 (None이면 답변 생성 안 함)
             sets: 처리할 세트 번호 리스트 (None이면 1~5 모두 처리, models가 있을 때만 사용)
             use_server_mode: vLLM 서버 모드 사용 (models가 있을 때만 사용)
-            steps: 실행할 단계 리스트 (예: [1, 2] 또는 [3] 등). None이면 모든 단계 실행
+            steps: 실행할 단계 리스트 (예: [1, 2] 또는 [3, 4, 5] 등). None이면 모든 단계(1-5) 실행
+                1단계: 해설이 많은 문제 선별
+                2단계: 시험별로 분류
+                3단계: 서술형 문제로 변환
+                4단계: 키워드 추출
+                5단계: 모범답안 생성
         
         Returns:
             dict: 실행 결과
@@ -94,8 +97,8 @@ class Step9MultipleEssay(PipelineBase):
                 self.logger.error("LLMQuery가 초기화되지 않았습니다.")
                 return {'success': False, 'error': 'LLMQuery 초기화 실패'}
             
-            if create_essay_main is None:
-                self.logger.error("transformed.create_essay_with_keywords 모듈을 import할 수 없습니다.")
+            if filter_full_explanation is None:
+                self.logger.error("transformed.essay_filter_full_explanation 모듈을 import할 수 없습니다.")
                 return {'success': False, 'error': '필수 모듈 import 실패'}
             
             # 경로 설정
@@ -106,11 +109,11 @@ class Step9MultipleEssay(PipelineBase):
             
             # 실행할 단계 결정 (None이면 모든 단계 실행)
             if steps is None:
-                steps = [0, 1, 2, 3, 4]
+                steps = [1, 2, 3, 4, 5]
             else:
-                steps = [s for s in steps if 0 <= s <= 4]
+                steps = [s for s in steps if 1 <= s <= 5]
                 if not steps:
-                    self.logger.error("유효한 단계가 없습니다. (0-4 사이의 숫자만 가능)")
+                    self.logger.error("유효한 단계가 없습니다. (1-5 사이의 숫자만 가능)")
                     return {'success': False, 'error': '유효하지 않은 단계 번호'}
             
             self.logger.info(f"실행할 단계: {steps}")
@@ -134,9 +137,9 @@ class Step9MultipleEssay(PipelineBase):
             total_questions = 0
             output_files = []
             
-            # 0단계: 해설이 많은 문제 선별
-            if 0 in steps:
-                self.logger.info("0단계: 해설이 많은 문제 선별 중...")
+            # 1단계: 해설이 많은 문제 선별
+            if 1 in steps:
+                self.logger.info("1단계: 해설이 많은 문제 선별 중...")
                 if filter_full_explanation is None:
                     self.logger.error("filter_full_explanation 함수를 import할 수 없습니다.")
                     return {'success': False, 'error': 'filter_full_explanation import 실패'}
@@ -147,39 +150,39 @@ class Step9MultipleEssay(PipelineBase):
                         onedrive_path=self.onedrive_path,
                         log_func=self.logger.info
                     )
-                    self.logger.info(f"0단계 완료: 총 {count}개의 문제 선별")
-                except Exception as e:
-                    self.logger.error(f"0단계 오류: {e}")
-                    import traceback
-                    self.logger.error(traceback.format_exc())
-                    return {'success': False, 'error': f'0단계 오류: {str(e)}'}
-            
-            # 1단계: 시험별로 분류
-            if 1 in steps:
-                self.logger.info("1단계: 시험별로 분류 중...")
-                try:
-                    if classify_essay_by_exam_main is None:
-                        self.logger.error("classify_essay_by_exam 모듈을 import할 수 없습니다.")
-                        return {'success': False, 'error': 'classify_essay_by_exam import 실패'}
-                    
-                    # classify_essay_by_exam_main은 모든 회차를 한 번에 처리하므로
-                    # sets가 있어도 전체를 처리하고, 이후 단계에서 sets에 해당하는 회차만 사용
-                    classify_essay_by_exam_main()
-                    self.logger.info("1단계 완료: 시험별 분류")
+                    self.logger.info(f"1단계 완료: 총 {count}개의 문제 선별")
                 except Exception as e:
                     self.logger.error(f"1단계 오류: {e}")
                     import traceback
                     self.logger.error(traceback.format_exc())
                     return {'success': False, 'error': f'1단계 오류: {str(e)}'}
             
-            # 2단계: 키워드 추출
+            # 2단계: 시험별로 분류
             if 2 in steps:
-                self.logger.info("2단계: 키워드 추출 중...")
-                if extract_keywords is None:
-                    self.logger.error("step2_extract_keywords 함수를 import할 수 없습니다.")
-                    return {'success': False, 'error': 'step2_extract_keywords import 실패'}
+                self.logger.info("2단계: 시험별로 분류 중...")
+                try:
+                    if classify_essay_by_exam_main is None:
+                        self.logger.error("essay_classify_by_exam 모듈을 import할 수 없습니다.")
+                        return {'success': False, 'error': 'essay_classify_by_exam import 실패'}
+                    
+                    # classify_essay_by_exam_main은 모든 회차를 한 번에 처리하므로
+                    # sets가 있어도 전체를 처리하고, 이후 단계에서 sets에 해당하는 회차만 사용
+                    classify_essay_by_exam_main()
+                    self.logger.info("2단계 완료: 시험별 분류")
+                except Exception as e:
+                    self.logger.error(f"2단계 오류: {e}")
+                    import traceback
+                    self.logger.error(traceback.format_exc())
+                    return {'success': False, 'error': f'2단계 오류: {str(e)}'}
+            
+            # 3단계: 서술형 문제로 변환
+            if 3 in steps:
+                self.logger.info("3단계: 서술형 문제로 변환 중...")
+                if change_question_to_essay is None:
+                    self.logger.error("essay_change_question_to_essay 함수를 import할 수 없습니다.")
+                    return {'success': False, 'error': 'essay_change_question_to_essay import 실패'}
                 
-                step2_total = 0
+                step3_total = 0
                 for round_number in round_numbers:
                     round_folder = round_number_to_folder[round_number]
                     input_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}.json')
@@ -188,7 +191,40 @@ class Step9MultipleEssay(PipelineBase):
                         self.logger.warning(f"입력 파일을 찾을 수 없습니다: {input_file}, 건너뜁니다.")
                         continue
                     
-                    self.logger.info(f"{round_number} 회차 2단계 처리 중...")
+                    self.logger.info(f"{round_number} 회차 3단계 처리 중...")
+                    try:
+                        count = change_question_to_essay(
+                            llm=self.llm_query,
+                            onedrive_path=self.onedrive_path,
+                            log_func=self.logger.info,
+                            round_number=round_number
+                        )
+                        step3_total += count
+                    except Exception as e:
+                        self.logger.error(f"{round_number} 회차 3단계 오류: {e}")
+                        import traceback
+                        self.logger.error(traceback.format_exc())
+                        continue
+                
+                self.logger.info(f"3단계 완료: 총 {step3_total}개의 문제 처리")
+            
+            # 4단계: 키워드 추출
+            if 4 in steps:
+                self.logger.info("4단계: 키워드 추출 중...")
+                if extract_keywords is None:
+                    self.logger.error("essay_extract_keywords 함수를 import할 수 없습니다.")
+                    return {'success': False, 'error': 'essay_extract_keywords import 실패'}
+                
+                step4_total = 0
+                for round_number in round_numbers:
+                    round_folder = round_number_to_folder[round_number]
+                    input_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}_서술형문제로변환.json')
+                    
+                    if not os.path.exists(input_file):
+                        self.logger.warning(f"입력 파일을 찾을 수 없습니다: {input_file}, 건너뜁니다.")
+                        continue
+                    
+                    self.logger.info(f"{round_number} 회차 4단계 처리 중...")
                     try:
                         count = extract_keywords(
                             llm=self.llm_query,
@@ -196,33 +232,33 @@ class Step9MultipleEssay(PipelineBase):
                             log_func=self.logger.info,
                             round_number=round_number
                         )
-                        step2_total += count
+                        step4_total += count
                     except Exception as e:
-                        self.logger.error(f"{round_number} 회차 2단계 오류: {e}")
+                        self.logger.error(f"{round_number} 회차 4단계 오류: {e}")
                         import traceback
                         self.logger.error(traceback.format_exc())
                         continue
                 
-                self.logger.info(f"2단계 완료: 총 {step2_total}개의 문제 처리")
+                self.logger.info(f"4단계 완료: 총 {step4_total}개의 문제 처리")
             
-            # 3단계: 모범답안 생성
-            if 3 in steps:
-                self.logger.info("3단계: 모범답안 생성 중...")
+            # 5단계: 모범답안 생성
+            if 5 in steps:
+                self.logger.info("5단계: 모범답안 생성 중...")
                 if create_best_answers is None:
-                    self.logger.error("create_best_answers 함수를 import할 수 없습니다.")
-                    return {'success': False, 'error': 'create_best_answers import 실패'}
+                    self.logger.error("essay_create_best_answers 함수를 import할 수 없습니다.")
+                    return {'success': False, 'error': 'essay_create_best_answers import 실패'}
                 
-                step3_total = 0
+                step5_total = 0
                 for round_number in round_numbers:
                     round_folder = round_number_to_folder[round_number]
-                    input_file = os.path.join(essay_dir, 'questions', f'essay_questions_w_keyword_{round_folder}.json')
+                    input_file = os.path.join(essay_dir, 'questions', f'essay_questions_w_keyword_{round_folder}_서술형답변에서키워드추출.json')
                     output_file = os.path.join(essay_dir, 'answers', f'best_ans_{round_folder}.json')
                     
                     if not os.path.exists(input_file):
                         self.logger.warning(f"입력 파일을 찾을 수 없습니다: {input_file}, 건너뜁니다.")
                         continue
                     
-                    self.logger.info(f"{round_number} 회차 3단계 처리 중...")
+                    self.logger.info(f"{round_number} 회차 5단계 처리 중...")
                     try:
                         count = create_best_answers(
                             llm=self.llm_query,
@@ -230,20 +266,20 @@ class Step9MultipleEssay(PipelineBase):
                             log_func=self.logger.info,
                             round_number=round_number
                         )
-                        step3_total += count
+                        step5_total += count
                         output_files.append(output_file)
                     except Exception as e:
-                        self.logger.error(f"{round_number} 회차 3단계 오류: {e}")
+                        self.logger.error(f"{round_number} 회차 5단계 오류: {e}")
                         import traceback
                         self.logger.error(traceback.format_exc())
                         continue
                 
-                total_questions = step3_total
-                self.logger.info(f"3단계 완료: 총 {step3_total}개의 문제 처리")
+                total_questions = step5_total
+                self.logger.info(f"5단계 완료: 총 {step5_total}개의 문제 처리")
             
-            # 4단계: 모델 답변 생성
-            if 4 in steps and models:
-                self.logger.info("4단계: 모델 답변 생성 중...")
+            # 모델 답변 생성 (선택적, steps와 별개)
+            if models:
+                self.logger.info("모델 답변 생성 중...")
                 
                 if process_essay_questions is None:
                     self.logger.error("transformed.multi_essay_answer 모듈을 import할 수 없습니다.")
@@ -278,9 +314,9 @@ class Step9MultipleEssay(PipelineBase):
                         round_number = str(set_num)
                         round_folder = round_number_to_folder.get(round_number, '1st')
                         
-                        # 각 회차별 파일에서 데이터 로드 (2단계 출력 파일 사용)
+                        # 각 회차별 파일에서 데이터 로드 (4단계 출력 파일 사용)
                         input_file = os.path.join(
-                            essay_dir, 'questions', f'essay_questions_w_keyword_{round_folder}.json'
+                            essay_dir, 'questions', f'essay_questions_w_keyword_{round_folder}_서술형답변에서키워드추출.json'
                         )
                         
                         if not os.path.exists(input_file):

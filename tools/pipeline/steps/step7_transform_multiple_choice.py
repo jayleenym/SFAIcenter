@@ -26,7 +26,7 @@ sys.path.insert(0, tools_dir)
 
 try:
     from qna.processing.answer_type_classifier import AnswerTypeClassifier
-    from transformed.transform_multiple_choice import MultipleChoiceTransformer
+    from tools.transformed.multiple_change_question_and_options import MultipleChoiceTransformer
 except ImportError:
     AnswerTypeClassifier = None
     MultipleChoiceTransformer = None

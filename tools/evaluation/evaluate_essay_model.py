@@ -450,7 +450,7 @@ def evaluate_single_model(model_name: str, question_file: str,
     # 파일 존재 확인
     if not os.path.exists(answer_file):
         print(f"경고: 모델 답변 파일을 찾을 수 없습니다: {answer_file}")
-        print(f"먼저 multi_essay_answer.py를 실행하여 모델 답변을 생성하세요.")
+        print(f"먼저 essay_create_model_answers.py를 실행하여 모델 답변을 생성하세요.")
         return None, None, None
     
     # 데이터 로드

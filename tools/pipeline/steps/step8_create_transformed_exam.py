@@ -25,8 +25,8 @@ from tools import tools_dir
 sys.path.insert(0, tools_dir)
 
 from statistics import StatisticsSaver
-from transformed.load_transformed_questions import load_transformed_questions
-from transformed.create_transformed_exam import create_transformed_exam
+from tools.transformed.multiple_load_transformed_questions import load_transformed_questions
+from tools.transformed.multiple_create_transformed_exam import create_transformed_exam
 
 
 class Step8CreateTransformedExam(PipelineBase):
