@@ -35,7 +35,7 @@ class Step1ExtractQnAWDomain(PipelineBase):
         super().__init__(base_path, config_path, onedrive_path, project_root_path)
         self._step_log_handler = None
     
-    def execute(self, cycle: Optional[int] = None, levels: List[str] = None, model: str = 'x-ai/grok-4-fast') -> Dict[str, Any]:
+    def execute(self, cycle: Optional[int] = None, levels: List[str] = None, model: str = 'x-ai/grok-4-fast', debug: bool = False) -> Dict[str, Any]:
         """
         1단계 실행: 추출 -> 분류 -> 도메인 채우기
         
@@ -43,6 +43,7 @@ class Step1ExtractQnAWDomain(PipelineBase):
             cycle: 사이클 번호 (None이면 모든 사이클)
             levels: 처리할 레벨 목록 (None이면 ['Lv2', 'Lv3_4', 'Lv5'])
             model: 도메인 분류에 사용할 LLM 모델
+            debug: 디버그 모드 (기존 파일 백업 및 활용, 기본값: False)
         """
         if cycle is None:
             self.logger.info("=== 1단계: Q&A 추출 및 Domain 분류 (모든 사이클) ===")
@@ -58,13 +59,13 @@ class Step1ExtractQnAWDomain(PipelineBase):
             # 1. Q&A 추출 (make_extracted_qna.py)
             self.logger.info("--- 1. Q&A 추출 시작 ---")
             maker = QnAMaker(self.file_manager, self.json_handler, self.logger)
-            extract_result = maker.process_cycle(cycle, levels, self.onedrive_path)
+            extract_result = maker.process_cycle(cycle, levels, self.onedrive_path, debug=debug)
             self.logger.info(f"Q&A 추출 완료: {extract_result}")
             
             # 2-3. 타입별 분류 및 저장 (classify_qna_type.py)
             self.logger.info("--- 2-3. 타입별 분류 시작 ---")
             classifier = QnAClassifier(self.file_manager, self.json_handler, self.logger)
-            classify_result = classifier.classify_and_save(cycle, self.onedrive_path)
+            classify_result = classifier.classify_and_save(cycle, self.onedrive_path, debug=debug)
             self.logger.info(f"타입별 분류 완료: {classify_result}")
             
             # 4-5. Domain/Subdomain 채우기 (fill_domain.py)
@@ -75,12 +76,27 @@ class Step1ExtractQnAWDomain(PipelineBase):
             # 분류된 모든 타입에 대해 수행
             for qna_type in classify_result.get('classified_data', {}).keys():
                 # etc는 제외할 수 있음 (필요에 따라)
-                if qna_type == 'etc':
-                    continue
+                # if qna_type == 'etc':
+                    # continue
                     
                 self.logger.info(f"[{qna_type}] 처리 중...")
-                result = filler.fill_domain(qna_type, model, self.onedrive_path)
+                result = filler.fill_domain(qna_type, model, self.onedrive_path, debug=debug)
                 fill_results[qna_type] = result
+                
+                # 통계 파일 생성
+                if result.get('success'):
+                    try:
+                        from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
+                        classifier = QnASubdomainClassifier(
+                            config_path=None,
+                            mode=qna_type,
+                            onedrive_path=self.onedrive_path,
+                            logger=self.logger
+                        )
+                        classifier.save_statistics()
+                        self.logger.info(f"[{qna_type}] 통계 파일 생성 완료")
+                    except Exception as e:
+                        self.logger.warning(f"[{qna_type}] 통계 파일 생성 실패: {e}")
             
             self.logger.info("Domain/Subdomain 채우기 완료")
             

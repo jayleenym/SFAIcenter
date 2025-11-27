@@ -3,16 +3,13 @@
 """
 메인 파이프라인 - 전체 프로세스 실행
 
-전체 프로세스:
-0. 텍스트 전처리 (Lv2 폴더) - 문장내 엔터 제거, 빈 챕터정보 채우기, 문단 병합(안함), 선지 텍스트 정규화
-1. 문제 추출 (Lv2, Lv3_4) - 문제/선지/정답/해설 추출 및 포맷화
-2. 전체 문제 추출 (Lv3, Lv3_4, Lv5) - 태그들을 재귀로 돌면서 전체 대치 시키고 ~_extracted_qna.json으로 저장
-3. qna_type별 분류 - multiple/short/essay/etc로 분류 및 필터링
-4. domain/subdomain/classification_reason/is_calculation 빈칸 채우기 - openrouter 사용, 실패한 것들은 따로 저장해서 재처리
-5. 시험문제 만들기 - 5세트의 시험문제를 exam_config.json 참고하여 만들기
-6. 시험지 평가 - 만들어진 시험지(1st/2nd/3rd/4th/5th) 모델별 답변 평가 (10문제씩 배치화하여 호출)
-7. 객관식 문제 변형 - AnswerTypeClassifier로 문제 분류 (right/wrong/abcd) 및 변형
-8. 변형 문제를 포함한 시험지 생성 - 변형된 문제를 원본 시험지에 적용하여 새로운 시험지 생성
+6. 전체 프로세스:
+7. 0. 텍스트 전처리 (Lv2 폴더) - 문장내 엔터 제거, 빈 챕터정보 채우기, 문단 병합(안함), 선지 텍스트 정규화
+8. 1. 문제 추출 (Lv2, Lv3_4) - 문제/선지/정답/해설 추출 및 포맷화
+9. 2. 시험문제 만들기 - 5세트의 시험문제를 exam_config.json 참고하여 만들기 (일반/변형 시험지 모두 지원)
+10. 3. 객관식 문제 변형 - AnswerTypeClassifier로 문제 분류 (right/wrong/abcd) 및 변형
+11. 6. 시험지 평가 - 만들어진 시험지(1st/2nd/3rd/4th/5th) 모델별 답변 평가 (10문제씩 배치화하여 호출)
+12. 9. 서술형 문제 평가 - 서술형 문제에 대한 모델 답변 생성 및 평가
 """
 
 import os
@@ -46,7 +43,7 @@ def main():
     parser.add_argument('--cycle', type=int, default=None, choices=[1, 2, 3],
                        help='사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리)')
     parser.add_argument('--steps', nargs='+',
-                       choices=['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam', 'evaluate_essay'],
+                       choices=['extract_qna_w_domain', 'create_exam', 'evaluate_exams', 'transform_questions', 'create_transformed_exam', 'evaluate_essay'],
                        default=None,
                        help='실행할 단계 (기본값: 전체 실행)')
     parser.add_argument('--base_path', type=str, default=None, 
@@ -66,7 +63,7 @@ def main():
     parser.add_argument('--model', type=str, default='x-ai/grok-4-fast',
                        help='사용할 모델 (4단계에서 사용)')
     parser.add_argument('--num_sets', type=int, default=5,
-                       help='시험 세트 개수 (5단계에서 사용)')
+                       help='시험 세트 개수 (2단계에서 사용)')
     parser.add_argument('--eval_models', nargs='+',
                        default=None,
                        help='평가할 모델 목록 (6단계에서 사용, 기본값: 자동 설정)')
@@ -86,27 +83,27 @@ def main():
     parser.add_argument('--eval_essay', action='store_true', default=False,
                        help='서술형 문제 평가 모드 (6단계에서 사용, 기본값: False)')
     parser.add_argument('--transform_classified_data_path', type=str, default=None,
-                       help='이미 분류된 데이터 파일 경로 (7단계에서 사용, --transform_classify가 없을 때 필수)')
+                       help='이미 분류된 데이터 파일 경로 (3단계에서 사용, --transform_classify가 없을 때 필수)')
     parser.add_argument('--transform_classify', action='store_true', default=False,
-                       help='분류 단계 실행 (7단계에서 사용, 기본값: False)')
+                       help='분류 단계 실행 (3단계에서 사용, 기본값: False)')
     parser.add_argument('--transform_input_data_path', type=str, default=None,
-                       help='변형 입력 데이터 파일 경로 (7단계에서 사용, --transform_classify가 있을 때)')
+                       help='변형 입력 데이터 파일 경로 (3단계에서 사용, --transform_classify가 있을 때)')
     parser.add_argument('--transform_classify_model', type=str, default='openai/gpt-5',
-                       help='분류에 사용할 모델 (7단계에서 사용, --transform_classify가 있을 때만, 기본값: openai/gpt-5)')
+                       help='분류에 사용할 모델 (3단계에서 사용, --transform_classify가 있을 때만, 기본값: openai/gpt-5)')
     parser.add_argument('--transform_classify_batch_size', type=int, default=10,
-                       help='분류 배치 크기 (7단계에서 사용, --transform_classify가 있을 때만, 기본값: 10)')
+                       help='분류 배치 크기 (3단계에서 사용, --transform_classify가 있을 때만, 기본값: 10)')
     parser.add_argument('--transform_model', type=str, default='openai/o3',
-                       help='변형에 사용할 모델 (7단계에서 사용, 기본값: openai/o3)')
-    # 7단계 변형 옵션 (기본값: False, --transform_* 옵션으로 활성화)
+                       help='변형에 사용할 모델 (3단계에서 사용, 기본값: openai/o3)')
+    # 3단계 변형 옵션 (기본값: False, --transform_* 옵션으로 활성화)
     parser.add_argument('--transform_wrong_to_right', action='store_true', default=False,
-                       help='wrong -> right 변형 수행 (7단계에서 사용)')
+                       help='wrong -> right 변형 수행 (3단계에서 사용)')
     parser.add_argument('--transform_right_to_wrong', action='store_true', default=False,
-                       help='right -> wrong 변형 수행 (7단계에서 사용)')
+                       help='right -> wrong 변형 수행 (3단계에서 사용)')
     parser.add_argument('--transform_abcd', action='store_true', default=False,
-                       help='abcd 변형 수행 (7단계에서 사용)')
+                       help='abcd 변형 수행 (3단계에서 사용)')
     parser.add_argument('--create_transformed_exam_sets', type=int, nargs='+', default=None,
                        choices=[1, 2, 3, 4, 5],
-                       help='변형 시험지 생성할 세트 번호 (8단계에서 사용, 예: --create_transformed_exam_sets 1 또는 --create_transformed_exam_sets 1 2 3, None이면 모든 세트 처리)')
+                       help='변형 시험지 생성할 세트 번호 (2단계에서 사용, 예: --create_transformed_exam_sets 1 또는 --create_transformed_exam_sets 1 2 3, None이면 모든 세트 처리)')
     parser.add_argument('--essay_models', nargs='+', default=None,
                        help='모델 답변 생성할 모델 목록 (9단계에서 사용, None이면 답변 생성 안 함)')
     parser.add_argument('--essay_sets', type=int, nargs='+', default=None,
@@ -174,7 +171,8 @@ def main():
         create_transformed_exam_sets=args.create_transformed_exam_sets,
         essay_models=args.essay_models,
         essay_sets=args.essay_sets,
-        essay_use_server_mode=args.essay_use_server_mode
+        essay_use_server_mode=args.essay_use_server_mode,
+        debug=args.debug
     )
     
     # 결과 확인 (에러 시에만 종료)

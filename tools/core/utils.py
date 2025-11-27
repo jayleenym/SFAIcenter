@@ -11,6 +11,7 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 import shutil
+from datetime import datetime
 
 
 class FileManager:
@@ -225,9 +226,31 @@ class JSONHandler:
             return json.load(f)
     
     @staticmethod
-    def save(data: Any, file_path: str, indent: int = 2) -> None:
-        """JSON 파일 저장"""
+    def save(data: Any, file_path: str, indent: int = 2, backup: bool = False, logger: Any = None) -> None:
+        """
+        JSON 파일 저장
+        
+        Args:
+            data: 저장할 데이터
+            file_path: 저장할 파일 경로
+            indent: JSON 들여쓰기 (기본값: 2)
+            backup: 기존 파일 백업 여부 (기본값: False)
+            logger: 로거 인스턴스 (백업 시 로그 출력용)
+        """
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        # 백업이 필요하고 기존 파일이 있으면 백업
+        if backup and os.path.exists(file_path):
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_path = f"{file_path}.backup_{timestamp}"
+            try:
+                shutil.copy2(file_path, backup_path)
+                if logger:
+                    logger.info(f"기존 파일 백업: {backup_path}")
+            except Exception as e:
+                if logger:
+                    logger.warning(f"백업 실패: {e}")
+        
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=indent)
     

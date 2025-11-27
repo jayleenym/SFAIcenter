@@ -21,7 +21,7 @@ try:
     sys.path.insert(0, project_root)
     from tools import ONEDRIVE_PATH
     from tools.core.utils import JSONHandler
-    from tools.qna.qna_processor import TagProcessor
+    from tools.qna.tag_processor import TagProcessor
 except ImportError:
     # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
     import platform
@@ -36,7 +36,7 @@ except ImportError:
     _temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))
     sys.path.insert(0, _temp_tools_dir)
     from tools.core.utils import JSONHandler
-    from tools.qna.qna_processor import TagProcessor
+    from tools.qna.tag_processor import TagProcessor
 
 
 def load_json_file(file_path: str) -> Dict[str, Any]:
@@ -59,26 +59,38 @@ def extract_tags_from_qna_content(qna_item: Dict) -> List[str]:
     """Q&A 내용에서 img_, f_, tb_, etc_, note_ 태그를 추출합니다. (TagProcessor 사용)"""
     return TagProcessor.extract_tags_from_qna_content(qna_item)
 
-def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data: Dict) -> tuple:
-    """additional_tags_found에 있지만 additional_tag_data에 없는 태그들을 추가합니다. (TagProcessor 사용)"""
+def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data_list: List[Dict]) -> tuple:
+    """additional_tags_found에 있지만 additional_tag_data에 없는 태그들을 추가합니다. (TagProcessor 사용)
+    
+    Args:
+        qna_data: Q&A 데이터 리스트
+        source_data_list: 여러 레벨의 source 데이터 리스트 (Lv2, Lv3_4, Lv5)
+    """
     tag_processor = TagProcessor()
     
-    # add_info에서 태그 데이터 수집 (기존 로직 유지 - data 섹션도 확인)
+    # 여러 source 파일에서 태그 데이터 수집 (기존 로직 유지 - data 섹션도 확인)
     source_tags_data = {}
-    for item in source_data.get('contents', []):
-        if "add_info" in item and isinstance(item["add_info"], list):
-            for add_item in item["add_info"]:
-                if "tag" in add_item:
-                    source_tags_data[add_item["tag"]] = add_item
-        
-        # 기존 data 섹션도 확인
-        if "data" in item and isinstance(item["data"], list):
-            for data_item in item["data"]:
-                if "tag" in data_item:
-                    source_tags_data[data_item["tag"]] = data_item
-        # top-level 'tag'도 확인
-        if "tag" in item:
-            source_tags_data[item["tag"]] = item
+    for source_data in source_data_list:
+        if not source_data:
+            continue
+        for item in source_data.get('contents', []):
+            if "add_info" in item and isinstance(item["add_info"], list):
+                for add_item in item["add_info"]:
+                    if "tag" in add_item:
+                        # 이미 있으면 덮어쓰지 않음 (우선순위: Lv5 > Lv3_4 > Lv2)
+                        if add_item["tag"] not in source_tags_data:
+                            source_tags_data[add_item["tag"]] = add_item
+            
+            # 기존 data 섹션도 확인
+            if "data" in item and isinstance(item["data"], list):
+                for data_item in item["data"]:
+                    if "tag" in data_item:
+                        if data_item["tag"] not in source_tags_data:
+                            source_tags_data[data_item["tag"]] = data_item
+            # top-level 'tag'도 확인
+            if "tag" in item:
+                if item["tag"] not in source_tags_data:
+                    source_tags_data[item["tag"]] = item
 
     tags_added_from_source = 0
     tags_added_empty = 0
@@ -136,18 +148,28 @@ def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data: Dict) -> t
 
     return tags_added_from_source, tags_added_empty, tags_found_in_content
 
-def fill_additional_tag_data(qna_data: List[Dict], source_data: Dict) -> tuple:
-    """빈 additional_tag_data의 "data":{}를 원본 파일의 add_info에서 채웁니다. (TagProcessor 사용)"""
+def fill_additional_tag_data(qna_data: List[Dict], source_data_list: List[Dict]) -> tuple:
+    """빈 additional_tag_data의 "data":{}를 원본 파일의 add_info에서 채웁니다. (TagProcessor 사용)
+    
+    Args:
+        qna_data: Q&A 데이터 리스트
+        source_data_list: 여러 레벨의 source 데이터 리스트 (Lv2, Lv3_4, Lv5)
+    """
     tag_processor = TagProcessor()
     
-    # 페이지별 add_info를 인덱싱
+    # 여러 source 파일에서 페이지별 add_info를 인덱싱 (우선순위: Lv5 > Lv3_4 > Lv2)
     page_add_info = {}
-    for page_data in source_data.get('contents', []):
-        page_num = page_data.get('page')
-        if page_num:
-            page_add_info[page_num] = page_data.get('add_info', [])
+    for source_data in source_data_list:
+        if not source_data:
+            continue
+        for page_data in source_data.get('contents', []):
+            page_num = page_data.get('page')
+            if page_num:
+                # 이미 있으면 덮어쓰지 않음 (우선순위 유지)
+                if page_num not in page_add_info:
+                    page_add_info[page_num] = page_data.get('add_info', [])
     
-    print(f"Found {len(page_add_info)} pages in source file")
+    print(f"Found {len(page_add_info)} pages across all source files")
     
     # extracted_qna의 각 항목을 처리
     filled_count = 0
@@ -179,37 +201,80 @@ def fill_additional_tag_data(qna_data: List[Dict], source_data: Dict) -> tuple:
     
     return filled_count, total_empty
 
+def find_extracted_qna_file(cycle: str, file_id: str) -> tuple:
+    """extracted_qna 파일을 찾습니다. (Lv2, Lv3_4, Lv5 순서로 확인)
+    
+    Returns:
+        (file_path, level) 튜플 또는 (None, None)
+    """
+    levels = ['Lv2', 'Lv3_4', 'Lv5']
+    for level in levels:
+        file_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C', level, f'{file_id}_extracted_qna.json')
+        if os.path.exists(file_path):
+            return file_path, level
+    return None, None
+
+def find_source_files(cycle: str, file_id: str) -> List[tuple]:
+    """source 파일들을 찾습니다. (Lv2, Lv3_4, Lv5 모두 확인)
+    
+    Returns:
+        [(file_path, level), ...] 리스트
+    """
+    source_files = []
+    levels = ['Lv2', 'Lv3_4', 'Lv5']
+    for level in levels:
+        source_path = os.path.join(ONEDRIVE_PATH, 'data', 'FINAL', f'{cycle}C', level, file_id, f'{file_id}.json')
+        if os.path.exists(source_path):
+            source_files.append((source_path, level))
+    return source_files
+
 def process_additional_tags(cycle: str, file_id: str) -> bool:
     """additional_tag_data를 처리하는 메인 함수. 성공시 True, 실패시 False 반환"""
     
-    # 파일 경로 설정
-    extracted_qna_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C', 'Lv5', f'{file_id}_extracted_qna.json')
-    source_path = os.path.join(ONEDRIVE_PATH, 'data', 'FINAL', f'{cycle}C', 'Lv5', file_id, f'{file_id}.json')
-    backup_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C', 'Lv5', '_backup')
-    backup_path = os.path.join(backup_dir, f'{file_id}_extracted_qna.json.bak')
-    
-    # 백업 디렉토리 생성 (존재하지 않는 경우)
-    os.makedirs(backup_dir, exist_ok=True)
+    # extracted_qna 파일 찾기 (Lv2, Lv3_4, Lv5 순서로 확인)
+    extracted_qna_path, extracted_level = find_extracted_qna_file(cycle, file_id)
+    if not extracted_qna_path:
+        print(f"Warning: extracted_qna 파일을 찾을 수 없습니다: {file_id}")
+        return False
     
     print(f"Processing {file_id}...")
+    print(f"Found extracted_qna at: {extracted_level}")
     print("=" * 50)
+    
+    # 백업 디렉토리 생성
+    backup_dir = os.path.join(os.path.dirname(extracted_qna_path), '_backup')
+    os.makedirs(backup_dir, exist_ok=True)
+    backup_path = os.path.join(backup_dir, f'{file_id}_extracted_qna.json.bak')
     
     # 기존 파일 백업
     if os.path.exists(extracted_qna_path):
         print(f"Backing up original file to: {backup_path}")
         shutil.copy2(extracted_qna_path, backup_path)
-    else:
-        print(f"Warning: Original file not found: {extracted_qna_path}")
-        return False
     
     # 파일 로드
     print("Loading files...")
     qna_data = load_json_file(extracted_qna_path)
-    source_data = load_json_file(source_path)
+    
+    # 여러 레벨의 source 파일 찾기 및 로드
+    source_files = find_source_files(cycle, file_id)
+    if not source_files:
+        print(f"Warning: source 파일을 찾을 수 없습니다: {file_id}")
+        return False
+    
+    print(f"Found {len(source_files)} source file(s): {[level for _, level in source_files]}")
+    source_data_list = []
+    for source_path, level in source_files:
+        try:
+            source_data = load_json_file(source_path)
+            source_data_list.append(source_data)
+            print(f"  - Loaded {level}: {source_path}")
+        except Exception as e:
+            print(f"  - Failed to load {level}: {e}")
+            source_data_list.append(None)
     
     # 1단계: 누락된 태그 추가
     print("\n1단계: 누락된 태그 추가 중...")
-    tags_added_from_source, tags_added_empty, tags_found_in_content = fix_missing_tags_with_add_info(qna_data, source_data)
+    tags_added_from_source, tags_added_empty, tags_found_in_content = fix_missing_tags_with_add_info(qna_data, source_data_list)
     
     print(f"\n1단계 완료:")
     print(f"  - Q&A 내용에서 발견된 태그: {tags_found_in_content}개")
@@ -218,7 +283,7 @@ def process_additional_tags(cycle: str, file_id: str) -> bool:
     
     # 2단계: 빈 data 채우기
     print("\n2단계: 빈 data 채우기 중...")
-    filled_count, total_empty = fill_additional_tag_data(qna_data, source_data)
+    filled_count, total_empty = fill_additional_tag_data(qna_data, source_data_list)
     
     print(f"\n2단계 완료:")
     print(f"  - 빈 data 필드: {total_empty}개")
@@ -241,19 +306,24 @@ def process_additional_tags(cycle: str, file_id: str) -> bool:
     return True
 
 def find_all_extracted_qna_files(cycle: str) -> List[str]:
-    """지정된 경로의 모든 extracted_qna 파일을 찾습니다."""
-    extracted_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C', 'Lv5')
+    """지정된 경로의 모든 extracted_qna 파일을 찾습니다. (Lv2, Lv3_4, Lv5 모두 확인)"""
+    base_dir = os.path.join(ONEDRIVE_PATH, 'evaluation', 'workbook_data', f'{cycle}C')
     
-    if not os.path.exists(extracted_dir):
-        print(f"디렉토리가 존재하지 않습니다: {extracted_dir}")
+    if not os.path.exists(base_dir):
+        print(f"디렉토리가 존재하지 않습니다: {base_dir}")
         return []
     
-    extracted_files = []
-    for file in os.listdir(extracted_dir):
-        if file.endswith('_extracted_qna.json') and file != 'merged_extracted_qna.json':
-            # file_id 추출 (파일명에서 _extracted_qna.json 제거)
-            file_id = file.replace('_extracted_qna.json', '')
-            extracted_files.append(file_id)
+    extracted_files = set()
+    levels = ['Lv2', 'Lv3_4', 'Lv5']
+    
+    for level in levels:
+        extracted_dir = os.path.join(base_dir, level)
+        if os.path.exists(extracted_dir):
+            for file in os.listdir(extracted_dir):
+                if file.endswith('_extracted_qna.json') and file != 'merged_extracted_qna.json':
+                    # file_id 추출 (파일명에서 _extracted_qna.json 제거)
+                    file_id = file.replace('_extracted_qna.json', '')
+                    extracted_files.add(file_id)
     
     return sorted(extracted_files)
 

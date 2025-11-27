@@ -420,16 +420,21 @@ class QnASubdomainClassifier:
     
     def _normalize_item_format(self, item: Dict[str, Any]) -> Dict[str, Any]:
         """항목 형식을 표준 형식으로 정규화 (불필요한 필드 제거)"""
-        # 표준 필드만 유지
+        # 표준 필드만 유지 (지정된 순서대로)
         normalized = {
             'file_id': item.get('file_id', ''),
-            'title': item.get('title', ''),
-            'chapter': item.get('chapter', ''),
             'tag': item.get('tag', ''),
+            'title': item.get('title', ''),
+            'cat1_domain': item.get('cat1_domain', ''),
+            'cat2_sub': item.get('cat2_sub', ''),
+            'cat3_specific': item.get('cat3_specific', ''),
+            'chapter': item.get('chapter', ''),
+            'page': item.get('page', ''),
+            'qna_type': item.get('qna_type', ''),
             'domain': item.get('domain', ''),
             'subdomain': item.get('subdomain', ''),
-            'classification_reason': item.get('classification_reason', ''),
             'is_calculation': item.get('is_calculation', False),
+            'classification_reason': item.get('classification_reason', ''),
             'question': item.get('question', ''),
             'options': item.get('options', []),
             'answer': item.get('answer', ''),
@@ -588,8 +593,8 @@ class QnASubdomainClassifier:
             twice_failed = [item for item in retry_failed]
             
             if twice_failed:
-                self.logger.warning(f"2번 실패한 항목 {len(twice_failed)}개를 multiple_failed.json에 저장합니다.")
                 failed_filepath = os.path.join(self.output_dir, f"{self.mode}_failed.json")
+                self.logger.warning(f"2번 실패한 항목 {len(twice_failed)}개를 {failed_filepath}에 저장합니다.")
                 with open(failed_filepath, 'w', encoding='utf-8') as f:
                     json.dump(twice_failed, f, ensure_ascii=False, indent=2)
                 self.logger.info(f"2번 실패한 항목 저장 완료: {failed_filepath}")
@@ -650,9 +655,19 @@ class QnASubdomainClassifier:
                 'subdomain_distribution': subdomain_counts
             }
             
-        stats_filepath = os.path.join(self.output_dir, "STATS_multiple_subdomain.md")
+        # mode에 따라 파일명과 제목 설정
+        mode_display_name = {
+            'multiple': 'Multiple Choice',
+            'short': 'Short Answer',
+            'essay': 'Essay',
+            'multiple-fail': 'Multiple Choice (Fail)',
+            'multiple-re': 'Multiple Choice (Re-run)',
+            'short-fail': 'Short Answer (Fail)'
+        }.get(self.mode, self.mode.title())
+        
+        stats_filepath = os.path.join(self.output_dir, f"STATS_{self.mode}_subdomain.md")
         with open(stats_filepath, 'w', encoding='utf-8') as f:
-            f.write("# Multiple Subdomain 통계\n\n")
+            f.write(f"# {mode_display_name} Subdomain 통계\n\n")
             f.write(f"생성일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
             f.write("---\n\n")
             

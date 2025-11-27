@@ -11,7 +11,7 @@ import subprocess
 
 # Import handling for both script and module execution
 try:
-    from qna.qna_processor import TagProcessor
+    from qna.tag_processor import TagProcessor
     from qna.formatting import should_include_qna_item
 except ImportError:
     import sys
@@ -19,7 +19,7 @@ except ImportError:
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
     sys.path.insert(0, project_root)
-    from qna.qna_processor import TagProcessor
+    from qna.tag_processor import TagProcessor
     from qna.formatting import should_include_qna_item
 
 

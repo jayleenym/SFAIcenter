@@ -23,13 +23,14 @@ class QnAClassifier:
         self.json_handler = json_handler
         self.logger = logger or logging.getLogger(__name__)
 
-    def classify_and_save(self, cycle: Optional[int], onedrive_path: str) -> Dict[str, Any]:
+    def classify_and_save(self, cycle: Optional[int], onedrive_path: str, debug: bool = False) -> Dict[str, Any]:
         """
         추출된 Q&A 파일들을 읽어서 타입별로 분류 및 저장
         
         Args:
             cycle: 사이클 번호 (None이면 모든 사이클)
             onedrive_path: OneDrive 경로
+            debug: 디버그 모드 (기존 파일 백업 및 활용, 기본값: False)
             
         Returns:
             분류 결과 통계
@@ -83,6 +84,11 @@ class QnAClassifier:
                 for qna_item in qna_data:
                     qna_type = qna_item.get('qna_type', 'etc')
                     
+                    # 문제에 {img_ 가 포함되어 있으면 etc로 분류
+                    question = qna_item.get('question', '')
+                    if '{img_' in question:
+                        qna_type = 'etc'
+                    
                     # 필터링 조건 확인
                     if not should_include_qna_item(qna_item, qna_type):
                         continue
@@ -103,9 +109,9 @@ class QnAClassifier:
             if items:
                 output_file = os.path.join(output_dir, f'{qna_type}.json')
                 
-                # 기존 파일이 있으면 로드해서 병합
+                # debug 모드일 때만 기존 파일 로드해서 병합, 아니면 덮어쓰기
                 existing_items = []
-                if os.path.exists(output_file):
+                if debug and os.path.exists(output_file):
                     try:
                         existing_items = self.json_handler.load(output_file)
                         if not isinstance(existing_items, list):
@@ -114,26 +120,32 @@ class QnAClassifier:
                         self.logger.warning(f"{qna_type}: 기존 파일 로드 실패: {e}")
                         existing_items = []
                 
-                # 중복 제거: file_id와 tag 기준
-                existing_keys = set()
-                for item in existing_items:
-                    file_id = item.get('file_id', '')
-                    tag = item.get('tag', '')
-                    existing_keys.add((file_id, tag))
+                if debug and existing_items:
+                    # 중복 제거: file_id와 tag 기준
+                    existing_keys = set()
+                    for item in existing_items:
+                        file_id = item.get('file_id', '')
+                        tag = item.get('tag', '')
+                        existing_keys.add((file_id, tag))
+                    
+                    # 새 항목 중 중복이 아닌 것만 추가
+                    new_items = []
+                    for item in items:
+                        file_id = item.get('file_id', '')
+                        tag = item.get('tag', '')
+                        key = (file_id, tag)
+                        if key not in existing_keys:
+                            new_items.append(item)
+                            existing_keys.add(key)
+                    
+                    # 기존 항목과 새 항목 병합
+                    merged_items = existing_items + new_items
+                    self.logger.info(f"{qna_type}: 기존 파일과 병합 (기존 {len(existing_items)}개, 신규 {len(new_items)}개)")
+                else:
+                    merged_items = items
+                    new_items = items
                 
-                # 새 항목 중 중복이 아닌 것만 추가
-                new_items = []
-                for item in items:
-                    file_id = item.get('file_id', '')
-                    tag = item.get('tag', '')
-                    key = (file_id, tag)
-                    if key not in existing_keys:
-                        new_items.append(item)
-                        existing_keys.add(key)
-                
-                # 기존 항목과 새 항목 병합
-                merged_items = existing_items + new_items
-                self.json_handler.save(merged_items, output_file)
+                self.json_handler.save(merged_items, output_file, backup=debug, logger=self.logger)
                 
                 self.logger.info(f"{qna_type}: 저장 완료 (총 {len(merged_items)}개, 신규 {len(new_items)}개)")
         

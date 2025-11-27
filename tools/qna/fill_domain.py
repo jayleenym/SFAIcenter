@@ -26,8 +26,31 @@ class DomainFiller:
         self.file_manager = file_manager
         self.json_handler = json_handler
         self.logger = logger or logging.getLogger(__name__)
+    
+    def _reorder_fields(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """필드 순서를 지정된 순서로 재정렬"""
+        field_order = [
+            'file_id', 'tag', 'title', 'cat1_domain', 'cat2_sub', 'cat3_specific',
+            'chapter', 'page', 'qna_type', 'domain', 'subdomain', 'is_calculation',
+            'classification_reason', 'question', 'options', 'answer', 'explanation'
+        ]
+        
+        ordered_data = []
+        for item in data:
+            ordered_item = {}
+            # 지정된 순서대로 필드 추가
+            for field in field_order:
+                if field in item:
+                    ordered_item[field] = item[field]
+            # 순서에 없는 필드도 추가 (혹시 모를 추가 필드 대비)
+            for key, value in item.items():
+                if key not in ordered_item:
+                    ordered_item[key] = value
+            ordered_data.append(ordered_item)
+        
+        return ordered_data
 
-    def fill_domain(self, qna_type: str, model: str, onedrive_path: str) -> Dict[str, Any]:
+    def fill_domain(self, qna_type: str, model: str, onedrive_path: str, debug: bool = False) -> Dict[str, Any]:
         """
         지정된 QnA 타입의 파일에 대해 Domain/Subdomain 채우기
         
@@ -35,6 +58,7 @@ class DomainFiller:
             qna_type: QnA 타입 ('multiple', 'short', 'essay')
             model: 사용할 LLM 모델
             onedrive_path: OneDrive 경로
+            debug: 디버그 모드 (기존 파일 백업 및 활용, 기본값: False)
             
         Returns:
             처리 결과 통계
@@ -91,6 +115,7 @@ class DomainFiller:
                     domain = str(item.get('domain', '')).strip()
                     subdomain = str(item.get('subdomain', '')).strip()
                     is_calculation = str(item.get('is_calculation', '')).strip()
+                    classification_reason = item.get('classification_reason', '')
                     
                     if (file_id and tag and 
                         domain and subdomain and
@@ -100,7 +125,8 @@ class DomainFiller:
                         lookup_dict[key] = {
                             'domain': domain,
                             'subdomain': subdomain,
-                            'is_calculation': is_calculation
+                            'is_calculation': is_calculation,
+                            'classification_reason': classification_reason
                         }
             except Exception:
                 pass
@@ -119,6 +145,8 @@ class DomainFiller:
                 item['domain'] = existing_data['domain']
                 item['subdomain'] = existing_data['subdomain']
                 item['is_calculation'] = existing_data['is_calculation']
+                if existing_data.get('classification_reason'):
+                    item['classification_reason'] = existing_data['classification_reason']
                 matched_count += 1
             else:
                 if 'domain' not in item: item['domain'] = ''
@@ -170,8 +198,11 @@ class DomainFiller:
                     input_data[i]['is_calculation'] = updated_item.get('is_calculation', '')
                     if 'classification_reason' in updated_item:
                         input_data[i]['classification_reason'] = updated_item.get('classification_reason', '')
+                    
+        # 5. 필드 순서 정렬
+        ordered_data = self._reorder_fields(input_data)
         
-        # 5. 결과 저장
+        # 6. 결과 저장
         output_file = os.path.join(
             onedrive_path,
             'evaluation', 'eval_data', '2_subdomain', 
@@ -179,7 +210,33 @@ class DomainFiller:
         )
         
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        self.json_handler.save(input_data, output_file)
+        
+        # debug 모드일 때는 기존 파일과 병합
+        if debug and os.path.exists(output_file):
+            try:
+                existing_data = self.json_handler.load(output_file)
+                if isinstance(existing_data, list):
+                    # file_id와 tag 기준으로 중복 제거
+                    existing_dict = {}
+                    for item in existing_data:
+                        file_id = item.get('file_id', '')
+                        tag = item.get('tag', '')
+                        key = (str(file_id), str(tag))
+                        existing_dict[key] = item
+                    
+                    # 새 데이터로 업데이트 (기존 데이터는 유지하되 새 데이터로 덮어쓰기)
+                    for item in ordered_data:
+                        file_id = item.get('file_id', '')
+                        tag = item.get('tag', '')
+                        key = (str(file_id), str(tag))
+                        existing_dict[key] = item
+                    
+                    ordered_data = list(existing_dict.values())
+                    self.logger.info(f"기존 파일과 병합: 총 {len(ordered_data)}개 항목")
+            except Exception as e:
+                self.logger.warning(f"기존 파일 병합 실패, 새로 생성: {e}")
+        
+        self.json_handler.save(ordered_data, output_file, backup=debug, logger=self.logger)
         
         stats = {
             'total': len(input_data),
