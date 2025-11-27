@@ -12,6 +12,7 @@ import subprocess
 # Import handling for both script and module execution
 try:
     from qna.qna_processor import TagProcessor
+    from qna.formatting import should_include_qna_item
 except ImportError:
     import sys
     import os
@@ -19,6 +20,7 @@ except ImportError:
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
     sys.path.insert(0, project_root)
     from qna.qna_processor import TagProcessor
+    from qna.formatting import should_include_qna_item
 
 
 # pipeline/config에서 ONEDRIVE_PATH import 시도
@@ -119,32 +121,15 @@ def rearrange_data(data_path: list or str = None, qtype: str = None):
 
     rearranged_data = []
     for m in data:
+        # 태그 치환 처리
         qna_data = TagProcessor.replace_tags_in_qna_data(m.get('qna_data'), m.get('additional_tag_data'))
         
         # qtype 유효성 검사
         if qtype not in ["multiple-choice", "short-answer", "essay", "etc"]:
             raise ValueError(f"올바르지 않은 문제 타입: {qtype}")
         
-        # 각 타입별 필터링 조건 확인
-        should_include = False
-        if qtype == "multiple-choice":
-            # 객관식: OX 문제 제외, 선지가 3개 이상인 경우
-            if (qna_data.get('description', {}).get('options') is not None) and (len(qna_data.get('description', {}).get('options', [])) > 2):
-                should_include = True
-        elif qtype == "short-answer":
-            # 단답형: 답변이 있고, 답변이 삭제되지 않은 경우
-            if (qna_data.get('description', {}).get('answer') is not None) and (qna_data.get('description', {}).get('answer') != "삭제"):
-                should_include = True
-        elif qtype == "essay":
-            # 서술형: 답변이 있는 경우
-            if qna_data.get('description', {}).get('answer') is not None:
-                should_include = True
-        elif qtype == "etc":
-            # etc 타입은 모두 포함
-            should_include = True
-        
-        # 조건을 만족하지 않으면 건너뛰기
-        if not should_include:
+        # formatting.py의 필터링 함수 재사용 (태그 치환된 qna_data 전달)
+        if not should_include_qna_item(m, qtype, qna_data=qna_data):
             continue
 
         qna = {
