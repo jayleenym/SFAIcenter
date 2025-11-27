@@ -21,8 +21,10 @@ import argparse
 from pathlib import Path
 
 # 프로젝트 루트 경로 추가
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, current_dir)
+current_dir = os.path.dirname(os.path.abspath(__file__))  # tools/
+project_root = os.path.dirname(current_dir)  # 프로젝트 루트
+sys.path.insert(0, project_root)  # 프로젝트 루트를 path에 추가하여 tools를 패키지로 인식
+sys.path.insert(0, current_dir)  # tools/도 추가하여 상대 import 지원
 
 # 독립 실행 시 파일명.log로 로깅 설정
 if __name__ == "__main__":
