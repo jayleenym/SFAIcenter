@@ -269,7 +269,7 @@ class TagProcessor:
         return filled_count, total_empty
     
     @staticmethod
-    def replace_tags_in_text(text: str, additional_tag_data: list, max_depth: int = 5) -> str:
+    def replace_tags_in_text(text: str, additional_tag_data: list, max_depth: int = 3) -> str:
         """
         텍스트에서 {f_0000_0000}이나 {tb_0000_0000} 같은 태그를 additional_tag_data에서 찾아서 대치합니다.
         중첩된 태그도 재귀적으로 처리합니다.
@@ -285,8 +285,8 @@ class TagProcessor:
         if not text or not additional_tag_data or max_depth <= 0:
             return text
         
-        # 태그 패턴 매칭: {f_0000_0000}, {tb_0000_0000}, {img_0000_0000}, {etc_0000_0000}, {note_0000_0000}
-        tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|img_\d{4}_\d{4}|etc_\d{4}_\d{4}|note_\d{4}_\d{4})\}'
+        # 태그 패턴 매칭: {f_0000_0000}, {tb_0000_0000}, {note_0000_0000}
+        tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|note_\d{4}_\d{4})\}'
         
         def replace_tag(match):
             tag_with_braces = match.group(0)  # {f_0000_0000}

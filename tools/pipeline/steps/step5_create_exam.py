@@ -14,6 +14,7 @@ from collections import defaultdict
 from ..base import PipelineBase
 from core.exam_config import ExamConfig
 from exam.exam_validator import ExamValidator
+from qna.qna_processor import TagProcessor
 
 
 class Step5CreateExam(PipelineBase):
@@ -23,6 +24,63 @@ class Step5CreateExam(PipelineBase):
                  onedrive_path: str = None, project_root_path: str = None):
         super().__init__(base_path, config_path, onedrive_path, project_root_path)
         self._step_log_handler = None
+        self._extracted_qna_cache = {}  # _extracted_qna.json 파일 캐시
+    
+    def _find_extracted_qna_file(self, file_id: str) -> str:
+        """
+        file_id에 해당하는 _extracted_qna.json 파일 경로를 찾습니다.
+        
+        Args:
+            file_id: 파일 ID
+        
+        Returns:
+            _extracted_qna.json 파일 경로 (없으면 None)
+        """
+        workbook_base = os.path.join(self.onedrive_path, 'evaluation', 'workbook_data')
+        
+        # workbook_data 디렉토리 전체를 탐색
+        for root, dirs, files in os.walk(workbook_base):
+            for file in files:
+                if file == f'{file_id}_extracted_qna.json':
+                    return os.path.join(root, file)
+        
+        return None
+    
+    def _load_extracted_qna_item(self, file_id: str, tag: str) -> Dict[str, Any]:
+        """
+        _extracted_qna.json 파일에서 특정 file_id와 tag에 해당하는 항목을 로드합니다.
+        
+        Args:
+            file_id: 파일 ID
+            tag: 태그
+        
+        Returns:
+            Q&A 항목 (없으면 None)
+        """
+        # 캐시 확인
+        cache_key = file_id
+        if cache_key not in self._extracted_qna_cache:
+            # 파일 찾기
+            extracted_qna_file = self._find_extracted_qna_file(file_id)
+            if not extracted_qna_file:
+                return None
+            
+            # 파일 로드
+            try:
+                with open(extracted_qna_file, 'r', encoding='utf-8') as f:
+                    self._extracted_qna_cache[cache_key] = json.load(f)
+            except Exception as e:
+                self.logger.warning(f"_extracted_qna.json 파일 로드 실패 ({extracted_qna_file}): {e}")
+                return None
+        
+        # 해당 tag를 가진 항목 찾기
+        extracted_qna_data = self._extracted_qna_cache[cache_key]
+        for item in extracted_qna_data:
+            item_tag = item.get('qna_data', {}).get('tag', '')
+            if item_tag == tag:
+                return item
+        
+        return None
     
     def execute(self, num_sets: int = 5, seed: int = 42) -> Dict[str, Any]:
         """
@@ -196,14 +254,33 @@ class Step5CreateExam(PipelineBase):
                         set_dir = os.path.join(exam_dir, set_names[set_num+1])
                         output_file = os.path.join(set_dir, f'{exam_name}_exam.json')
                         
-                        percentage_total = (len(exam_data_sets[set_num])/total_exam_questions*100) if total_exam_questions > 0 else 0
+                        # 태그 대치 수행 (exam 저장 전) - _extracted_qna.json 파일 참조
+                        exam_data_with_tags_replaced = []
+                        for item in exam_data_sets[set_num]:
+                            file_id = item.get('file_id', '')
+                            tag = item.get('tag', '')
+                            
+                            # _extracted_qna.json 파일에서 원본 데이터 로드
+                            extracted_qna_item = self._load_extracted_qna_item(file_id, tag)
+                            if extracted_qna_item:
+                                additional_tag_data = extracted_qna_item.get('additional_tag_data', [])
+                                if additional_tag_data:
+                                    item = TagProcessor.replace_tags_in_formatted_qna(item.copy(), additional_tag_data)
+                            else:
+                                self.logger.warning(f"_extracted_qna.json에서 항목을 찾을 수 없음: file_id={file_id}, tag={tag}")
+                            
+                            # additional_tag_data 필드는 제거 (저장 시 불필요)
+                            item_cleaned = {k: v for k, v in item.items() if k != 'additional_tag_data'}
+                            exam_data_with_tags_replaced.append(item_cleaned)
+                        
+                        percentage_total = (len(exam_data_with_tags_replaced)/total_exam_questions*100) if total_exam_questions > 0 else 0
                         self.logger.info(
                             f"  ====> {set_names[set_num+1]}세트: 새로 생성 "
-                            f"{len(exam_data_sets[set_num])}/{total_exam_questions} ({percentage_total:.2f}%)"
+                            f"{len(exam_data_with_tags_replaced)}/{total_exam_questions} ({percentage_total:.2f}%)"
                         )
                         
                         with open(output_file, 'w', encoding='utf-8') as f:
-                            json.dump(exam_data_sets[set_num], f, ensure_ascii=False, indent=4)
+                            json.dump(exam_data_with_tags_replaced, f, ensure_ascii=False, indent=4)
                         
                         self.logger.info(f"  ====> 저장 완료: {output_file}")
                 
@@ -218,14 +295,33 @@ class Step5CreateExam(PipelineBase):
                             existing_exam_data, exam_name, stats, all_data, used_questions, self.logger
                         )
                         
-                        with open(output_file, 'w', encoding='utf-8') as f:
-                            json.dump(updated_exam_data, f, ensure_ascii=False, indent=4)
+                        # 태그 대치 수행 (exam 저장 전) - _extracted_qna.json 파일 참조
+                        updated_exam_data_with_tags_replaced = []
+                        for item in updated_exam_data:
+                            file_id = item.get('file_id', '')
+                            tag = item.get('tag', '')
+                            
+                            # _extracted_qna.json 파일에서 원본 데이터 로드
+                            extracted_qna_item = self._load_extracted_qna_item(file_id, tag)
+                            if extracted_qna_item:
+                                additional_tag_data = extracted_qna_item.get('additional_tag_data', [])
+                                if additional_tag_data:
+                                    item = TagProcessor.replace_tags_in_formatted_qna(item.copy(), additional_tag_data)
+                            else:
+                                self.logger.warning(f"_extracted_qna.json에서 항목을 찾을 수 없음: file_id={file_id}, tag={tag}")
+                            
+                            # additional_tag_data 필드는 제거 (저장 시 불필요)
+                            item_cleaned = {k: v for k, v in item.items() if k != 'additional_tag_data'}
+                            updated_exam_data_with_tags_replaced.append(item_cleaned)
                         
-                        percentage_total = (len(updated_exam_data)/total_exam_questions*100) if total_exam_questions > 0 else 0
+                        with open(output_file, 'w', encoding='utf-8') as f:
+                            json.dump(updated_exam_data_with_tags_replaced, f, ensure_ascii=False, indent=4)
+                        
+                        percentage_total = (len(updated_exam_data_with_tags_replaced)/total_exam_questions*100) if total_exam_questions > 0 else 0
                         self.logger.info(
                             f"  ====> {set_names[set_num+1]}세트: 업데이트 완료 "
-                            f"({len(existing_exam_data)}개 → {len(updated_exam_data)}개, "
-                            f"{len(updated_exam_data)}/{total_exam_questions} ({percentage_total:.2f}%))"
+                            f"({len(existing_exam_data)}개 → {len(updated_exam_data_with_tags_replaced)}개, "
+                            f"{len(updated_exam_data_with_tags_replaced)}/{total_exam_questions} ({percentage_total:.2f}%))"
                         )
                 
                 if not sets_to_create and not sets_to_update:

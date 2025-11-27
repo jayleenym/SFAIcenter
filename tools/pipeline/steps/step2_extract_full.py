@@ -6,9 +6,10 @@
 
 import os
 import sys
+import re
 from typing import List, Dict, Any, Optional
 from ..base import PipelineBase
-from qna.qna_processor import QnAExtractor, TagProcessor
+from qna.qna_processor import QnAExtractor
 
 # 포맷화 유틸리티 import
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +18,7 @@ _temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/step
 sys.path.insert(0, _temp_tools_dir)
 from tools import tools_dir
 sys.path.insert(0, tools_dir)
-from qna.formatting import format_qna_item
+from qna.formatting import format_qna_item, should_include_qna_item
 
 
 class Step2ExtractFull(PipelineBase):
@@ -52,7 +53,6 @@ class Step2ExtractFull(PipelineBase):
             
             data_path = self.file_manager.final_data_path
             extractor = QnAExtractor(self.file_manager)
-            tag_processor = TagProcessor()
             total_extracted = 0
             processed_files = 0
             
@@ -81,11 +81,12 @@ class Step2ExtractFull(PipelineBase):
                             output_path = os.path.join(workbook_base, cycle_dir, level)
                             os.makedirs(output_path, exist_ok=True)
                             
-                            # 직접 JSON 파일 찾기
+                            # 직접 JSON 파일 찾기 (SS0000.json 형식만)
                             json_files = []
                             for root, _, files in os.walk(level_path):
                                 for f in files:
-                                    if f.endswith(".json") and ('_' not in f):
+                                    # ss로 시작하고 4자리 숫자 + .json 형식만 찾기
+                                    if re.match(r'^SS\d{4}\.json$', f, re.IGNORECASE):
                                         json_files.append(os.path.join(root, f))
                             
                             json_files = sorted(json_files)
@@ -99,12 +100,7 @@ class Step2ExtractFull(PipelineBase):
                                     # Q&A 추출
                                     result = extractor.extract_from_file(json_file, file_output_path)
                                     
-                                    # 태그 대치 처리
-                                    for qna_item in result['extracted_qna']:
-                                        additional_tag_data = qna_item.get('additional_tag_data', [])
-                                        if additional_tag_data:
-                                            # 태그 대치
-                                            qna_item = tag_processor.replace_tags_in_qna_data(qna_item, additional_tag_data)
+                                    # 태그 대치는 exam 생성 시점에 수행 (additional_tag_data는 유지)
                                     
                                     # 저장 (덮어쓰기)
                                     qna_output_path = file_output_path.replace('.json', '_extracted_qna.json')
@@ -147,7 +143,12 @@ class Step2ExtractFull(PipelineBase):
                     output_path = os.path.join(output_base, level)
                     os.makedirs(output_path, exist_ok=True)
                     
-                    json_files = self.file_manager.get_json_file_list(cycle, level_path)
+                    # SS0000.json 형식만 필터링
+                    all_json_files = self.file_manager.get_json_file_list(cycle, level_path)
+                    json_files = [
+                        f for f in all_json_files
+                        if re.match(r'^SS\d{4}\.json$', os.path.basename(f), re.IGNORECASE)
+                    ]
                     self.logger.info(f"{level}: 총 {len(json_files)}개의 JSON 파일을 찾았습니다.")
                     
                     for json_file in json_files:
@@ -158,12 +159,7 @@ class Step2ExtractFull(PipelineBase):
                             # Q&A 추출
                             result = extractor.extract_from_file(json_file, file_output_path)
                             
-                            # 태그 대치 처리
-                            for qna_item in result['extracted_qna']:
-                                additional_tag_data = qna_item.get('additional_tag_data', [])
-                                if additional_tag_data:
-                                    # 태그 대치
-                                    qna_item = tag_processor.replace_tags_in_qna_data(qna_item, additional_tag_data)
+                            # 태그 대치는 exam 생성 시점에 수행 (additional_tag_data는 유지)
                             
                             # 저장 (덮어쓰기)
                             qna_output_path = file_output_path.replace('.json', '_extracted_qna.json')
@@ -235,6 +231,10 @@ class Step2ExtractFull(PipelineBase):
                     
                     for qna_item in qna_data:
                         qna_type = qna_item.get('qna_type', 'etc')
+                        
+                        # 필터링 조건 확인 (img/etc 태그가 있는 문제 제외)
+                        if not should_include_qna_item(qna_item, qna_type):
+                            continue
                         
                         # 포맷화된 데이터 생성
                         formatted_item = format_qna_item(qna_item)
