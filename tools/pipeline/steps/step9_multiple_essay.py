@@ -117,7 +117,20 @@ class Step9MultipleEssay(PipelineBase):
             
             # 회차에 따른 폴더명 매핑
             round_number_to_folder = {'1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th'}
-            round_numbers = ['1', '2', '3', '4', '5']
+            
+            # sets가 있으면 해당 회차만 처리, 없으면 모든 회차 처리
+            if sets is not None:
+                valid_sets = [s for s in sets if 1 <= s <= 5]
+                if not valid_sets:
+                    self.logger.error("유효한 세트 번호가 없습니다. (1-5 사이의 숫자만 가능)")
+                    return {'success': False, 'error': '유효하지 않은 세트 번호'}
+                round_numbers = [str(s) for s in sorted(valid_sets)]
+                # 4단계에서 사용할 수 있도록 sets 업데이트
+                sets = valid_sets
+                self.logger.info(f"처리할 회차: {round_numbers}")
+            else:
+                round_numbers = ['1', '2', '3', '4', '5']
+            
             total_questions = 0
             output_files = []
             
@@ -149,6 +162,8 @@ class Step9MultipleEssay(PipelineBase):
                         self.logger.error("classify_essay_by_exam 모듈을 import할 수 없습니다.")
                         return {'success': False, 'error': 'classify_essay_by_exam import 실패'}
                     
+                    # classify_essay_by_exam_main은 모든 회차를 한 번에 처리하므로
+                    # sets가 있어도 전체를 처리하고, 이후 단계에서 sets에 해당하는 회차만 사용
                     classify_essay_by_exam_main()
                     self.logger.info("1단계 완료: 시험별 분류")
                 except Exception as e:
@@ -234,17 +249,9 @@ class Step9MultipleEssay(PipelineBase):
                     self.logger.error("transformed.multi_essay_answer 모듈을 import할 수 없습니다.")
                     return {'success': False, 'error': 'multi_essay_answer import 실패'}
                 
-                # 세트 번호 설정
+                # 세트 번호 설정 (이미 위에서 설정됨)
                 if sets is None:
                     sets = [1, 2, 3, 4, 5]
-                else:
-                    sets = [s for s in sets if 1 <= s <= 5]
-                    if not sets:
-                        self.logger.error("유효한 세트 번호가 없습니다. (1-5 사이의 숫자만 가능)")
-                        return {'success': False, 'error': '유효하지 않은 세트 번호'}
-                
-                # 회차에 따른 폴더명 매핑
-                round_number_to_folder = {'1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th'}
                 
                 # API 키 읽기 (서버 모드가 아닐 때만 필요)
                 api_key = None
@@ -269,7 +276,7 @@ class Step9MultipleEssay(PipelineBase):
                 for model_name in models:
                     for set_num in sets:
                         round_number = str(set_num)
-                        round_folder = round_number_to_folder[round_number]
+                        round_folder = round_number_to_folder.get(round_number, '1st')
                         
                         # 각 회차별 파일에서 데이터 로드 (2단계 출력 파일 사용)
                         input_file = os.path.join(
