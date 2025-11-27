@@ -26,11 +26,7 @@ tools/
 │   ├── main.py               # Pipeline 메인 클래스 (오케스트레이터)
 │   └── steps/                # 각 단계별 모듈
 │       ├── __init__.py
-│       ├── step0_preprocessing.py      # 0단계: 텍스트 전처리
-│       ├── step1_extract_basic.py      # 1단계: 기본 문제 추출
-│       ├── step2_extract_full.py       # 2단계: 전체 문제 추출 (태그 대치)
-│       ├── step3_classify.py           # 3단계: Q&A 타입별 분류
-│       ├── step4_fill_domain.py        # 4단계: Domain/Subdomain 분류
+│       ├── step1_extract_qna_w_domain.py # 1단계(통합): Q&A 추출 및 Domain 분류
 │       ├── step5_create_exam.py        # 5단계: 시험문제 만들기
 │       ├── step6_evaluate.py           # 6단계: 시험지 평가
 │       ├── step7_transform_multiple_choice.py  # 7단계: 객관식 문제 변형
@@ -125,17 +121,9 @@ tools/
 
 **steps/** - 각 단계별 모듈
 
-- `Step0Preprocessing`: 텍스트 전처리 (문장내 엔터 제거, 빈 챕터정보 채우기, 선지 텍스트 정규화)
-  - Output: `final_data_path/{cycle}/Lv2/` (원본 파일 수정)
-- `Step1ExtractBasic`: 기본 문제 추출 (Lv2, Lv3_4)
-  - Output: `workbook_data/{cycle}/Lv2/`, `workbook_data/{cycle}/Lv3_4/`
-- `Step2ExtractFull`: 전체 문제 추출 (Lv2, Lv3, Lv3_4, Lv5) - 태그 대치 포함, 덮어쓰기 저장
-  - Output: `workbook_data/{cycle}/{level}/` 또는 `workbook_data/{level}/`
-  - `cycle` 파라미터가 `None`이면 모든 사이클의 원본 파일을 자동으로 찾아서 처리
-- `Step3Classify`: Q&A 타입별 분류 (multiple-choice/short-answer/essay/etc), 기존 파일 병합 지원
-  - Output: `eval_data/1_filter_with_tags/{qna_type}.json`
-  - `cycle` 파라미터가 `None`이면 모든 사이클의 파일을 자동으로 찾아서 처리
-- `Step4FillDomain`: Domain/Subdomain 분류 (실패 항목 재처리 포함, 기존 파일 병합 지원)
+- `Step1ExtractQnAWDomain`: Q&A 추출 및 Domain 분류 (통합)
+  - 기존 Step 2, 3, 4를 통합한 단계
+  - Q&A 추출 -> 타입별 분류 -> Domain/Subdomain 채우기
   - Output: `eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json`
 - `Step5CreateExam`: 시험문제 만들기 (exam_config.json 참고)
   - Output: `eval_data/4_multiple_exam/{set_name}/{exam_name}_exam.json`
@@ -327,15 +315,7 @@ tools/
 
 ```
 main_pipeline.py → 전체 프로세스 실행
-├── Step 0: 텍스트 전처리 (Lv2)
-│   └── Output: final_data_path/{cycle}/Lv2/ (원본 파일 수정)
-├── Step 1: 기본 문제 추출 (Lv2, Lv3_4)
-│   └── Output: workbook_data/{cycle}/Lv2/, workbook_data/{cycle}/Lv3_4/
-├── Step 2: 전체 문제 추출 (Lv2, Lv3, Lv3_4, Lv5) - 태그 대치
-│   └── Output: workbook_data/{cycle}/{level}/ 또는 workbook_data/{level}/
-├── Step 3: Q&A 타입별 분류
-│   └── Output: eval_data/1_filter_with_tags/{qna_type}.json
-├── Step 4: Domain/Subdomain 분류 (실패 항목 재처리)
+├── Step 1(통합): Q&A 추출 및 Domain 분류
 │   └── Output: eval_data/2_subdomain/{qna_type}_subdomain_classified_ALL.json
 ├── Step 5: 시험문제 만들기
 │   └── Output: eval_data/4_multiple_exam/{set_name}/{exam_name}_exam.json
@@ -355,32 +335,12 @@ main_pipeline.py → 전체 프로세스 실행
 
 ### 개별 단계 실행
 
-#### 1. 데이터 준비
+#### 1. Q&A 추출 및 분류 (통합)
 
 ```
-pipeline/steps/step0_preprocessing.py → 텍스트 전처리
-data_processing/json_cleaner.py → 빈 페이지 제거
-```
-
-#### 2. Q&A 추출 및 분류
-
-```
-pipeline/steps/step1_extract_basic.py → 기본 문제 추출
-pipeline/steps/step2_extract_full.py → 전체 문제 추출 (태그 대치)
-  - cycle=None이면 final_data_path에서 모든 사이클의 원본 파일을 자동으로 찾아서 처리
-  - 특정 사이클만 처리하려면 cycle=1, 2, 3 중 하나 지정
-pipeline/steps/step3_classify.py → Q&A 타입별 분류
-  - cycle=None이면 모든 사이클의 파일을 자동으로 찾아서 처리
-  - 결과는 타입별 파일(multiple-choice.json, short-answer.json 등)에 병합 저장
-```
-
-#### 3. Domain/Subdomain 분류
-
-```
-pipeline/steps/step4_fill_domain.py → Domain/Subdomain 분류
-  ├── 기존 데이터로 빈칸 채우기
-  ├── LLM을 통한 분류
-  └── 실패 항목 재처리
+pipeline/steps/step1_extract_qna_w_domain.py → Q&A 추출 및 Domain 분류
+  - Q&A 추출 -> 타입별 분류 -> Domain/Subdomain 채우기
+  - cycle=None이면 모든 사이클 자동 처리
 ```
 
 #### 4. 시험문제 생성 및 평가
@@ -438,32 +398,8 @@ pipeline/steps/step9_multiple_essay.py → 객관식 문제를 서술형 문제�
 ### 메인 파이프라인 실행
 
 ```bash
-# 전체 파이프라인 실행 (Cycle 1)
-python tools/main_pipeline.py --cycle 1
-
-# 특정 단계만 실행
-python tools/main_pipeline.py --cycle 1 --steps preprocess extract_basic extract_full
-
-# 2단계: Lv2, Lv3_4만 처리 (evaluation/workbook_data/1C/Lv2/, 1C/Lv3_4/에 저장)
-python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full
-
-# 2단계만 실행 (모든 사이클 자동 처리)
-python tools/main_pipeline.py --steps extract_full
-
-# 2단계만 실행 (특정 사이클만 처리)
-python tools/main_pipeline.py --cycle 1 --steps extract_full
-
-# 3단계만 실행 (모든 사이클 자동 처리)
-python tools/main_pipeline.py --steps classify
-
-# 3단계만 실행 (특정 사이클만 처리)
-python tools/main_pipeline.py --cycle 1 --steps classify
-
-# 2단계 + 3단계 + 4단계: Lv2, Lv3_4 처리 후 분류 및 domain/subdomain 채우기
-python tools/main_pipeline.py --cycle 1 --levels Lv2 Lv3_4 --steps extract_full classify fill_domain --qna_type multiple --model x-ai/grok-4-fast
-
-# 4단계: Domain/Subdomain 분류
-python tools/main_pipeline.py --steps fill_domain --qna_type multiple --model x-ai/grok-4-fast
+# 1단계(통합): Q&A 추출 및 Domain 분류
+python tools/main_pipeline.py --steps extract_qna_w_domain --cycle 1
 
 # 5단계: 시험문제 만들기
 python tools/main_pipeline.py --steps create_exam --num_sets 5
@@ -540,7 +476,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 | ----------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--cycle`             | 사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리) | None                                                                                                                                                                                                              |
 | `--steps`             | 실행할 단계 목록 (공백으로 구분)                                                                    | None (전체 실행)                                                                                                                                                                                                  |
-|                         |                                                                                                     | 가능한 값:`preprocess`, `extract_basic`, `extract_full`, `classify`, `fill_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice`, `create_transformed_exam`, `evaluate_essay` |
+|                         |                                                                                                     | 가능한 값:`extract_qna_w_domain`, `create_exam`, `evaluate_exams`, `transform_multiple_choice`, `create_transformed_exam`, `evaluate_essay` |
 | `--levels`            | 처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4)                                                    | None (기본값: Lv2, Lv3_4, Lv5)                                                                                                                                                                                    |
 | `--base_path`         | 기본 데이터 경로                                                                                    | None (ONEDRIVE_PATH 사용)                                                                                                                                                                                         |
 | `--config_path`       | LLM 설정 파일 경로                                                                                  | None (PROJECT_ROOT_PATH/llm_config.ini 사용)                                                                                                                                                                      |
@@ -550,24 +486,13 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 
 #### 단계별 옵션
 
-**2단계 (전체 문제 추출)**
-
-| 옵션         | 설명                                            | 기본값                         |
-| ------------ | ----------------------------------------------- | ------------------------------ |
-| `--levels` | 처리할 레벨 목록 (공백으로 구분, 예: Lv2 Lv3_4) | None (기본값: Lv2, Lv3_4, Lv5) |
-
-**참고:**
-
-- `--cycle`과 `--levels`를 함께 사용하면 `evaluation/workbook_data/{cycle_path}/{level}/` 경로에 저장됩니다 (예: `--cycle 1 --levels Lv2 Lv3_4` → `workbook_data/1C/Lv2/`, `workbook_data/1C/Lv3_4/`).
-- 기존 파일이 있으면 덮어쓰기됩니다 (중복 체크 없음).
-- 내용이 비어있으면 파일을 저장하지 않습니다.
-
-**4단계 (Domain/Subdomain 분류)**
+**1단계(통합) (Q&A 추출 및 Domain 분류)**
 
 | 옵션           | 설명                              | 기본값             |
 | -------------- | --------------------------------- | ------------------ |
-| `--qna_type` | QnA 타입 (multiple, short, essay) | 'multiple'         |
-| `--model`    | 사용할 모델                       | 'x-ai/grok-4-fast' |
+| `--levels`     | 처리할 레벨 목록 (공백으로 구분)  | Lv2 Lv3_4 Lv5      |
+| `--qna_type`   | QnA 타입 (multiple, short, essay) | 'multiple'         |
+| `--model`      | 사용할 모델                       | 'x-ai/grok-4-fast' |
 
 **5단계 (시험문제 만들기)**
 
@@ -626,11 +551,7 @@ python tools/main_pipeline.py --cycle 1 --onedrive_path /path/to/onedrive --proj
 
 `--steps` 옵션에 사용할 수 있는 단계 이름:
 
-- `preprocess`: 0단계 - 텍스트 전처리
-- `extract_basic`: 1단계 - 기본 문제 추출
-- `extract_full`: 2단계 - 전체 문제 추출 (태그 대치)
-- `classify`: 3단계 - Q&A 타입별 분류
-- `fill_domain`: 4단계 - Domain/Subdomain 분류
+- `extract_qna_w_domain`: 1단계(통합) - Q&A 추출 및 Domain 분류
 - `create_exam`: 5단계 - 시험문제 만들기
 - `evaluate_exams`: 6단계 - 시험지 평가
 - `transform_multiple_choice`: 7단계 - 객관식 문제 변형
@@ -651,14 +572,7 @@ pipeline = Pipeline(
 # 전체 파이프라인 실행
 results = pipeline.run_full_pipeline(
     cycle=1,
-    steps=['preprocess', 'extract_basic', 'extract_full', 'classify']
-)
-
-# 개별 단계 실행
-result = pipeline.step0.execute(cycle=1)
-result = pipeline.step2.execute(cycle=1, levels=['Lv2', 'Lv3_4'])
-result = pipeline.step3.execute(cycle=None)  # 모든 사이클 자동 처리
-result = pipeline.step4.execute(qna_type='multiple', model='x-ai/grok-4-fast')
+result = pipeline.step1_domain.execute(cycle=1, levels=['Lv2', 'Lv3_4'], model='x-ai/grok-4-fast')
 result = pipeline.step5.execute(num_sets=5)
 result = pipeline.step6.execute(exam_dir="/path/to/exam/directory")
 result = pipeline.step7.execute(

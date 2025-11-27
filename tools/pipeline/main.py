@@ -7,11 +7,7 @@
 from typing import List, Dict, Any, Optional
 from .base import PipelineBase
 from .steps import (
-    Step0Preprocessing,
-    Step1ExtractBasic,
-    Step2ExtractFull,
-    Step3Classify,
-    Step4FillDomain,
+    Step1ExtractQnAWDomain,
     Step5CreateExam,
     Step6Evaluate,
     Step7TransformMultipleChoice,
@@ -35,11 +31,7 @@ class Pipeline(PipelineBase):
         super().__init__(base_path, config_path, onedrive_path, project_root_path)
         
         # 각 단계 인스턴스 생성
-        self.step0 = Step0Preprocessing(base_path, config_path, onedrive_path, project_root_path)
-        self.step1 = Step1ExtractBasic(base_path, config_path, onedrive_path, project_root_path)
-        self.step2 = Step2ExtractFull(base_path, config_path, onedrive_path, project_root_path)
-        self.step3 = Step3Classify(base_path, config_path, onedrive_path, project_root_path)
-        self.step4 = Step4FillDomain(base_path, config_path, onedrive_path, project_root_path)
+        self.step1_domain = Step1ExtractQnAWDomain(base_path, config_path, onedrive_path, project_root_path)
         self.step5 = Step5CreateExam(base_path, config_path, onedrive_path, project_root_path)
         self.step6 = Step6Evaluate(base_path, config_path, onedrive_path, project_root_path)
         self.step7 = Step7TransformMultipleChoice(base_path, config_path, onedrive_path, project_root_path)
@@ -71,7 +63,7 @@ class Pipeline(PipelineBase):
         Args:
             cycle: 사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 사용
             steps: 실행할 단계 리스트 (None이면 전체 실행)
-                가능한 값: 'preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam', 'evaluate_essay'
+                가능한 값: 'extract_qna_w_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam', 'evaluate_essay'
             qna_type: QnA 타입 (4단계에서 사용, None이면 모든 타입 처리: 'multiple', 'short', 'essay')
             model: 사용할 모델 (4단계에서 사용)
             num_sets: 시험 세트 개수 (5단계에서 사용)
@@ -104,41 +96,14 @@ class Pipeline(PipelineBase):
             실행 결과
         """
         if steps is None:
-            steps = ['preprocess', 'extract_basic', 'extract_full', 'classify', 'fill_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam', 'evaluate_essay']
+            steps = ['extract_qna_w_domain', 'create_exam', 'evaluate_exams', 'transform_multiple_choice', 'create_transformed_exam', 'evaluate_essay']
         
         results = {}
         
         try:
-            if 'preprocess' in steps:
-                if cycle is None:
-                    results['preprocess'] = {'success': False, 'error': 'cycle 필요'}
-                else:
-                    results['preprocess'] = self.step0.execute(cycle)
-            
-            if 'extract_basic' in steps:
-                if cycle is None:
-                    results['extract_basic'] = {'success': False, 'error': 'cycle 필요'}
-                else:
-                    results['extract_basic'] = self.step1.execute(cycle)
-            
-            if 'extract_full' in steps:
+            if 'extract_qna_w_domain' in steps:
                 # cycle이 None이어도 가능 (모든 사이클 자동 처리)
-                results['extract_full'] = self.step2.execute(cycle, levels=levels)
-            
-            if 'classify' in steps:
-                # cycle이 None이어도 가능 (모든 사이클 자동 처리)
-                results['classify'] = self.step3.execute(cycle)
-            
-            if 'fill_domain' in steps:
-                # qna_type이 None이면 모든 타입 처리
-                if qna_type is None:
-                    qna_types = ['multiple', 'short', 'essay']
-                    for qtype in qna_types:
-                        self.logger.info(f"fill_domain 처리 시작: {qtype}")
-                        result = self.step4.execute(qna_type=qtype, model=model)
-                        results[f'fill_domain_{qtype}'] = result
-                else:
-                    results['fill_domain'] = self.step4.execute(qna_type=qna_type, model=model)
+                results['extract_qna_w_domain'] = self.step1_domain.execute(cycle, levels=levels, model=model)
             
             if 'create_exam' in steps:
                 results['create_exam'] = self.step5.execute(num_sets=num_sets)
