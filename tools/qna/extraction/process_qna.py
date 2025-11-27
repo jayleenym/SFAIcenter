@@ -16,7 +16,7 @@ from tools import tools_dir
 sys.path.insert(0, tools_dir)
 from core.llm_query import LLMQuery
 from core.utils import FileManager
-from qna.qna_processor import TagProcessor
+from qna.qna_processor import TagProcessor, QnATypeClassifier
 
 # LLMQuery 인스턴스 생성 (전역 변수로 캐시)
 _llm_query_instance = None
@@ -30,38 +30,8 @@ def _get_llm_query():
 
 
 def analyze_extracted_qna(qna_info: dict):
-    try:
-        if 'description' in qna_info and 'options' in qna_info['description']:
-            options = qna_info['description']['options']
-            answer = qna_info['description']['answer']
-            # 객관식 판별: O/X 선택 또는 ①②③④⑤ 번호 선택만
-            # if (answer in ['O', 'X']) or \
-            #     (answer in ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']) or \
-            if (len(options) >= 2):
-                if len(answer) == 1 and (answer in ['O', 'X'] or answer in ['①', '②', '③', '④', '⑤']):
-                    # 객관식 (O, X 문제 또는 ①~⑩ 번호 선택)
-                    return 'multiple-choice'
-                else:
-                    return 'etc'
-            else:
-                # 주관식 - 답변의 문장 수로 단답형/서술형 구분
-                sentence_count = answer.count('.') + answer.count('!') + answer.count('?') + answer.count('\n')
-                
-                # {f_0000_0000} 또는 {tb_0000_0000} 패턴만 있는 경우 short-answer로 분류
-                import re
-                pattern_only_answer = re.match(r'^\{[ft]b?_\d{4}_\d{4}\}$', answer.strip())
-                
-                if len(answer) == 0:
-                    return "etc"
-                elif (sentence_count <= 1) or pattern_only_answer:
-                    # 한 문장 또는 한 단어 (단답형)
-                    # 또는 {f_0000_0000}, {tb_0000_0000} 패턴만 있는 경우
-                    return 'short-answer'
-                else:
-                    # 2문장 이상 (서술형)
-                    return 'essay'
-    except Exception as e:
-        print("분석 오류:", e)
+    """Q&A 타입 분류 (QnATypeClassifier 사용)"""
+    return QnATypeClassifier.classify_qna_type(qna_info)
 
 
 def add_qna_domain_onebyone(json_data: dict, page_data: dict, model: str = None) -> list:
@@ -261,7 +231,7 @@ def extract_qna_tags(json_data: Dict[str, Any], file_name: str, output_path: str
                     # indices_to_remove.add(qna_item_index)
 
                     # 질문 타입
-                    qna_type = analyze_extracted_qna(qna_item)
+                    qna_type = QnATypeClassifier.classify_qna_type(qna_item)
 
                     # Domain 찾기
                     # with_domain_dir = "/Users/jinym/Desktop/Desktop_AICenter✨/SFAIcenter/data/FIN_workbook/1C/with_domain"
@@ -574,7 +544,7 @@ def merge_qna_by_domain(input_dir: str, output_dir: str = None) -> Dict[str, Any
 
 def process_json_file_with_tag_replacement(file_path: str) -> bool:
     """
-    JSON 파일을 로드하고 태그 대치를 수행한 후 저장합니다.
+    JSON 파일을 로드하고 태그 대치를 수행한 후 저장합니다. (JSONHandler 사용)
     
     Args:
         file_path: 처리할 JSON 파일 경로
@@ -582,10 +552,11 @@ def process_json_file_with_tag_replacement(file_path: str) -> bool:
     Returns:
         성공 여부
     """
+    from core.utils import JSONHandler
+    
     try:
-        # JSON 파일 로드
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        # JSON 파일 로드 (JSONHandler 사용)
+        data = JSONHandler.load(file_path)
         
         # extracted_qna 데이터가 있는 경우 처리
         if 'extracted_qna' in data and isinstance(data['extracted_qna'], list):
@@ -606,9 +577,8 @@ def process_json_file_with_tag_replacement(file_path: str) -> bool:
             shutil.copy2(file_path, backup_path)
             print(f"Backup created: {backup_path}")
             
-            # 수정된 데이터 저장
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
+            # 수정된 데이터 저장 (JSONHandler 사용)
+            JSONHandler.save(data, file_path)
             
             print(f"Tag replacement completed for {os.path.basename(file_path)}")
             return True

@@ -8,21 +8,26 @@ file_id와 tag를 기준으로 매칭하여 domain, subdomain, classification_re
 
 import json
 import os
+import sys
 import argparse
 from typing import Dict, List, Any, Tuple
 from collections import defaultdict
 from datetime import datetime
 
+# tools 모듈 import를 위한 경로 설정
+current_dir = os.path.dirname(os.path.abspath(__file__))
+_temp_tools_dir = os.path.dirname(current_dir)  # qna -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
+sys.path.insert(0, tools_dir)
+from tools.core.utils import JSONHandler
+
 
 def load_json_file(file_path: str) -> List[Dict[str, Any]]:
-    """JSON 파일을 로드합니다."""
+    """JSON 파일을 로드합니다. (JSONHandler 사용)"""
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"파일을 찾을 수 없습니다: {file_path}")
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    
-    return data
+    return JSONHandler.load(file_path)
 
 
 def create_lookup_dict(source_data: List[Dict[str, Any]]) -> Dict[Tuple[str, str], Dict[str, Any]]:

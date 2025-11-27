@@ -46,10 +46,19 @@ def extract_ss_pattern_from_question(question_text):
     return matches[0] if matches else None
 
 def load_json_file(file_path):
-    """JSON 파일을 로드합니다."""
+    """JSON 파일을 로드합니다. (JSONHandler 사용)"""
+    import sys
+    import os
+    # tools 모듈 import를 위한 경로 설정
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    _temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # analysis -> qna -> tools
+    sys.path.insert(0, _temp_tools_dir)
+    from tools import tools_dir
+    sys.path.insert(0, tools_dir)
+    from tools.core.utils import JSONHandler
+    
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        return JSONHandler.load(file_path)
     except Exception as e:
         print(f"Error loading {file_path}: {e}")
         return None

@@ -7,40 +7,22 @@ import json
 import os
 import glob
 import re
+import sys
 from pathlib import Path
+
+# tools 모듈 import를 위한 경로 설정
+current_dir = os.path.dirname(os.path.abspath(__file__))
+_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # processing -> qna -> tools
+sys.path.insert(0, _temp_tools_dir)
+from tools import tools_dir
+sys.path.insert(0, tools_dir)
+from qna.qna_processor import QnATypeClassifier
 
 def analyze_extracted_qna(qna_info: dict):
     """
-    Updated QnA classification function with corrected multiple-choice criteria.
+    Q&A 타입 분류 (QnATypeClassifier 사용)
     """
-    try:
-        if 'description' in qna_info and 'options' in qna_info['description']:
-            options = qna_info['description']['options']
-            answer = qna_info['description']['answer']
-            # 객관식 판별: O/X 선택 또는 ①②③④⑤ 번호 선택만
-            if (answer in ['O', 'X']) or \
-               (answer in ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']):
-                # 객관식
-                return 'multiple-choice'
-            else:
-                # 주관식 - 답변의 문장 수로 단답형/서술형 구분
-                sentence_count = answer.count('.') + answer.count('!') + answer.count('?') + answer.count('\n')
-                
-                # {f_0000_0000} 또는 {tb_0000_0000} 패턴만 있는 경우 short-answer로 분류
-                pattern_only_answer = re.match(r'^\{[ft]b?_\d{4}_\d{4}\}$', answer.strip())
-                
-                if len(answer) == 0:
-                    return ""
-                elif (sentence_count <= 1) and (("{" not in answer) or pattern_only_answer):
-                    # 한 문장 또는 한 단어 (단답형)
-                    # 또는 {f_0000_0000}, {tb_0000_0000} 패턴만 있는 경우
-                    return 'short-answer'
-                else:
-                    # 2문장 이상 (서술형)
-                    return 'essay'
-    except Exception as e:
-        print(f"분석 오류: {e}")
-        return None
+    return QnATypeClassifier.classify_qna_type(qna_info)
 
 def reclassify_qna_data(data):
     """

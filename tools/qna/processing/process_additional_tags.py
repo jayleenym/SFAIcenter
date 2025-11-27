@@ -20,6 +20,8 @@ try:
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
     sys.path.insert(0, project_root)
     from tools import ONEDRIVE_PATH
+    from tools.core.utils import JSONHandler
+    from tools.qna.qna_processor import TagProcessor
 except ImportError:
     # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
     import platform
@@ -29,74 +31,39 @@ except ImportError:
         ONEDRIVE_PATH = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
     else:
         ONEDRIVE_PATH = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+    # fallback for imports
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    _temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))
+    sys.path.insert(0, _temp_tools_dir)
+    from tools.core.utils import JSONHandler
+    from tools.qna.qna_processor import TagProcessor
 
 
 def load_json_file(file_path: str) -> Dict[str, Any]:
-    """JSON 파일을 로드합니다."""
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    """JSON 파일을 로드합니다. (JSONHandler 사용)"""
+    return JSONHandler.load(file_path)
 
 def save_json_file(data: List[Dict[str, Any]], file_path: str) -> None:
-    """JSON 파일을 저장합니다."""
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    """JSON 파일을 저장합니다. (JSONHandler 사용)"""
+    JSONHandler.save(data, file_path)
 
 def extract_page_from_tag(tag: str) -> str:
-    """tag에서 페이지 번호를 추출합니다.
-    예: {img_0205_0001} -> 0205
-    """
-    # 중괄호 제거
-    clean_tag = tag.strip('{}')
-    
-    # 패턴 매칭: img_0205_0001, f_0205_0001, tb_0205_0001, note_0205_0001, etc_0205_0001 등
-    match = re.match(r'^(img|f|tb|note|etc)_(\d{4})_\d+$', clean_tag)
-    if match:
-        return match.group(2)
-    
-    return None
+    """tag에서 페이지 번호를 추출합니다. (TagProcessor 사용)"""
+    return TagProcessor.extract_page_from_tag(tag)
 
 def find_tag_data_in_add_info(add_info: List[Dict], tag: str) -> Dict[str, Any]:
-    """add_info에서 특정 tag에 해당하는 데이터를 찾습니다."""
-    clean_tag = tag.strip('{}')
-    
-    for item in add_info:
-        if item.get('tag') == clean_tag:
-            return item
-    
-    return None
+    """add_info에서 특정 tag에 해당하는 데이터를 찾습니다. (TagProcessor 사용)"""
+    return TagProcessor.find_tag_data_in_add_info(add_info, tag)
 
 def extract_tags_from_qna_content(qna_item: Dict) -> List[str]:
-    """Q&A 내용에서 img_, f_, tb_, etc_, note_ 태그를 추출합니다."""
-    qna_content = ""
-    if 'qna_data' in qna_item and 'description' in qna_item['qna_data']:
-        desc = qna_item['qna_data']['description']
-        # question, answer, explanation, options에서 태그 추출
-        for field in ['question', 'answer', 'explanation', 'options']:
-            if field in desc and desc[field]:
-                if field == 'options' and isinstance(desc[field], list):
-                    # options는 리스트이므로 각 항목을 합침
-                    for option in desc[field]:
-                        qna_content += str(option) + " "
-                elif field == 'explanation':
-                    # explanation은 긴 문자열이므로 명시적으로 처리
-                    qna_content += str(desc[field]) + " "
-                else:
-                    # question, answer 등 문자열 필드
-                    qna_content += str(desc[field]) + " "
-    
-    # Q&A 내용에서 tb, img, f, etc, note 태그 추출
-    tb_tags = re.findall(r'\{tb_\d{4}_\d{4}\}', qna_content)
-    img_tags = re.findall(r'\{img_\d{4}_\d{4}\}', qna_content)
-    f_tags = re.findall(r'\{f_\d{4}_\d{4}\}', qna_content)
-    etc_tags = re.findall(r'\{etc_\d{4}_\d{4}\}', qna_content)
-    footnote_tags = re.findall(r'\{note_\d{4}_\d{4}\}', qna_content)
-    
-    return tb_tags + img_tags + f_tags + etc_tags + footnote_tags
+    """Q&A 내용에서 img_, f_, tb_, etc_, note_ 태그를 추출합니다. (TagProcessor 사용)"""
+    return TagProcessor.extract_tags_from_qna_content(qna_item)
 
 def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data: Dict) -> tuple:
-    """additional_tags_found에 있지만 additional_tag_data에 없는 태그들을 추가합니다."""
+    """additional_tags_found에 있지만 additional_tag_data에 없는 태그들을 추가합니다. (TagProcessor 사용)"""
+    tag_processor = TagProcessor()
     
-    # add_info에서 태그 데이터 수집
+    # add_info에서 태그 데이터 수집 (기존 로직 유지 - data 섹션도 확인)
     source_tags_data = {}
     for item in source_data.get('contents', []):
         if "add_info" in item and isinstance(item["add_info"], list):
@@ -121,8 +88,8 @@ def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data: Dict) -> t
         # 기존 additional_tags_found 가져오기
         additional_tags_found = set(entry.get("additional_tags_found", []))
         
-        # Q&A 내용에서 추가 태그 추출
-        content_tags = extract_tags_from_qna_content(entry)
+        # Q&A 내용에서 추가 태그 추출 (TagProcessor 사용)
+        content_tags = tag_processor.extract_tags_from_qna_content(entry)
         if content_tags:
             print(f"항목 {i}에서 Q&A 내용에서 {len(content_tags)}개의 태그 발견: {content_tags}")
             # 새로 발견된 태그들을 additional_tags_found에 추가
@@ -170,7 +137,8 @@ def fix_missing_tags_with_add_info(qna_data: List[Dict], source_data: Dict) -> t
     return tags_added_from_source, tags_added_empty, tags_found_in_content
 
 def fill_additional_tag_data(qna_data: List[Dict], source_data: Dict) -> tuple:
-    """빈 additional_tag_data의 "data":{}를 원본 파일의 add_info에서 채웁니다."""
+    """빈 additional_tag_data의 "data":{}를 원본 파일의 add_info에서 채웁니다. (TagProcessor 사용)"""
+    tag_processor = TagProcessor()
     
     # 페이지별 add_info를 인덱싱
     page_add_info = {}
@@ -193,12 +161,12 @@ def fill_additional_tag_data(qna_data: List[Dict], source_data: Dict) -> tuple:
                     tag = tag_data.get('tag')
                     
                     if tag:
-                        # 페이지 번호 추출
-                        page_num = extract_page_from_tag(tag)
+                        # 페이지 번호 추출 (TagProcessor 사용)
+                        page_num = tag_processor.extract_page_from_tag(tag)
                         
                         if page_num and page_num in page_add_info:
-                            # 해당 페이지의 add_info에서 tag 데이터 찾기
-                            found_data = find_tag_data_in_add_info(page_add_info[page_num], tag)
+                            # 해당 페이지의 add_info에서 tag 데이터 찾기 (TagProcessor 사용)
+                            found_data = tag_processor.find_tag_data_in_add_info(page_add_info[page_num], tag)
                             
                             if found_data:
                                 tag_data['data'] = found_data
