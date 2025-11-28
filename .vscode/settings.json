@@ -1,9 +1,0 @@
-{
-    "python.defaultInterpreterPath": "$(conda env list | grep '^internal' | awk '{print $NF}')/bin/python",
-    "python.condaPath": "$(which conda)",
-    "terminal.integrated.shellArgs.osx": [
-        "-l",
-        "-c",
-        "conda activate internal && exec $SHELL -l"
-    ]
-}
