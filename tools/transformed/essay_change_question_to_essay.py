@@ -81,7 +81,7 @@ except ImportError:
         _clean_question_data = None
 
 
-def change_question_to_essay(llm=None, onedrive_path=None, log_func=None, round_number=None):
+def change_question_to_essay(llm=None, onedrive_path=None, log_func=None, round_number=None, input_file=None, output_file=None):
     """
     1단계: 서술형 문제로 변환
     
@@ -90,7 +90,8 @@ def change_question_to_essay(llm=None, onedrive_path=None, log_func=None, round_
         onedrive_path: OneDrive 경로 (None이면 ONEDRIVE_PATH 사용)
         log_func: 로깅 함수 (None이면 logger.info 또는 print 사용)
         round_number: 회차 번호 (예: '1', '2', '3', '4', '5')
-    
+        input_file: 입력 파일 경로 (None이면 기본 경로 사용)
+        output_file: 출력 파일 경로 (None이면 기본 경로 사용)
     Returns:
         int: 처리된 문제 개수
     """
@@ -101,8 +102,10 @@ def change_question_to_essay(llm=None, onedrive_path=None, log_func=None, round_
         return 0
     
     essay_dir = _get_essay_dir(onedrive_path)
-    input_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}.json')
-    output_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}_서술형문제로변환.json')
+    if input_file is None:
+        input_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}.json')
+    if output_file is None:
+        output_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}_서술형문제로변환.json')
     
     questions = _load_questions(input_file, log_func, '1단계')
     if questions is None:

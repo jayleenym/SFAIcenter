@@ -24,7 +24,7 @@ except ImportError:
 ROUND_NUMBER_TO_FOLDER = {'1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th'}
 
 
-def _init_common(llm, onedrive_path, log_func, logger=None):
+def _init_common(llm=None, onedrive_path=None, log_func=None, logger=None):
     """공통 초기화 함수"""
     if onedrive_path is None:
         onedrive_path = ONEDRIVE_PATH
