@@ -11,16 +11,16 @@ import subprocess
 
 # Import handling for both script and module execution
 try:
-    from qna.tag_processor import TagProcessor
-    from qna.formatting import should_include_qna_item
+    from tools.qna.extraction.tag_processor import TagProcessor
+    from .formatting import should_include_qna_item
 except ImportError:
     import sys
     import os
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
     sys.path.insert(0, project_root)
-    from qna.tag_processor import TagProcessor
-    from qna.formatting import should_include_qna_item
+    from qna.extraction.tag_processor import TagProcessor
+    from qna.processing.formatting import should_include_qna_item
 
 
 # pipeline/config에서 ONEDRIVE_PATH import 시도

@@ -32,7 +32,7 @@ sys.path.insert(0, tools_dir)
 # 전역 변수로 export (steps에서 사용)
 try:
     from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
-    from tools.qna.fill_multiple_choice_data import (
+    from tools.qna.processing.fill_multiple_choice_data import (
         load_json_file, create_lookup_dict, fill_multiple_choice_data
     )
     from evaluation.multiple_eval_by_model import (
@@ -46,7 +46,7 @@ except ImportError:
     pass
     try:
         from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
-        from tools.qna.fill_multiple_choice_data import (
+        from tools.qna.processing.fill_multiple_choice_data import (
             load_json_file, create_lookup_dict, fill_multiple_choice_data
         )
         from evaluation.multiple_eval_by_model import (

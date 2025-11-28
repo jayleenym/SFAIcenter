@@ -7,7 +7,7 @@ Q&A 추출 모듈
 """
 
 from typing import Dict, Any, List, Optional
-from .extraction.batch_extractor import BatchExtractor
+from .batch_extractor import BatchExtractor
 
 class QnAMaker(BatchExtractor):
     """

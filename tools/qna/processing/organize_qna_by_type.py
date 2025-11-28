@@ -12,11 +12,11 @@ from typing import Dict, Any, Optional
 # tools 모듈 import를 위한 경로 설정 (필요한 경우)
 from .formatting import format_qna_item, should_include_qna_item
 # QnATypeClassifier가 필요하다면 import (step3에서는 사용했지만, 여기서는 로직을 직접 구현하거나 import)
-# step3에서는 qna.qna_processor.QnATypeClassifier를 사용했음.
-from .qna_processor import QnATypeClassifier
+# step3에서는 qna.processing.qna_type_classifier.QnATypeClassifier를 사용했음.
+from .qna_type_classifier import QnATypeClassifier
 
-class QnAClassifier:
-    """Q&A 타입 분류 클래스"""
+class QnAOrganizer:
+    """Q&A 타입별 정리 클래스"""
     
     def __init__(self, file_manager, json_handler, logger=None):
         self.file_manager = file_manager
@@ -84,12 +84,8 @@ class QnAClassifier:
                 for qna_item in qna_data:
                     qna_type = qna_item.get('qna_type', 'etc')
                     
-                    # 문제에 {img_ 가 포함되어 있으면 etc로 분류
-                    question = qna_item.get('question', '')
-                    if '{img_' in question:
-                        qna_type = 'etc'
-                    
-                    # 필터링 조건 확인
+                    # 필터링 조건 확인 (img/etc 태그 포함 여부 및 타입별 조건 확인)
+                    # formatting.should_include_qna_item에서 img/etc 태그가 포함된 문제는 자동으로 제외됨
                     if not should_include_qna_item(qna_item, qna_type):
                         continue
                     

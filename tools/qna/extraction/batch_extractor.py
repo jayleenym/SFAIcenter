@@ -15,7 +15,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from pathlib import Path
 
 from tools.core.utils import FileManager, JSONHandler
-from tools.qna.qna_processor import QnAExtractor
+from tools.qna.extraction.qna_extractor import QnAExtractor
 
 class BatchExtractor:
     """Q&A 일괄 추출 클래스"""

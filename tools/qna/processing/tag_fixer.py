@@ -10,7 +10,7 @@ import logging
 from typing import Dict, Any, List, Optional
 
 from tools.core.utils import FileManager, JSONHandler
-from tools.qna.tag_processor import TagProcessor
+from tools.qna.extraction.tag_processor import TagProcessor
 
 class TagFixer:
     """Q&A 태그 대치 클래스"""

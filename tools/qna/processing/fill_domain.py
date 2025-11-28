@@ -13,9 +13,9 @@ import sys
 from typing import Dict, Any, List
 
 # tools 모듈 import를 위한 경로 설정 (필요한 경우)
-# 이 파일이 tools/qna/ 에 위치하므로 상위 디렉토리 접근 가능해야 함
+# 이 파일이 tools/qna/processing/ 에 위치하므로 상위 디렉토리 접근 가능해야 함
 try:
-    from .processing.qna_subdomain_classifier import QnASubdomainClassifier
+    from .qna_subdomain_classifier import QnASubdomainClassifier
 except ImportError:
     QnASubdomainClassifier = None
 

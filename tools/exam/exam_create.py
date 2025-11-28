@@ -13,7 +13,7 @@ import copy
 from typing import Dict, Any, List, Tuple, Set
 from core.exam_config import ExamConfig
 from exam.exam_validator import ExamValidator
-from qna.tag_processor import TagProcessor
+from qna.extraction.tag_processor import TagProcessor
 
 class ExamMaker:
     """시험문제 생성 클래스"""

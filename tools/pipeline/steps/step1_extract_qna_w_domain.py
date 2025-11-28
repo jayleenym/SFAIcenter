@@ -23,9 +23,9 @@ from tools import tools_dir
 sys.path.insert(0, tools_dir)
 
 # 새로 만든 모듈들 import
-from qna.make_extracted_qna import QnAMaker
-from qna.classify_qna_type import QnAClassifier
-from qna.fill_domain import DomainFiller
+from qna.extraction.make_extracted_qna import QnAMaker
+from qna.processing.organize_qna_by_type import QnAOrganizer
+from qna.processing.fill_domain import DomainFiller
 
 class Step1ExtractQnAWDomain(PipelineBase):
     """1단계: Q&A 추출 및 Domain 분류 (통합)"""
@@ -62,10 +62,10 @@ class Step1ExtractQnAWDomain(PipelineBase):
             extract_result = maker.process_cycle(cycle, levels, self.onedrive_path, debug=debug)
             self.logger.info(f"Q&A 추출 완료: {extract_result}")
             
-            # 2-3. 타입별 분류 및 저장 (classify_qna_type.py)
+            # 2-3. 타입별 분류 및 저장 (organize_qna_by_type.py)
             self.logger.info("--- 2-3. 타입별 분류 시작 ---")
-            classifier = QnAClassifier(self.file_manager, self.json_handler, self.logger)
-            classify_result = classifier.classify_and_save(cycle, self.onedrive_path, debug=debug)
+            organizer = QnAOrganizer(self.file_manager, self.json_handler, self.logger)
+            classify_result = organizer.classify_and_save(cycle, self.onedrive_path, debug=debug)
             self.logger.info(f"타입별 분류 완료: {classify_result}")
             
             # 4-5. Domain/Subdomain 채우기 (fill_domain.py)

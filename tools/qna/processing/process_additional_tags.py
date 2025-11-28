@@ -21,7 +21,7 @@ try:
     sys.path.insert(0, project_root)
     from tools import ONEDRIVE_PATH
     from tools.core.utils import JSONHandler
-    from tools.qna.tag_processor import TagProcessor
+    from tools.qna.extraction.tag_processor import TagProcessor
 except ImportError:
     # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
     import platform
@@ -36,7 +36,7 @@ except ImportError:
     _temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))
     sys.path.insert(0, _temp_tools_dir)
     from tools.core.utils import JSONHandler
-    from tools.qna.tag_processor import TagProcessor
+    from tools.qna.extraction.tag_processor import TagProcessor
 
 
 def load_json_file(file_path: str) -> Dict[str, Any]:

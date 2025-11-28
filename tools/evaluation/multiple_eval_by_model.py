@@ -28,7 +28,7 @@ try:
     from tools.core.logger import setup_logger
     from tools.core.llm_query import LLMQuery
     from tools.core.utils import TextProcessor
-    from tools.qna.tag_processor import TagProcessor
+    from tools.qna.extraction.tag_processor import TagProcessor
 except ImportError:
     # Fallback for standalone execution
     PROJECT_ROOT_PATH = os.getcwd()

@@ -16,8 +16,8 @@ from datetime import datetime
 
 # tools 모듈 import를 위한 경로 설정
 current_dir = os.path.dirname(os.path.abspath(__file__))
-_temp_tools_dir = os.path.dirname(current_dir)  # qna -> tools
-sys.path.insert(0, _temp_tools_dir)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir))) # processing -> qna -> tools -> root
+sys.path.insert(0, project_root)
 from tools import tools_dir
 sys.path.insert(0, tools_dir)
 from tools.core.utils import JSONHandler
