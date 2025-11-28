@@ -17,25 +17,22 @@ def epub_to_pdf(filepath, oname: None, rename : None, ten: False):
     return filename
 
 
-def check_pdf_pages(input, ouput, dir):
-    df = pd.read_excel(input, header=4)[['관리 ID', '도서명']]
-
+def check_pdf_pages(cycle, output_file):
+    from tools.core.utils import FileManager
+    file_manager = FileManager()
+    df = file_manager.load_excel_metadata(cycle)
+    dir = os.path.join(file_manager.original_data_path, f'{cycle}C', 'Lv1')
+    if not os.path.exists(dir):
+        print(f"경로가 존재하지 않습니다: {dir}")
+        return
+    
     for file in tqdm(os.listdir(dir)):
-        isbn = file.split(".")[0]
-
-        if file.endswith(".EPUB"):
-            name = epub_to_pdf(dir+file, file, isbn)
-            reader = PyPDF2.PdfReader(name)
-            df.loc[df[df['ISBN'] == int(isbn)].index[0], '본 페이지수'] = len(reader.pages)
-
-            name10 = epub_to_pdf(dir+file, file, isbn, True)    
-            reader2 = PyPDF2.PdfReader(name10)
-            df.loc[df[df['ISBN'] == int(isbn)].index[0], '10p 페이지수'] = len(reader2.pages)
-
-
+        file_id = file.split(".")[0]
         if file.endswith(".PDF") or file.endswith(".pdf"):
-            reader = PyPDF2.PdfReader(dir+file)
-            # df.loc[df[df['ISBN'] == int(isbn)].index[0], '본 페이지수'] = len(reader3.pages)
-            df.loc[df[df['관리 ID'] == isbn].index[0], '본 페이지수'] = len(reader.pages)
-            
-    df.to_excel(ouput, index=False)
+            reader = PyPDF2.PdfReader(os.path.join(dir, file))
+            df.loc[file_id, '본 페이지수'] = len(reader.pages)
+            # print(file_id, len(reader.pages))
+    
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': '관리번호'}, inplace=True)
+    df.to_excel(output_file, index=False)
