@@ -10,10 +10,11 @@ import os
 import json
 import random
 import copy
-from typing import Dict, Any, List, Tuple, Set
+from typing import Dict, Any, List, Tuple, Set, Optional
 from core.exam_config import ExamConfig
 from exam.exam_validator import ExamValidator
 from qna.extraction.tag_processor import TagProcessor
+from exam.extract_exam_question_list import load_question_lists
 
 class ExamMaker:
     """시험문제 생성 클래스"""
@@ -72,7 +73,7 @@ class ExamMaker:
         
         return None
 
-    def create_exams(self, num_sets: int = 5, seed: int = 42, debug: bool = False) -> Dict[str, Any]:
+    def create_exams(self, num_sets: int = 5, seed: int = 42, debug: bool = False, random_mode: bool = False) -> Dict[str, Any]:
         """
         시험문제 생성 실행
         
@@ -80,9 +81,11 @@ class ExamMaker:
             num_sets: 생성할 시험 세트 개수 (기본값: 5)
             seed: 랜덤 시드 값 (기본값: 42)
             debug: 디버그 모드 (기존 파일 백업 및 활용, 기본값: False)
+            random_mode: 랜덤 모드 (True면 새로 뽑기, False면 저장된 문제 번호 리스트 사용, 기본값: False)
         """
         random.seed(seed)
-        self.logger.info(f"=== 시험문제 만들기 ({num_sets}세트, seed={seed}, debug={debug}) ===")
+        mode_str = "랜덤 모드" if random_mode else "저장된 리스트 사용 모드"
+        self.logger.info(f"=== 시험문제 만들기 ({num_sets}세트, seed={seed}, debug={debug}, {mode_str}) ===")
         
         try:
             set_names = {1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th'}
@@ -113,8 +116,23 @@ class ExamMaker:
             exam_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '4_multiple_exam')
             os.makedirs(exam_dir, exist_ok=True)
             
+            # 저장된 문제 번호 리스트 로드 (random_mode가 False일 때)
+            question_lists = None
+            if not random_mode:
+                question_list_file = os.path.join(exam_dir, 'exam_question_lists.json')
+                if os.path.exists(question_list_file):
+                    try:
+                        question_lists = load_question_lists(question_list_file)
+                        self.logger.info(f"저장된 문제 번호 리스트 로드 완료: {question_list_file}")
+                    except Exception as e:
+                        self.logger.warning(f"문제 번호 리스트 로드 실패: {e}. 랜덤 모드로 전환합니다.")
+                        random_mode = True
+                else:
+                    self.logger.warning(f"문제 번호 리스트 파일을 찾을 수 없습니다: {question_list_file}. 랜덤 모드로 전환합니다.")
+                    random_mode = True
+            
             for exam_name in stats.keys():
-                self._process_exam_subject(exam_name, stats, num_sets, set_names, exam_dir, all_data, used_questions, debug)
+                self._process_exam_subject(exam_name, stats, num_sets, set_names, exam_dir, all_data, used_questions, debug, random_mode, question_lists)
             
             self._save_remaining_questions(all_data, used_questions)
             
@@ -130,7 +148,8 @@ class ExamMaker:
             return {'success': False, 'error': str(e)}
 
     def _process_exam_subject(self, exam_name: str, stats: Dict, num_sets: int, set_names: Dict, 
-                            exam_dir: str, all_data: List[Dict], used_questions: Set, debug: bool = False):
+                            exam_dir: str, all_data: List[Dict], used_questions: Set, debug: bool = False,
+                            random_mode: bool = False, question_lists: Optional[Dict[str, Dict[str, List[Dict[str, str]]]]] = None):
         """과목별 시험문제 처리"""
         self.logger.info(f"{'='*50}")
         self.logger.info(f"과목: {exam_name}")
@@ -166,40 +185,154 @@ class ExamMaker:
                 sets_to_create.append(set_num)
         
         if sets_to_create:
-            self._create_new_sets(exam_name, stats, sets_to_create, set_names, exam_dir, all_data, used_questions, total_exam_questions, debug)
+            self._create_new_sets(exam_name, stats, sets_to_create, set_names, exam_dir, all_data, used_questions, total_exam_questions, debug, random_mode, question_lists)
             
         if sets_to_update:
-            self._update_sets(exam_name, stats, sets_to_update, set_names, exam_dir, existing_exams_data, all_data, used_questions, total_exam_questions, debug)
+            self._update_sets(exam_name, stats, sets_to_update, set_names, exam_dir, existing_exams_data, all_data, used_questions, total_exam_questions, debug, random_mode, question_lists)
 
     def _create_new_sets(self, exam_name: str, stats: Dict, sets_to_create: List[int], set_names: Dict, 
-                       exam_dir: str, all_data: List[Dict], used_questions: Set, total_exam_questions: int, debug: bool = False):
+                       exam_dir: str, all_data: List[Dict], used_questions: Set, total_exam_questions: int, debug: bool = False,
+                       random_mode: bool = False, question_lists: Optional[Dict[str, Dict[str, List[Dict[str, str]]]]] = None):
         """새로운 세트 생성"""
         exam_data_sets = [[] for _ in range(len(set_names) + 1)] # 1-based indexing support
         
-        for domain in stats[exam_name].keys():
-            domain_data = [d for d in all_data if d.get('domain') == domain]
-            
-            for subdomain, needed_count in stats[exam_name][domain]['exam_subdomain_distribution'].items():
-                subdomain_data = [
-                    d for d in domain_data 
-                    if d.get('subdomain') == subdomain
-                    and (d.get('file_id', ''), d.get('tag', '')) not in used_questions
-                ]
-                random.shuffle(subdomain_data)
+        # all_data를 (file_id, tag)로 인덱싱
+        all_data_index = {}
+        for item in all_data:
+            file_id = item.get('file_id', '')
+            tag = item.get('tag', '')
+            if file_id and tag:
+                all_data_index[(file_id, tag)] = item
+        
+        if random_mode:
+            # 랜덤 모드: 기존 로직 사용
+            for domain in stats[exam_name].keys():
+                domain_data = [d for d in all_data if d.get('domain') == domain]
                 
-                remaining_data = subdomain_data.copy()
-                for set_num in sets_to_create:
-                    if len(remaining_data) >= needed_count:
-                        sample = random.sample(remaining_data, needed_count)
-                        remaining_data = [d for d in remaining_data if d not in sample]
-                    else:
-                        sample = remaining_data[:needed_count] if remaining_data else []
-                        remaining_data = remaining_data[needed_count:] if len(remaining_data) > needed_count else []
-                        self.logger.warning(f"  - {subdomain}: 데이터 부족")
+                for subdomain, needed_count in stats[exam_name][domain]['exam_subdomain_distribution'].items():
+                    subdomain_data = [
+                        d for d in domain_data 
+                        if d.get('subdomain') == subdomain
+                        and (d.get('file_id', ''), d.get('tag', '')) not in used_questions
+                    ]
+                    random.shuffle(subdomain_data)
                     
-                    for item in sample:
-                        used_questions.add((item.get('file_id', ''), item.get('tag', '')))
-                    exam_data_sets[set_num].extend(sample)
+                    remaining_data = subdomain_data.copy()
+                    for set_num in sets_to_create:
+                        if len(remaining_data) >= needed_count:
+                            sample = random.sample(remaining_data, needed_count)
+                            remaining_data = [d for d in remaining_data if d not in sample]
+                        else:
+                            sample = remaining_data[:needed_count] if remaining_data else []
+                            remaining_data = remaining_data[needed_count:] if len(remaining_data) > needed_count else []
+                            self.logger.warning(f"  - {subdomain}: 데이터 부족")
+                        
+                        for item in sample:
+                            used_questions.add((item.get('file_id', ''), item.get('tag', '')))
+                        exam_data_sets[set_num].extend(sample)
+        else:
+            # 저장된 리스트 사용 모드: question_lists에서 문제 번호를 가져와서 all_data에서 찾기
+            if question_lists is None:
+                self.logger.error("저장된 문제 번호 리스트가 없습니다. 랜덤 모드로 전환합니다.")
+                # 랜덤 모드 로직 직접 실행
+                for domain in stats[exam_name].keys():
+                    domain_data = [d for d in all_data if d.get('domain') == domain]
+                    
+                    for subdomain, needed_count in stats[exam_name][domain]['exam_subdomain_distribution'].items():
+                        subdomain_data = [
+                            d for d in domain_data 
+                            if d.get('subdomain') == subdomain
+                            and (d.get('file_id', ''), d.get('tag', '')) not in used_questions
+                        ]
+                        random.shuffle(subdomain_data)
+                        
+                        remaining_data = subdomain_data.copy()
+                        for set_num in sets_to_create:
+                            if len(remaining_data) >= needed_count:
+                                sample = random.sample(remaining_data, needed_count)
+                                remaining_data = [d for d in remaining_data if d not in sample]
+                            else:
+                                sample = remaining_data[:needed_count] if remaining_data else []
+                                remaining_data = remaining_data[needed_count:] if len(remaining_data) > needed_count else []
+                                self.logger.warning(f"  - {subdomain}: 데이터 부족")
+                            
+                            for item in sample:
+                                used_questions.add((item.get('file_id', ''), item.get('tag', '')))
+                            exam_data_sets[set_num].extend(sample)
+            else:
+                for set_num in sets_to_create:
+                    set_name = set_names[set_num + 1]
+                    
+                    if set_name not in question_lists:
+                        self.logger.warning(f"  {set_name} 세트의 문제 번호 리스트를 찾을 수 없습니다. 랜덤 모드로 전환합니다.")
+                        # 해당 세트만 랜덤 모드로 처리
+                        for domain in stats[exam_name].keys():
+                            domain_data = [d for d in all_data if d.get('domain') == domain]
+                            
+                            for subdomain, needed_count in stats[exam_name][domain]['exam_subdomain_distribution'].items():
+                                subdomain_data = [
+                                    d for d in domain_data 
+                                    if d.get('subdomain') == subdomain
+                                    and (d.get('file_id', ''), d.get('tag', '')) not in used_questions
+                                ]
+                                random.shuffle(subdomain_data)
+                                
+                                if len(subdomain_data) >= needed_count:
+                                    sample = random.sample(subdomain_data, needed_count)
+                                else:
+                                    sample = subdomain_data[:needed_count] if subdomain_data else []
+                                    self.logger.warning(f"  - {subdomain}: 데이터 부족")
+                                
+                                for item in sample:
+                                    used_questions.add((item.get('file_id', ''), item.get('tag', '')))
+                                exam_data_sets[set_num].extend(sample)
+                        continue
+                    
+                    if exam_name not in question_lists[set_name]:
+                        self.logger.warning(f"  {set_name}/{exam_name}의 문제 번호 리스트를 찾을 수 없습니다. 랜덤 모드로 전환합니다.")
+                        # 해당 세트만 랜덤 모드로 처리
+                        for domain in stats[exam_name].keys():
+                            domain_data = [d for d in all_data if d.get('domain') == domain]
+                            
+                            for subdomain, needed_count in stats[exam_name][domain]['exam_subdomain_distribution'].items():
+                                subdomain_data = [
+                                    d for d in domain_data 
+                                    if d.get('subdomain') == subdomain
+                                    and (d.get('file_id', ''), d.get('tag', '')) not in used_questions
+                                ]
+                                random.shuffle(subdomain_data)
+                                
+                                if len(subdomain_data) >= needed_count:
+                                    sample = random.sample(subdomain_data, needed_count)
+                                else:
+                                    sample = subdomain_data[:needed_count] if subdomain_data else []
+                                    self.logger.warning(f"  - {subdomain}: 데이터 부족")
+                                
+                                for item in sample:
+                                    used_questions.add((item.get('file_id', ''), item.get('tag', '')))
+                                exam_data_sets[set_num].extend(sample)
+                        continue
+                    
+                    # 저장된 문제 번호 리스트에서 문제 가져오기
+                    question_ids = question_lists[set_name][exam_name]
+                    found_count = 0
+                    missing_count = 0
+                    
+                    for qid in question_ids:
+                        file_id = qid.get('file_id', '')
+                        tag = qid.get('tag', '')
+                        key = (file_id, tag)
+                        
+                        if key in all_data_index:
+                            item = all_data_index[key]
+                            exam_data_sets[set_num].append(item)
+                            used_questions.add(key)
+                            found_count += 1
+                        else:
+                            missing_count += 1
+                            self.logger.warning(f"  문제를 찾을 수 없음: {file_id}_{tag}")
+                    
+                    self.logger.info(f"  {set_name} 세트: {found_count}개 문제 로드 (누락: {missing_count}개)")
 
         for set_num in sets_to_create:
             set_dir = os.path.join(exam_dir, set_names[set_num+1])
@@ -224,16 +357,63 @@ class ExamMaker:
             self.logger.info(f"  ====> {set_names[set_num+1]}세트: 새로 생성 완료")
 
     def _update_sets(self, exam_name: str, stats: Dict, sets_to_update: List[int], set_names: Dict, 
-                   exam_dir: str, existing_exams_data: Dict, all_data: List[Dict], used_questions: Set, total_exam_questions: int, debug: bool = False):
+                   exam_dir: str, existing_exams_data: Dict, all_data: List[Dict], used_questions: Set, total_exam_questions: int, debug: bool = False,
+                   random_mode: bool = False, question_lists: Optional[Dict[str, Dict[str, List[Dict[str, str]]]]] = None):
         """기존 세트 업데이트"""
         for set_num in sets_to_update:
             set_dir = os.path.join(exam_dir, set_names[set_num+1])
             output_file = os.path.join(set_dir, f'{exam_name}_exam.json')
             
             existing_exam_data = existing_exams_data[set_num]
-            updated_exam_data = ExamValidator.update_existing_exam(
-                existing_exam_data, exam_name, stats, all_data, used_questions, self.logger
-            )
+            
+            if random_mode:
+                # 랜덤 모드: 기존 로직 사용
+                updated_exam_data = ExamValidator.update_existing_exam(
+                    existing_exam_data, exam_name, stats, all_data, used_questions, self.logger
+                )
+            else:
+                # 저장된 리스트 사용 모드: question_lists에서 문제 번호를 가져와서 all_data에서 찾기
+                if question_lists is None:
+                    self.logger.warning("저장된 문제 번호 리스트가 없습니다. 랜덤 모드로 전환합니다.")
+                    updated_exam_data = ExamValidator.update_existing_exam(
+                        existing_exam_data, exam_name, stats, all_data, used_questions, self.logger
+                    )
+                else:
+                    set_name = set_names[set_num + 1]
+                    if set_name not in question_lists or exam_name not in question_lists[set_name]:
+                        self.logger.warning(f"  {set_name}/{exam_name}의 문제 번호 리스트를 찾을 수 없습니다. 랜덤 모드로 전환합니다.")
+                        updated_exam_data = ExamValidator.update_existing_exam(
+                            existing_exam_data, exam_name, stats, all_data, used_questions, self.logger
+                        )
+                    else:
+                        # 저장된 문제 번호 리스트로 시험지 재구성
+                        all_data_index = {}
+                        for item in all_data:
+                            file_id = item.get('file_id', '')
+                            tag = item.get('tag', '')
+                            if file_id and tag:
+                                all_data_index[(file_id, tag)] = item
+                        
+                        question_ids = question_lists[set_name][exam_name]
+                        updated_exam_data = []
+                        found_count = 0
+                        missing_count = 0
+                        
+                        for qid in question_ids:
+                            file_id = qid.get('file_id', '')
+                            tag = qid.get('tag', '')
+                            key = (file_id, tag)
+                            
+                            if key in all_data_index:
+                                item = all_data_index[key]
+                                updated_exam_data.append(item)
+                                used_questions.add(key)
+                                found_count += 1
+                            else:
+                                missing_count += 1
+                                self.logger.warning(f"  문제를 찾을 수 없음: {file_id}_{tag}")
+                        
+                        self.logger.info(f"  {set_name} 세트 업데이트: {found_count}개 문제 로드 (누락: {missing_count}개)")
             
             updated_exam_data_with_tags_replaced = self._replace_tags(updated_exam_data)
             

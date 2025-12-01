@@ -55,7 +55,7 @@ class Pipeline(PipelineBase):
             essay_models: List[str] = None, essay_sets: List[int] = None,
             essay_use_server_mode: bool = False,
             essay_steps: List[int] = None,
-            debug: bool = False) -> Dict[str, Any]:
+            debug: bool = False, random_mode: bool = False) -> Dict[str, Any]:
         """
         전체 파이프라인 실행
         
@@ -66,6 +66,7 @@ class Pipeline(PipelineBase):
             qna_type: QnA 타입 (4단계에서 사용, None이면 모든 타입 처리: 'multiple', 'short', 'essay')
             model: 사용할 모델 (4단계에서 사용)
             num_sets: 시험 세트 개수 (5단계에서 사용)
+            random_mode: 랜덤 모드 (2단계에서 사용, True면 새로 뽑기, False면 저장된 문제 번호 리스트 사용, 기본값: False)
             eval_models: 평가할 모델 목록 (6단계에서 사용)
             eval_batch_size: 평가 배치 크기 (6단계에서 사용)
             eval_use_ox_support: O, X 문제 지원 활성화 (6단계에서 사용)
@@ -106,7 +107,7 @@ class Pipeline(PipelineBase):
                 results['extract_qna_w_domain'] = self.step1_domain.execute(cycle, levels=levels, model=model, debug=debug)
             
             if 'create_exam' in steps:
-                results['create_exam'] = self.step2.execute(num_sets=num_sets, seed=transform_seed, transformed=False, debug=debug)
+                results['create_exam'] = self.step2.execute(num_sets=num_sets, seed=transform_seed, transformed=False, debug=debug, random_mode=random_mode)
             
             if 'evaluate_exams' in steps:
                 results['evaluate_exams'] = self.step6.execute(

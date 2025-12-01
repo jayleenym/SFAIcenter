@@ -67,7 +67,8 @@ class QnASubdomainClassifier:
         self.llm_query = LLMQuery(config_path=config_path)
         
         # mode 검증
-        valid_modes = ['multiple', 'short', 'essay', 'multiple-fail', 'multiple-re', 'short-fail']
+        valid_modes = ['multiple', 'short', 'essay', 'multiple-choice', 'short-answer', 
+                      'multiple-fail', 'multiple-re', 'short-fail']
         if mode not in valid_modes:
             self.logger.warning(f"mode '{mode}'가 표준 모드가 아닙니다. 계속 진행합니다.")
         
@@ -455,7 +456,9 @@ class QnASubdomainClassifier:
         # mode에 따른 파일명 매핑
         qna_type_file_map = {
             'multiple': 'multiple-choice.json',
+            'multiple-choice': 'multiple-choice.json',
             'short': 'short-answer.json',
+            'short-answer': 'short-answer.json',
             'essay': 'essay.json',
             'etc': 'etc.json'
         }
@@ -643,8 +646,8 @@ class QnASubdomainClassifier:
         """통계 정보 저장"""
         # 통계 정보 저장
         if all_results is None:
-            # 먼저 {mode}_subdomain_classified_ALL.json 파일을 찾아서 읽기
-            all_file = os.path.join(self.output_dir, f"{self.mode}_subdomain_classified_ALL.json")
+            # 먼저 {mode}_subdomain_classified_ALL.json 파일을 찾아서 읽기 (원본 모드 사용)
+            all_file = self._get_output_filepath()
             if os.path.exists(all_file):
                 with open(all_file, 'r', encoding='utf-8') as f:
                     all_questions = json.load(f)
@@ -691,7 +694,9 @@ class QnASubdomainClassifier:
         # mode에 따라 파일명과 제목 설정
         mode_display_name = {
             'multiple': 'Multiple Choice',
+            'multiple-choice': 'Multiple Choice',
             'short': 'Short Answer',
+            'short-answer': 'Short Answer',
             'essay': 'Essay',
             'multiple-fail': 'Multiple Choice (Fail)',
             'multiple-re': 'Multiple Choice (Re-run)',
