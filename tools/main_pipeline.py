@@ -3,179 +3,149 @@
 """
 메인 파이프라인 - 전체 프로세스 실행
 
-6. 전체 프로세스:
-7. 0. 텍스트 전처리 (Lv2 폴더) - 문장내 엔터 제거, 빈 챕터정보 채우기, 문단 병합(안함), 선지 텍스트 정규화
-8. 1. 문제 추출 (Lv2, Lv3_4) - 문제/선지/정답/해설 추출 및 포맷화
-9. 2. 시험문제 만들기 - 5세트의 시험문제를 exam_config.json 참고하여 만들기 (일반/변형 시험지 모두 지원)
-10. 3. 객관식 문제 변형 - AnswerTypeClassifier로 문제 분류 (right/wrong/abcd) 및 변형
-11. 6. 시험지 평가 - 만들어진 시험지(1st/2nd/3rd/4th/5th) 모델별 답변 평가 (10문제씩 배치화하여 호출)
-12. 9. 서술형 문제 평가 - 서술형 문제에 대한 모델 답변 생성 및 평가
+단계:
+  1. extract_qna_w_domain: 문제 추출 (Lv2, Lv3_4)
+  2. create_exam: 시험문제 만들기 (5세트)
+  3. transform_questions: 객관식 문제 변형
+  4. create_transformed_exam: 변형 시험지 생성
+  5. evaluate_exams: 시험지 평가
+  6. evaluate_essay: 서술형 문제 평가
 """
 
 import os
 import sys
 import argparse
-from pathlib import Path
 
 # 프로젝트 루트 경로 추가
-current_dir = os.path.dirname(os.path.abspath(__file__))  # tools/
-project_root = os.path.dirname(current_dir)  # 프로젝트 루트
-sys.path.insert(0, project_root)  # 프로젝트 루트를 path에 추가하여 tools를 패키지로 인식
-sys.path.insert(0, current_dir)  # tools/도 추가하여 상대 import 지원
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+sys.path.insert(0, project_root)
+sys.path.insert(0, current_dir)
 
-# 독립 실행 시 파일명.log로 로깅 설정
 if __name__ == "__main__":
     from core.logger import setup_logger
     script_name = os.path.splitext(os.path.basename(__file__))[0]
-    logger = setup_logger(
-        name=__name__,
-        log_file=f'{script_name}.log',
-        use_console=True,
-        use_file=True
-    )
+    logger = setup_logger(name=__name__, log_file=f'{script_name}.log', use_console=True, use_file=True)
 
 from pipeline import Pipeline
 
 
 def main():
     """메인 함수"""
-    parser = argparse.ArgumentParser(description='전체 파이프라인 실행')
-    parser.add_argument('--cycle', type=int, default=None, choices=[1, 2, 3],
-                       help='사이클 번호 (1, 2, 3) - 0, 1단계에서는 필수, 2, 3단계에서는 선택적 (None이면 모든 사이클 자동 처리)')
-    parser.add_argument('--steps', nargs='+',
-                       choices=['extract_qna_w_domain', 'create_exam', 'evaluate_exams', 'transform_questions', 'create_transformed_exam', 'evaluate_essay'],
-                       default=None,
-                       help='실행할 단계 (기본값: 전체 실행)')
-    parser.add_argument('--base_path', type=str, default=None, 
-                       help='기본 데이터 경로 (None이면 ONEDRIVE_PATH 사용)')
-    parser.add_argument('--config_path', type=str, default=None, 
-                       help='LLM 설정 파일 경로 (None이면 PROJECT_ROOT_PATH/llm_config.ini 사용)')
-    parser.add_argument('--onedrive_path', type=str, default=None,
-                       help='OneDrive 경로 (None이면 자동 감지 또는 환경 변수 사용)')
-    parser.add_argument('--project_root_path', type=str, default=None,
-                       help='프로젝트 루트 경로 (None이면 자동 감지 또는 환경 변수 사용)')
-    parser.add_argument('--levels', nargs='+',
-                       default=None,
-                       help='처리할 레벨 목록 (2단계에서 사용, 예: Lv2 Lv3_4)')
-    parser.add_argument('--qna_type', type=str, default='multiple',
-                       choices=['multiple', 'short', 'essay'],
-                       help='QnA 타입 (4단계에서 사용)')
-    parser.add_argument('--model', type=str, default='x-ai/grok-4-fast',
-                       help='사용할 모델 (4단계에서 사용)')
-    parser.add_argument('--num_sets', type=int, default=5,
-                       help='시험 세트 개수 (2단계에서 사용)')
-    parser.add_argument('--eval_models', nargs='+',
-                       default=None,
-                       help='평가할 모델 목록 (6단계에서 사용, 기본값: 자동 설정)')
-    parser.add_argument('--eval_batch_size', type=int, default=10,
-                       help='평가 배치 크기 (6단계에서 사용, 기본값: 10)')
-    parser.add_argument('--eval_use_ox_support', action='store_true', default=True,
-                       help='O, X 문제 지원 활성화 (6단계에서 사용)')
-    parser.add_argument('--eval_use_server_mode', action='store_true',
-                       help='vLLM 서버 모드 사용 (6단계에서 사용)')
-    parser.add_argument('--eval_exam_dir', type=str, default=None,
-                       help='시험지 디렉토리 경로 (6단계에서 사용, None이면 기본 경로 사용)')
-    parser.add_argument('--eval_sets', type=int, nargs='+', default=None,
-                       choices=[1, 2, 3, 4, 5],
-                       help='평가할 세트 번호 (6단계에서 사용, 예: --eval_sets 1 또는 --eval_sets 1 2 3, None이면 모든 세트 평가)')
-    parser.add_argument('--eval_transformed', action='store_true', default=False,
-                       help='변형 시험지 평가 모드 (6단계에서 사용, 기본값: False)')
-    parser.add_argument('--eval_essay', action='store_true', default=False,
-                       help='서술형 문제 평가 모드 (6단계에서 사용, 기본값: False)')
-    parser.add_argument('--transform_classified_data_path', type=str, default=None,
-                       help='이미 분류된 데이터 파일 경로 (3단계에서 사용, --transform_classify가 없을 때 필수)')
-    parser.add_argument('--transform_classify', action='store_true', default=False,
-                       help='분류 단계 실행 (3단계에서 사용, 기본값: False)')
-    parser.add_argument('--transform_input_data_path', type=str, default=None,
-                       help='변형 입력 데이터 파일 경로 (3단계에서 사용, --transform_classify가 있을 때)')
-    parser.add_argument('--transform_classify_model', type=str, default='openai/gpt-5',
-                       help='분류에 사용할 모델 (3단계에서 사용, --transform_classify가 있을 때만, 기본값: openai/gpt-5)')
-    parser.add_argument('--transform_classify_batch_size', type=int, default=10,
-                       help='분류 배치 크기 (3단계에서 사용, --transform_classify가 있을 때만, 기본값: 10)')
-    parser.add_argument('--transform_model', type=str, default='openai/o3',
-                       help='변형에 사용할 모델 (3단계에서 사용, 기본값: openai/o3)')
-    # 3단계 변형 옵션 (기본값: False, --transform_* 옵션으로 활성화)
-    parser.add_argument('--transform_wrong_to_right', action='store_true', default=False,
-                       help='wrong -> right 변형 수행 (3단계에서 사용)')
-    parser.add_argument('--transform_right_to_wrong', action='store_true', default=False,
-                       help='right -> wrong 변형 수행 (3단계에서 사용)')
-    parser.add_argument('--transform_abcd', action='store_true', default=False,
-                       help='abcd 변형 수행 (3단계에서 사용)')
-    parser.add_argument('--create_transformed_exam_sets', type=int, nargs='+', default=None,
-                       choices=[1, 2, 3, 4, 5],
-                       help='변형 시험지 생성할 세트 번호 (2단계에서 사용, 예: --create_transformed_exam_sets 1 또는 --create_transformed_exam_sets 1 2 3, None이면 모든 세트 처리)')
-    parser.add_argument('--essay_models', nargs='+', default=None,
-                       help='모델 답변 생성할 모델 목록 (9단계에서 사용, None이면 답변 생성 안 함)')
-    parser.add_argument('--essay_sets', type=int, nargs='+', default=None,
-                       choices=[1, 2, 3, 4, 5],
-                       help='처리할 세트 번호 (9단계에서 사용, models가 있을 때만 사용, 예: --essay_sets 1 또는 --essay_sets 1 2 3, None이면 모든 세트 처리)')
-    parser.add_argument('--essay_use_server_mode', action='store_true', default=False,
-                       help='vLLM 서버 모드 사용 (9단계에서 사용, models가 있을 때만 사용)')
-    parser.add_argument('--debug', action='store_true',
-                       help='디버그 로그 활성화')
+    parser = argparse.ArgumentParser(
+        description='전체 파이프라인 실행',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+사용 예시:
+  # 1단계만 실행
+  python main_pipeline.py --steps extract_qna_w_domain --cycle 1
+
+  # 2단계 시험 생성 (랜덤 모드)
+  python main_pipeline.py --steps create_exam --random
+
+  # 6단계 평가
+  python main_pipeline.py --steps evaluate_exams --eval_models gpt-4 claude-3
+        """
+    )
+    
+    # === 기본 옵션 ===
+    basic = parser.add_argument_group('기본 옵션')
+    basic.add_argument('--steps', nargs='+',
+                       choices=['extract_qna_w_domain', 'create_exam', 'transform_questions', 
+                                'create_transformed_exam', 'evaluate_exams', 'evaluate_essay'],
+                       help='실행할 단계 (미지정시 전체 실행)')
+    basic.add_argument('--cycle', type=int, choices=[1, 2, 3],
+                       help='사이클 번호 (1단계에서 사용)')
+    basic.add_argument('--debug', action='store_true', help='디버그 모드')
+    
+    # === 경로 옵션 ===
+    path = parser.add_argument_group('경로 옵션')
+    path.add_argument('--config_path', type=str, help='LLM 설정 파일 경로')
+    path.add_argument('--base_path', type=str, help='기본 데이터 경로')
+    
+    # === 시험 생성 (2단계) ===
+    exam = parser.add_argument_group('시험 생성 (create_exam)')
+    exam.add_argument('--num_sets', type=int, default=5, help='시험 세트 개수 (기본값: 5)')
+    exam.add_argument('--random', action='store_true', help='랜덤 모드 (새로 문제 뽑기)')
+    
+    # === 문제 변형 (3단계) ===
+    transform = parser.add_argument_group('문제 변형 (transform_questions)')
+    transform.add_argument('--transform_data', type=str, dest='transform_classified_data_path',
+                           help='분류된 데이터 파일 경로')
+    transform.add_argument('--transform_classify', action='store_true', help='분류 단계 실행')
+    transform.add_argument('--transform_input', type=str, dest='transform_input_data_path',
+                           help='변형 입력 데이터 경로 (--transform_classify 사용시)')
+    transform.add_argument('--transform_types', nargs='+', 
+                           choices=['wrong_to_right', 'right_to_wrong', 'abcd'],
+                           help='수행할 변형 종류')
+    
+    # === 변형 시험지 생성 (4단계) ===
+    trans_exam = parser.add_argument_group('변형 시험지 생성 (create_transformed_exam)')
+    trans_exam.add_argument('--transformed_sets', type=int, nargs='+', choices=[1, 2, 3, 4, 5],
+                            dest='create_transformed_exam_sets',
+                            help='생성할 세트 번호 (미지정시 전체)')
+    
+    # === 평가 (5단계) ===
+    evaluate = parser.add_argument_group('시험 평가 (evaluate_exams)')
+    evaluate.add_argument('--eval_models', nargs='+', help='평가 모델 목록')
+    evaluate.add_argument('--eval_sets', type=int, nargs='+', choices=[1, 2, 3, 4, 5],
+                          help='평가할 세트 번호')
+    evaluate.add_argument('--eval_transformed', action='store_true', help='변형 시험지 평가')
+    evaluate.add_argument('--eval_server_mode', action='store_true', dest='eval_use_server_mode',
+                          help='vLLM 서버 모드')
+    
+    # === 서술형 평가 (6단계) ===
+    essay = parser.add_argument_group('서술형 평가 (evaluate_essay)')
+    essay.add_argument('--essay_models', nargs='+', help='서술형 평가 모델 목록')
+    essay.add_argument('--essay_sets', type=int, nargs='+', choices=[1, 2, 3, 4, 5],
+                       help='처리할 세트 번호')
     
     args = parser.parse_args()
     
-    # 디버그 모드 설정
+    # 디버그 모드
     if args.debug:
         import logging
-        logging.getLogger().setLevel(logging.DEBUG)
-        # pipeline 모듈의 로거도 DEBUG 레벨로 설정
-        logging.getLogger('pipeline').setLevel(logging.DEBUG)
-        logging.getLogger('evaluation').setLevel(logging.DEBUG)
+        for name in ['', 'pipeline', 'evaluation']:
+            logging.getLogger(name).setLevel(logging.DEBUG)
     
-    # config_path가 상대 경로인 경우 절대 경로로 변환
+    # config_path 절대 경로 변환
     config_path = args.config_path
     if config_path and not os.path.isabs(config_path):
-        # 상대 경로인 경우 현재 스크립트 디렉토리 기준으로 변환
-        # 또는 프로젝트 루트 기준으로 변환
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        # SFAIcenter/tools/main_pipeline.py -> SFAIcenter/tools
-        # SFAIcenter/llm_config_0123.ini -> SFAIcenter/tools/../llm_config_0123.ini
-        project_root = os.path.dirname(script_dir)  # SFAIcenter
-        config_path = os.path.join(project_root, config_path)
-        config_path = os.path.normpath(config_path)  # 경로 정규화
+        config_path = os.path.normpath(os.path.join(project_root, config_path))
+    
+    # transform_types 파싱
+    transform_wrong_to_right = False
+    transform_right_to_wrong = False
+    transform_abcd = False
+    if args.transform_types:
+        transform_wrong_to_right = 'wrong_to_right' in args.transform_types
+        transform_right_to_wrong = 'right_to_wrong' in args.transform_types
+        transform_abcd = 'abcd' in args.transform_types
     
     # 파이프라인 실행
-    pipeline = Pipeline(
-        base_path=args.base_path,
-        config_path=config_path,
-        onedrive_path=args.onedrive_path,
-        project_root_path=args.project_root_path
-    )
+    pipeline = Pipeline(base_path=args.base_path, config_path=config_path)
     
     results = pipeline.run_full_pipeline(
         cycle=args.cycle,
         steps=args.steps,
-        levels=args.levels,
-        qna_type=args.qna_type,
-        model=args.model,
         num_sets=args.num_sets,
+        random_mode=args.random,
         eval_models=args.eval_models,
-        eval_batch_size=args.eval_batch_size,
-        eval_use_ox_support=args.eval_use_ox_support,
         eval_use_server_mode=args.eval_use_server_mode,
-        eval_exam_dir=args.eval_exam_dir,
         eval_sets=args.eval_sets,
         eval_transformed=args.eval_transformed,
-        eval_essay=args.eval_essay,
         transform_classified_data_path=args.transform_classified_data_path,
         transform_input_data_path=args.transform_input_data_path,
         transform_run_classify=args.transform_classify,
-        transform_classify_model=args.transform_classify_model,
-        transform_classify_batch_size=args.transform_classify_batch_size,
-        transform_model=args.transform_model,
-        transform_wrong_to_right=args.transform_wrong_to_right,
-        transform_right_to_wrong=args.transform_right_to_wrong,
-        transform_abcd=args.transform_abcd,
+        transform_wrong_to_right=transform_wrong_to_right,
+        transform_right_to_wrong=transform_right_to_wrong,
+        transform_abcd=transform_abcd,
         create_transformed_exam_sets=args.create_transformed_exam_sets,
         essay_models=args.essay_models,
         essay_sets=args.essay_sets,
-        essay_use_server_mode=args.essay_use_server_mode,
         debug=args.debug
     )
     
-    # 결과 확인 (에러 시에만 종료)
     if not results.get('success'):
         sys.exit(1)
 
