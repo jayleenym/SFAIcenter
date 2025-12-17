@@ -51,7 +51,7 @@ class JSONCleaner:
                 data['contents'] = filtered_contents
                 
                 if create_backup:
-                    backup_path = file_path.with_suffix('.json.bak')
+                    backup_path = file_path.replace('.json','.json.bak')
                     if not backup_path.exists():
                         with open(backup_path, 'w', encoding='utf-8') as f:
                             json.dump(data, f, ensure_ascii=False, indent=2)
