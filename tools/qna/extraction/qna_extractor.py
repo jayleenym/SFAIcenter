@@ -2,23 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 Q&A 추출 클래스
+
+JSON 데이터에서 Q&A 태그를 추출하고 처리합니다.
 """
 
 import re
-import json
 import os
-import sys
 from typing import List, Dict, Any, Optional
-from pathlib import Path
 
-# tools 모듈 import를 위한 경로 설정
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir))) # extraction -> qna -> tools -> root
-sys.path.insert(0, project_root)
-from tools import tools_dir
-sys.path.insert(0, tools_dir)
-
-from core.utils import FileManager, TextProcessor, JSONHandler
+from tools.core.utils import FileManager, JSONHandler
 from tools.qna.processing.qna_type_classifier import QnATypeClassifier
 from tools.qna.extraction.tag_processor import TagProcessor
 

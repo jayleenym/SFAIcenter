@@ -2,30 +2,22 @@
 # -*- coding: utf-8 -*-
 """
 1단계: Q&A 추출 및 Domain 분류 (통합)
-- 기존 step2, step3, step4를 통합
+
+처리 흐름:
 1. ~_extracted_qna 파일들을 만들고 (qna/make_extracted_qna.py)
-2. 거기에서 필터링 조건에 따라 multiple/short-answer/essay/etc 로 구분하고 (qna/classify_qna_type.py)
+2. 필터링 조건에 따라 multiple/short-answer/essay/etc 로 구분하고 (qna/classify_qna_type.py)
 3. 각각 2_subdomain에 저장해서 (qna/classify_qna_type.py)
 4. domain/subdomain/is_calculation 을 채워서 (qna/fill_domain.py)
-5. 2_subdomain 폴더에 ~_classified_ALL.json으로 저장할거야. (qna/fill_domain.py)
+5. 2_subdomain 폴더에 ~_classified_ALL.json으로 저장 (qna/fill_domain.py)
 """
 
-import os
-import sys
 from typing import Dict, Any, Optional, List
 from ..base import PipelineBase
 
-# tools 모듈 import를 위한 경로 설정
-current_dir = os.path.dirname(os.path.abspath(__file__))
-_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools
-sys.path.insert(0, _temp_tools_dir)
-from tools import tools_dir
-sys.path.insert(0, tools_dir)
-
-# 새로 만든 모듈들 import
-from qna.extraction.make_extracted_qna import QnAMaker
-from qna.processing.organize_qna_by_type import QnAOrganizer
-from qna.processing.fill_domain import DomainFiller
+# qna 모듈 import
+from tools.qna.extraction.make_extracted_qna import QnAMaker
+from tools.qna.processing.organize_qna_by_type import QnAOrganizer
+from tools.qna.processing.fill_domain import DomainFiller
 
 class Step1ExtractQnAWDomain(PipelineBase):
     """1단계: Q&A 추출 및 Domain 분류 (통합)"""

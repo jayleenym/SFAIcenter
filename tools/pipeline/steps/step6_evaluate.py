@@ -2,36 +2,31 @@
 # -*- coding: utf-8 -*-
 """
 6단계: 시험지 평가
+
+- 객관식 문제 평가 (일반/변형)
+- 서술형 문제 평가
 """
 
 import os
-import sys
 import json
 import configparser
 from typing import List, Dict, Any
 from ..base import PipelineBase
 
-# evaluation 모듈 import (tools 폴더에서)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# tools 모듈 import를 위한 경로 설정
-_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools
-sys.path.insert(0, _temp_tools_dir)
-from tools import tools_dir
-sys.path.insert(0, tools_dir)
+# evaluation 모듈 import
 try:
-    from evaluation.multiple_eval_by_model import (
+    from tools.evaluation.multiple_eval_by_model import (
         run_eval_pipeline,
         load_data_from_directory,
         save_results_to_excel,
-        print_evaluation_summary
+        print_evaluation_summary,
     )
-    from evaluation.evaluate_essay_model import (
+    from tools.evaluation.evaluate_essay_model import (
         evaluate_single_model,
-        calculate_statistics
+        calculate_statistics,
     )
-    from evaluation.essay_utils import load_best_answers, setup_llm_with_api_key
+    from tools.evaluation.essay_utils import load_best_answers, setup_llm_with_api_key
 except ImportError:
-    # fallback: 이미 tools_dir에 추가되어 있으므로 None으로 설정
     run_eval_pipeline = None
     load_data_from_directory = None
     save_results_to_excel = None

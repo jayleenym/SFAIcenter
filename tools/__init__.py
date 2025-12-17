@@ -2,145 +2,161 @@
 # -*- coding: utf-8 -*-
 """
 Tools 모듈 초기화
-tools_dir 경로 및 전역 설정을 제공
+
+이 모듈은 프로젝트 전체에서 사용되는 경로 설정을 제공합니다.
+환경 변수로 오버라이드 가능:
+- ONEDRIVE_PATH: OneDrive 데이터 경로
+- PROJECT_ROOT_PATH: 프로젝트 루트 경로  
+- SFAICENTER_PATH: SFAICenter 디렉토리 경로
 """
 
 import os
-import subprocess
 import platform
+from pathlib import Path
+from typing import Optional
+
+
+class PathResolver:
+    """플랫폼별 경로 자동 탐지 클래스"""
+    
+    _instance: Optional['PathResolver'] = None
+    _initialized: bool = False
+    
+    def __new__(cls) -> 'PathResolver':
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def __init__(self):
+        if PathResolver._initialized:
+            return
+        
+        self._system = platform.system()
+        self._home = Path.home()
+        self._tools_dir = Path(__file__).parent.resolve()
+        self._project_root = self._tools_dir.parent
+        
+        # 캐시된 경로들
+        self._onedrive_path: Optional[Path] = None
+        self._sfaicenter_path: Optional[Path] = None
+        
+        PathResolver._initialized = True
+    
+    @property
+    def tools_dir(self) -> Path:
+        """tools 디렉토리 경로"""
+        return self._tools_dir
+    
+    @property
+    def project_root(self) -> Path:
+        """프로젝트 루트 경로"""
+        return self._project_root
+    
+    @property
+    def onedrive_path(self) -> Path:
+        """OneDrive 경로 (캐시됨)"""
+        if self._onedrive_path is None:
+            self._onedrive_path = self._find_onedrive_path()
+        return self._onedrive_path
+    
+    @property
+    def sfaicenter_path(self) -> Path:
+        """SFAICenter 경로 (캐시됨)"""
+        if self._sfaicenter_path is None:
+            self._sfaicenter_path = self._find_sfaicenter_path()
+        return self._sfaicenter_path
+    
+    def _find_onedrive_path(self) -> Path:
+        """플랫폼별 OneDrive 경로 탐지"""
+        # 플랫폼별 후보 경로 정의
+        if self._system == "Windows":
+            candidates = [
+                self._home / "OneDrive" / "데이터L" / "selectstar",
+                self._home / "OneDrive - 개인" / "데이터L" / "selectstar",
+            ]
+            # 환경 변수에서 추가 경로 확인
+            for env_var in ["OneDrive", "OneDriveConsumer"]:
+                env_path = os.environ.get(env_var)
+                if env_path:
+                    candidates.append(Path(env_path) / "데이터L" / "selectstar")
+        elif self._system == "Darwin":  # macOS
+            cloud_storage = self._home / "Library" / "CloudStorage"
+            candidates = [
+                cloud_storage / "OneDrive-개인" / "데이터L" / "selectstar",
+                cloud_storage / "OneDrive" / "데이터L" / "selectstar",
+            ]
+        else:  # Linux 등
+            candidates = [
+                self._home / "OneDrive" / "데이터L" / "selectstar",
+            ]
+        
+        # 존재하는 첫 번째 경로 반환
+        for path in candidates:
+            if path.exists():
+                return path
+        
+        # 찾지 못한 경우 기본값 반환
+        return candidates[0] if candidates else self._home / "OneDrive"
+    
+    def _find_sfaicenter_path(self) -> Path:
+        """SFAICenter 디렉토리 탐지"""
+        # 현재 프로젝트가 SFAICenter인지 확인
+        current = self._project_root
+        if current.name.lower() in ('sfaicenter', 'sfaicenter✨'):
+            return current
+        
+        # 상위 디렉토리에서 검색
+        search_dirs = [
+            self._project_root,
+            self._project_root.parent,
+            self._home,
+        ]
+        
+        for base in search_dirs:
+            if not base.exists():
+                continue
+            
+            # 직접 하위 디렉토리 확인 (최대 2단계)
+            for depth in range(3):
+                for path in base.glob('*' * (depth + 1) if depth > 0 else '*'):
+                    if path.is_dir() and path.name.lower() in ('sfaicenter', 'sfaicenter✨'):
+                        return path
+        
+        # 찾지 못한 경우 프로젝트 루트 반환
+        return self._project_root
+
+
+# 싱글톤 인스턴스
+_resolver = PathResolver()
 
 # tools 디렉토리 경로 (이 파일이 있는 디렉토리)
-tools_dir = os.path.dirname(os.path.abspath(__file__))
+tools_dir = str(_resolver.tools_dir)
+
+# 환경 변수 우선, 없으면 자동 탐지
+ONEDRIVE_PATH = os.environ.get('ONEDRIVE_PATH') or str(_resolver.onedrive_path)
+PROJECT_ROOT_PATH = os.environ.get('PROJECT_ROOT_PATH') or str(_resolver.project_root)
+SFAICENTER_PATH = os.environ.get('SFAICENTER_PATH') or str(_resolver.sfaicenter_path)
 
 
-def _find_onedrive_path():
-    """플랫폼별 OneDrive 경로를 자동으로 찾는 함수"""
-    system = platform.system()
-    home_dir = os.path.expanduser("~")
-    
-    # 가능한 OneDrive 경로들
-    possible_paths = []
-    
-    if system == "Windows":
-        # Windows OneDrive 경로들
-        possible_paths = [
-            os.path.join(home_dir, "OneDrive", "데이터L", "selectstar"),
-            os.path.join(home_dir, "OneDrive - 개인", "데이터L", "selectstar"),
-            os.path.join(home_dir, "OneDrive", "개인", "데이터L", "selectstar"),
-            # 환경 변수에서 OneDrive 경로 찾기
-            os.path.join(os.environ.get("OneDrive", ""), "데이터L", "selectstar") if "OneDrive" in os.environ else None,
-            os.path.join(os.environ.get("OneDriveConsumer", ""), "데이터L", "selectstar") if "OneDriveConsumer" in os.environ else None,
-        ]
-    elif system == "Darwin":  # macOS
-        # macOS OneDrive 경로
-        possible_paths = [
-            os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar"),
-            os.path.join(home_dir, "Library", "CloudStorage", "OneDrive", "데이터L", "selectstar"),
-        ]
-    else:  # Linux or others
-        possible_paths = [
-            os.path.join(home_dir, "OneDrive", "데이터L", "selectstar"),
-        ]
-    
-    # 가능한 경로들 중 존재하는 첫 번째 경로 반환
-    for path in possible_paths:
-        if path and os.path.exists(path):
-            return path
-    
-    # 경로를 찾지 못한 경우, 플랫폼별 기본 경로 반환 (존재 여부와 관계없이)
-    if system == "Windows":
-        # Windows 기본 경로
-        return os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
-    else:
-        # macOS 기본 경로
-        return os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
-
-
-def get_default_onedrive_path():
+def get_default_onedrive_path() -> str:
     """플랫폼별 기본 OneDrive 경로 반환 (외부 모듈에서 사용)"""
-    return _find_onedrive_path()
+    return str(_resolver.onedrive_path)
 
 
-def _find_sfaicenter_path():
-    """SFAICenter 디렉토리를 찾는 함수 (find 명령어 사용)"""
-    # 현재 파일의 디렉토리에서 시작
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # 프로젝트 루트 경로 계산
-    project_root = os.path.dirname(current_dir)
-    
-    # 먼저 현재 경로에서 상위로 올라가면서 SFAICenter 찾기
-    search_paths = [
-        project_root,  # 프로젝트 루트
-        os.path.dirname(project_root),  # 프로젝트 루트의 상위
-        os.path.expanduser("~"),  # 홈 디렉토리
-    ]
-    
-    for search_path in search_paths:
-        if not os.path.exists(search_path):
-            continue
-        
-        # find 명령어로 SFAICenter 디렉토리 찾기
-        try:
-            # macOS/Linux find 명령어 사용
-            result = subprocess.run(
-                ['find', search_path, '-maxdepth', '3', '-type', 'd', '-name', 'SFAICenter', '-o', '-name', 'SFAIcenter'],
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
-            
-            if result.returncode == 0 and result.stdout.strip():
-                # 첫 번째 결과 사용
-                found_path = result.stdout.strip().split('\n')[0]
-                if os.path.isdir(found_path):
-                    return found_path
-        except (subprocess.TimeoutExpired, subprocess.SubprocessError, FileNotFoundError):
-            # find 명령어 실패 시 수동으로 찾기
-            pass
-        
-        # find 실패 시 수동으로 상위 디렉토리 탐색
-        current = search_path
-        for _ in range(3):  # 최대 3단계 상위로
-            sfaicenter_path = os.path.join(current, 'SFAICenter')
-            if os.path.isdir(sfaicenter_path):
-                return sfaicenter_path
-            
-            sfaicenter_path = os.path.join(current, 'SFAIcenter')
-            if os.path.isdir(sfaicenter_path):
-                return sfaicenter_path
-            
-            parent = os.path.dirname(current)
-            if parent == current:  # 루트에 도달
-                break
-            current = parent
-    
-    # 찾지 못한 경우 프로젝트 루트 반환 (fallback)
-    return project_root
+def get_path_resolver() -> PathResolver:
+    """PathResolver 인스턴스 반환 (고급 사용자용)"""
+    return _resolver
 
-
-# ONEDRIVE_PATH: OneDrive 데이터 경로 (플랫폼별 자동 감지)
-ONEDRIVE_PATH = _find_onedrive_path()
-
-# PROJECT_ROOT_PATH: 프로젝트 루트 경로 (기본값: 자동 감지)
-PROJECT_ROOT_PATH = os.path.dirname(tools_dir)
-
-# SFAICENTER_PATH: SFAICenter 디렉토리 경로 (find로 자동 감지)
-SFAICENTER_PATH = _find_sfaicenter_path()
-
-# 환경 변수로 오버라이드 가능
-if 'ONEDRIVE_PATH' in os.environ:
-    ONEDRIVE_PATH = os.environ['ONEDRIVE_PATH']
-if 'PROJECT_ROOT_PATH' in os.environ:
-    PROJECT_ROOT_PATH = os.environ['PROJECT_ROOT_PATH']
-if 'SFAICENTER_PATH' in os.environ:
-    SFAICENTER_PATH = os.environ['SFAICENTER_PATH']
 
 __all__ = [
+    # 경로 문자열 (하위 호환성)
     'tools_dir',
     'ONEDRIVE_PATH',
     'PROJECT_ROOT_PATH',
     'SFAICENTER_PATH',
-    'get_default_onedrive_path'
+    # 함수
+    'get_default_onedrive_path',
+    'get_path_resolver',
+    # 클래스
+    'PathResolver',
 ]
-

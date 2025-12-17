@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 2단계: 시험문제 만들기 (통합)
+
 - 일반 시험지 생성 (기존 Step 5)
 - 변형 시험지 생성 (기존 Step 8, --transformed 옵션 사용 시)
 """
 
 from typing import Dict, Any, List
 from ..base import PipelineBase
-from exam.exam_create import ExamMaker
-from exam.exam_plus_create import ExamPlusMaker
+from tools.exam.exam_create import ExamMaker
+from tools.exam.exam_plus_create import ExamPlusMaker
 
 class Step2CreateExams(PipelineBase):
     """2단계: 시험문제 만들기 (통합)"""

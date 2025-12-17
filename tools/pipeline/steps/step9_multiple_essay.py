@@ -2,30 +2,24 @@
 # -*- coding: utf-8 -*-
 """
 9단계: 객관식 문제를 서술형 문제로 변환
-- 1단계: 해설이 많은 문제 선별
-- 2단계: 시험별로 분류
-- 3단계: 서술형 문제로 변환
-- 4단계: 키워드 추출
-- 5단계: 모범답안 생성
-- 모델 답변 생성 (선택적)
+
+처리 흐름:
+1. 해설이 많은 문제 선별
+2. 시험별로 분류
+3. 서술형 문제로 변환
+4. 키워드 추출
+5. 모범답안 생성
+6. 모델 답변 생성 (선택적)
 """
 
 import os
-import sys
 import json
+import logging
 from typing import List, Dict, Any, Optional
 from ..base import PipelineBase
 
 # transformed 모듈 import
-# tools 모듈 import를 위한 경로 설정
-current_dir = os.path.dirname(os.path.abspath(__file__))
-_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # pipeline/steps -> pipeline -> tools
-sys.path.insert(0, _temp_tools_dir)
-from tools import tools_dir
-sys.path.insert(0, tools_dir)
-
 try:
-    # tools.transformed를 통해 import 시도
     from tools.transformed.essay_filter_full_explanation import filter_full_explanation
     from tools.transformed.essay_change_question_to_essay import change_question_to_essay
     from tools.transformed.essay_extract_keywords import extract_keywords
@@ -33,21 +27,9 @@ try:
     from tools.transformed.essay_classify_by_exam import main as classify_essay_by_exam_main
     from tools.transformed.essay_create_model_answers import process_essay_questions, get_api_key
     from tools.core.llm_query import LLMQuery
-except ImportError:
-    try:
-        # fallback: transformed를 직접 import 시도
-        from transformed.essay_filter_full_explanation import filter_full_explanation
-        from transformed.essay_change_question_to_essay import change_question_to_essay
-        from transformed.essay_extract_keywords import extract_keywords
-        from transformed.essay_create_best_answers import create_best_answers
-        from transformed.essay_classify_by_exam import main as classify_essay_by_exam_main
-        from tools.transformed.essay_create_model_answers import process_essay_questions, get_api_key
-        from core.llm_query import LLMQuery
-    except ImportError as e:
-        import traceback
-        # 디버깅을 위해 에러 로깅
-        import logging
-        logger = logging.getLogger(__name__)
+except ImportError as e:
+    # 디버깅을 위해 에러 로깅
+    logger = logging.getLogger(__name__)
         logger.error(f"Import error: {e}")
         logger.error(traceback.format_exc())
         filter_full_explanation = None
