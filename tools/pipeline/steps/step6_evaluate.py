@@ -359,7 +359,7 @@ class Step6Evaluate(PipelineBase):
                     # 각 시험지별로 개별 평가
                     for exam_file in exam_files:
                         exam_name = os.path.splitext(os.path.basename(exam_file))[0].replace('_exam', '').replace('_transformed', '')
-                        self.logger.info(f"\n{'='*50}")
+                        self.logger.info(f"{'='*50}")
                         self.logger.info(f"시험지: {exam_name} (세트: {set_name})")
                         self.logger.info(f"{'='*50}")
                         self.logger.info(f"데이터 로딩 중: {exam_file}")
