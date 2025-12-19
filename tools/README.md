@@ -83,8 +83,8 @@ tools/
 | 2 | `create_exam` | 일반 시험지 생성 (5세트) |
 | 3 | `transform_questions` | 객관식 문제 변형 (right↔wrong, ABCD) |
 | 4 | `create_transformed_exam` | 변형 시험지 생성 |
-| 5 | `evaluate_exams` | 시험지 평가 (객관식/서술형) |
-| 9 | `evaluate_essay` | 서술형 문제 변환 및 평가 |
+| 5 | `evaluate_exams` | 시험지 평가 (객관식) |
+| 6 | `evaluate_essay` | 서술형 문제 변환 및 평가 |
 
 ## 💻 사용법
 
@@ -99,19 +99,98 @@ python tools/main_pipeline.py --cycle 1
 ```bash
 # 1단계: Q&A 추출 및 Domain 분류
 python tools/main_pipeline.py --steps extract_qna_w_domain --cycle 1
+python tools/main_pipeline.py --steps extract_qna_w_domain --cycle 1 --levels Lv2 Lv3_4
 
 # 2단계: 시험문제 만들기 (랜덤 모드)
 python tools/main_pipeline.py --steps create_exam --random --num_sets 5
 
 # 3단계: 문제 변형
-python tools/main_pipeline.py --steps transform_questions
+python tools/main_pipeline.py --steps transform_questions --transform_data /path/to/classified.json
+python tools/main_pipeline.py --steps transform_questions \
+  --transform_classify --transform_input /path/to/input.json \
+  --transform_types wrong_to_right right_to_wrong
 
-# 6단계: 시험지 평가
+# 4단계: 변형 시험지 생성
+python tools/main_pipeline.py --steps create_transformed_exam --transformed_sets 1 2 3
+
+# 5단계: 시험지 평가 (기본)
 python tools/main_pipeline.py --steps evaluate_exams --eval_models gpt-4
 
-# 9단계: 서술형 변환
+# 5단계: 시험지 평가 (vLLM 서버 모드, 변형 시험지)
+python tools/main_pipeline.py --steps evaluate_exams \
+  --eval_exam_dir /path/to/exam \
+  --eval_models /path/to/model \
+  --eval_use_server_mode \
+  --eval_batch_size 1 \
+  --transformed
+
+# 6단계: 서술형 변환 (전체 단계)
 python tools/main_pipeline.py --steps evaluate_essay
+
+# 6단계: 서술형 변환 (특정 단계만)
+python tools/main_pipeline.py --steps evaluate_essay --essay_steps 1 2 3 --essay_sets 1 2
 ```
+
+### 주요 옵션
+
+#### 기본 옵션
+| 옵션 | 설명 |
+|------|------|
+| `--steps` | 실행할 단계 선택 (미지정시 전체 실행) |
+| `--cycle` | 사이클 번호 (1, 2, 3) - 1단계에서 사용 |
+| `--debug` | 디버그 모드 활성화 |
+| `--config_path` | LLM 설정 파일 경로 |
+| `--base_path` | 기본 데이터 경로 |
+
+#### Q&A 추출 (1단계)
+| 옵션 | 설명 |
+|------|------|
+| `--levels` | 처리할 레벨 (Lv2, Lv3_4, Lv5 중 선택, 미지정시 전체) |
+| `--model` | 도메인 분류에 사용할 LLM 모델 (기본값: x-ai/grok-4-fast) |
+
+#### 시험 생성 (2단계)
+| 옵션 | 설명 |
+|------|------|
+| `--num_sets` | 시험 세트 개수 (기본값: 5) |
+| `--random` | 랜덤 모드 (새로 문제 뽑기) |
+
+#### 문제 변형 (3단계)
+| 옵션 | 설명 |
+|------|------|
+| `--transform_data` | 분류된 데이터 파일 경로 |
+| `--transform_classify` | 분류 단계 실행 |
+| `--transform_input` | 변형 입력 데이터 경로 (--transform_classify 사용시) |
+| `--transform_types` | 수행할 변형 종류 (wrong_to_right, right_to_wrong, abcd) |
+| `--transform_classify_model` | 분류에 사용할 모델 (기본값: openai/gpt-5) |
+| `--transform_classify_batch_size` | 분류 배치 크기 (기본값: 10) |
+| `--transform_model` | 변형에 사용할 모델 (기본값: openai/o3) |
+| `--transform_seed` | 랜덤 시드 (기본값: 42) |
+
+#### 변형 시험지 생성 (4단계)
+| 옵션 | 설명 |
+|------|------|
+| `--transformed_sets` | 생성할 세트 번호 (1-5, 미지정시 전체) |
+
+#### 시험 평가 (5단계)
+| 옵션 | 설명 |
+|------|------|
+| `--eval_models` | 평가할 모델 목록 |
+| `--eval_sets` | 평가할 세트 번호 (1-5) |
+| `--eval_transformed`, `--transformed` | 변형 시험지 평가 모드 |
+| `--eval_server_mode`, `--eval_use_server_mode` | vLLM 서버 모드 |
+| `--eval_exam_dir` | 시험지 디렉토리/파일 경로 |
+| `--eval_batch_size` | 평가 배치 크기 (기본값: 10) |
+| `--eval_use_ox_support` | O, X 문제 지원 활성화 (기본값: True) |
+| `--eval_no_ox_support` | O, X 문제 지원 비활성화 |
+| `--eval_essay` | 서술형 평가도 함께 수행 |
+
+#### 서술형 평가 (6단계)
+| 옵션 | 설명 |
+|------|------|
+| `--essay_models` | 서술형 평가 모델 목록 |
+| `--essay_sets` | 처리할 세트 번호 (1-5) |
+| `--essay_server_mode` | vLLM 서버 모드 |
+| `--essay_steps` | 실행할 단계 번호 (1: 문제선별, 2: 시험분류, 3: 서술형변환, 4: 키워드추출, 5: 모범답안생성) |
 
 ### Python에서 직접 사용
 
