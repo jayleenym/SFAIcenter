@@ -29,17 +29,18 @@ try:
     from tools.core.llm_query import LLMQuery
 except ImportError as e:
     # 디버깅을 위해 에러 로깅
+    import traceback
     logger = logging.getLogger(__name__)
-        logger.error(f"Import error: {e}")
-        logger.error(traceback.format_exc())
-        filter_full_explanation = None
-        change_question_to_essay = None
-        extract_keywords = None
-        create_best_answers = None
-        classify_essay_by_exam_main = None
-        process_essay_questions = None
-        get_api_key = None
-        LLMQuery = None
+    logger.error(f"Import error: {e}")
+    logger.error(traceback.format_exc())
+    filter_full_explanation = None
+    change_question_to_essay = None
+    extract_keywords = None
+    create_best_answers = None
+    classify_essay_by_exam_main = None
+    process_essay_questions = None
+    get_api_key = None
+    LLMQuery = None
 
 
 class Step9MultipleEssay(PipelineBase):
