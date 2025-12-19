@@ -151,7 +151,15 @@ class Step6Evaluate(PipelineBase):
                 return {'success': False, 'error': f'시험지 디렉토리/파일 없음: {exam_dir}'}
             
             # 출력 디렉토리 설정
-            if transformed:
+            if use_server_mode:
+                # 서버 모드: exam_dir 밑에 결과 폴더
+                result_folder = 'exam_+_result' if transformed else 'exam_result'
+                if os.path.isfile(exam_dir):
+                    # 단일 파일인 경우 부모 디렉토리 사용
+                    output_dir = os.path.join(os.path.dirname(exam_dir), result_folder)
+                else:
+                    output_dir = os.path.join(exam_dir, result_folder)
+            elif transformed:
                 # 변형 모드: 8_multiple_exam_+ 밑에 exam_+_result 폴더
                 output_dir = os.path.join(
                     self.onedrive_path,
@@ -177,6 +185,8 @@ class Step6Evaluate(PipelineBase):
                     
                     # 파일 데이터 로드
                     exam_name = os.path.splitext(os.path.basename(exam_dir))[0]
+                    # subject 추출: 파일명에서 _exam, _transformed 등을 제거
+                    subject_name = exam_name.replace('_exam', '').replace('_transformed', '')
                     self.logger.info(f"데이터 로딩 중: {exam_dir}")
                     
                     file_data = load_data_from_directory(
@@ -187,6 +197,11 @@ class Step6Evaluate(PipelineBase):
                     if not file_data:
                         self.logger.error(f"데이터를 로드할 수 없습니다: {exam_dir}")
                         return {'success': False, 'error': f'데이터 로드 실패: {exam_dir}'}
+                    
+                    # 각 item에 subject 추가 (비어있거나 없는 경우)
+                    for item in file_data:
+                        if not item.get('subject'):
+                            item['subject'] = subject_name
                     
                     self.logger.info(f"{'='*50}")
                     self.logger.info(f"파일: {exam_name} - 총 {len(file_data)}개 문제")
@@ -372,6 +387,11 @@ class Step6Evaluate(PipelineBase):
                         if not file_data:
                             self.logger.warning(f"  - {exam_name}: 데이터를 로드할 수 없습니다.")
                             continue
+                        
+                        # 각 item에 subject 추가 (비어있거나 없는 경우)
+                        for item in file_data:
+                            if not item.get('subject'):
+                                item['subject'] = exam_name
                         
                         self.logger.info(f"  - {exam_name}: {len(file_data)}개 문제 로드")
                         
