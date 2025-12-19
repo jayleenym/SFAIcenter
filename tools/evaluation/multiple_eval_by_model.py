@@ -86,6 +86,12 @@ class MultipleChoiceEvaluator:
         self.use_server_mode = use_server_mode
         self.llm_query = None
         self._model_cache = {}
+        
+        # 서버 모드에서는 HuggingFace Hub 오프라인 모드 활성화 (로컬 모델 사용 시 불필요한 원격 요청 방지)
+        if use_server_mode:
+            os.environ['HF_HUB_OFFLINE'] = '1'
+            logger.info("HF_HUB_OFFLINE=1 설정 (서버 모드)")
+        
         self._init_llm()
 
     def _init_llm(self):
@@ -304,13 +310,19 @@ class MultipleChoiceEvaluator:
         rows = []
         system_prompt = self.SYSTEM_PROMPT_TRANSFORMED if transformed else self.SYSTEM_PROMPT
         
+        total_batches = len(batches)
+        total_models = len(models)
+        logger.info(f"평가 시작: 총 {len(df_sample)}개 문제, {total_batches}개 배치, {total_models}개 모델")
+        logger.info(f"평가 대상 모델: {models}")
+        
         for bidx, bdf in enumerate(batches, 1):
             user_prompt = self.build_prompt(bdf, transformed)
             ids = bdf["id"].tolist()
             
-            for model in models:
+            for midx, model in enumerate(models, 1):
+                logger.info(f"[진행] 배치 {bidx}/{total_batches}, 모델 {midx}/{total_models}: {model} (문제 {len(ids)}개)")
                 try:
-                    raw, _ = self.call_llm(model, system_prompt, user_prompt)
+                    raw, elapsed = self.call_llm(model, system_prompt, user_prompt)
                     
                     # 로그 저장
                     if output_base_dir:
@@ -320,15 +332,18 @@ class MultipleChoiceEvaluator:
                             f.write(f"Batch {bidx}\nIDs: {ids}\n{raw}\n\n")
                             
                     parsed = self.parse_output(raw, ids, transformed)
+                    parsed_count = sum(1 for v in parsed.values() if (isinstance(v, set) and v) or (not isinstance(v, set) and not pd.isna(v)))
+                    logger.info(f"[완료] 배치 {bidx}/{total_batches}, 모델 {model}: {parsed_count}/{len(ids)}개 응답 파싱 완료 ({elapsed:.1f}초)")
                     for _id in ids:
                         rows.append({"id": _id, "model_name": model, "answer": parsed[_id]})
                         
                 except Exception as e:
-                    logger.error(f"Error processing batch {bidx}, model {model}: {e}")
+                    logger.error(f"[오류] 배치 {bidx}/{total_batches}, 모델 {model}: {e}")
                     for _id in ids:
                         rows.append({"id": _id, "model_name": model, "answer": (set() if transformed else np.nan)})
 
         # 4. 결과 정리
+        logger.info(f"평가 완료: 총 {len(rows)}개 결과 수집")
         pred_long = pd.DataFrame(rows).sort_values('id').reset_index(drop=True)
         pred_wide = pred_long.pivot(index="id", columns="model_name", values="answer").reset_index()
         
