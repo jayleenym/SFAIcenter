@@ -63,6 +63,7 @@ class FileManager:
             sheet_name=analysis[cycle], 
             header=3
         )[['관리번호', 'ISBN', '도서명', '분류']]
+        excel_analy.fillna("", inplace=True)
         
         excel_buy = pd.read_excel(
             os.path.join(base_path, 'book_list_ALL.xlsx'), 
