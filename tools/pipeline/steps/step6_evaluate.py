@@ -19,6 +19,7 @@ try:
         run_eval_pipeline,
         load_data_from_directory,
         save_results_to_excel,
+        save_combined_results_to_excel,
         print_evaluation_summary,
     )
     from tools.evaluation.evaluate_essay_model import (
@@ -30,6 +31,7 @@ except ImportError:
     run_eval_pipeline = None
     load_data_from_directory = None
     save_results_to_excel = None
+    save_combined_results_to_excel = None
     print_evaluation_summary = None
     evaluate_single_model = None
     calculate_statistics = None
@@ -357,7 +359,7 @@ class Step6Evaluate(PipelineBase):
                 
                 self.logger.info(f"{set_name} 세트에서 {len(exam_files)}개의 시험 파일을 찾았습니다.")
                 
-                # 각 시험지별로 개별 평가 수행
+                # 세트별 통합 평가 수행 (4개 파일을 하나로 합쳐서 평가)
                 try:
                     # load_data_from_directory가 None인지 확인
                     if load_data_from_directory is None:
@@ -371,12 +373,10 @@ class Step6Evaluate(PipelineBase):
                     if len(models_str) > 200:
                         models_str = models_str[:200] + '_etc'
                     
-                    # 각 시험지별로 개별 평가
+                    # 모든 시험 파일 데이터를 통합
+                    all_exam_data = []
                     for exam_file in exam_files:
                         exam_name = os.path.splitext(os.path.basename(exam_file))[0].replace('_exam', '').replace('_transformed', '')
-                        self.logger.info(f"{'='*50}")
-                        self.logger.info(f"시험지: {exam_name} (세트: {set_name})")
-                        self.logger.info(f"{'='*50}")
                         self.logger.info(f"데이터 로딩 중: {exam_file}")
                         
                         file_data = load_data_from_directory(
@@ -394,62 +394,77 @@ class Step6Evaluate(PipelineBase):
                                 item['subject'] = exam_name
                         
                         self.logger.info(f"  - {exam_name}: {len(file_data)}개 문제 로드")
+                        all_exam_data.extend(file_data)
+                    
+                    if not all_exam_data:
+                        self.logger.warning(f"{set_name} 세트에서 로드할 문제가 없습니다.")
+                        continue
+                    
+                    self.logger.info(f"{'='*50}")
+                    self.logger.info(f"세트 {set_name} 통합 평가 시작: 총 {len(all_exam_data)}개 문제")
+                    self.logger.info(f"{'='*50}")
+                    
+                    # 통합 평가 실행
+                    self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size}, 변형 모드: {actual_transformed})")
+                    df_all, pred_long, pred_wide, acc = run_eval_pipeline(
+                        all_exam_data,
+                        models,
+                        sample_size=len(all_exam_data),
+                        batch_size=batch_size,
+                        seed=42,
+                        use_server_mode=use_server_mode,
+                        use_ox_support=use_ox_support,
+                        api_key=api_key,
+                        output_base_dir=output_dir,
+                        transformed=actual_transformed
+                    )
+                    
+                    # 결과 출력
+                    self.logger.info(f"\n{'='*50}")
+                    self.logger.info(f"평가 결과 요약 (세트: {set_name}, 총 {len(all_exam_data)}개 문제)")
+                    self.logger.info(f"{'='*50}")
+                    if print_evaluation_summary:
+                        print_evaluation_summary(acc, pred_long)
+                    
+                    # 결과 저장 경로 설정
+                    if actual_transformed:
+                        # 변형 모드: 기본 모드와 같은 파일명 형식에 _transformed 추가
+                        output_filename = f"{set_name}_evaluation_{models_str}_transformed.xlsx"
+                        output_path = os.path.join(output_dir, output_filename)
+                    else:
+                        # 기본 모드: 세트별 디렉토리에 저장
+                        # 세트별 출력 디렉토리 생성 (예: exam_result/1st, exam_result/2nd)
+                        set_output_dir = os.path.join(output_dir, set_name)
+                        os.makedirs(set_output_dir, exist_ok=True)
                         
-                        # 평가 실행
-                        self.logger.info(f"평가 실행 중... (모델: {models}, 배치 크기: {batch_size}, 변형 모드: {actual_transformed})")
-                        df_all, pred_long, pred_wide, acc = run_eval_pipeline(
-                            file_data,
-                            models,
-                            sample_size=len(file_data),
-                            batch_size=batch_size,
-                            seed=42,
-                            use_server_mode=use_server_mode,
-                            use_ox_support=use_ox_support,
-                            api_key=api_key,
-                            output_base_dir=output_dir,
-                            transformed=actual_transformed
+                        output_filename = f"{set_name}_evaluation_{models_str}.xlsx"
+                        output_path = os.path.join(set_output_dir, output_filename)
+                    
+                    # 통합 결과 저장 (subject/domain/subdomain별 정확도 포함)
+                    if save_combined_results_to_excel:
+                        save_combined_results_to_excel(
+                            df_all, pred_wide, acc, pred_long,
+                            models, output_path, actual_transformed
                         )
-                        
-                        # 결과 출력
-                        self.logger.info(f"\n{'='*50}")
-                        self.logger.info(f"평가 결과 요약 ({exam_name} - 세트: {set_name}, 총 {len(file_data)}개 문제)")
-                        self.logger.info(f"{'='*50}")
-                        if print_evaluation_summary:
-                            print_evaluation_summary(acc, pred_long)
-                        
-                        # 결과 저장 경로 설정
-                        if actual_transformed:
-                            # 변형 모드: 기본 모드와 같은 파일명 형식에 _transformed 추가
-                            output_filename = f"{set_name}_{exam_name}_evaluation_{models_str}_transformed.xlsx"
-                            output_path = os.path.join(output_dir, output_filename)
-                        else:
-                            # 기본 모드: 세트별 디렉토리에 저장
-                            # 세트별 출력 디렉토리 생성 (예: exam_result/1st, exam_result/2nd)
-                            set_output_dir = os.path.join(output_dir, set_name)
-                            os.makedirs(set_output_dir, exist_ok=True)
-                            
-                            output_filename = f"{set_name}_{exam_name}_evaluation_{models_str}.xlsx"
-                            output_path = os.path.join(set_output_dir, output_filename)
-                        
-                        if save_results_to_excel:
-                            save_results_to_excel(
-                                df_all, pred_wide, acc, pred_long,
-                                output_path
-                            )
-                            self.logger.info(f"결과 저장 완료: {output_path}")
-                        
-                        # 결과 저장
-                        result_key = f"{set_name}_{exam_name}"
-                        all_results[result_key] = {
-                            'set_name': set_name,
-                            'exam_name': exam_name,
-                            'total_questions': len(file_data),
-                            'models': models,
-                            'accuracy': acc.to_dict() if hasattr(acc, 'to_dict') else acc,
-                            'output_file': output_path
-                        }
-                        
-                        self.logger.info(f"{exam_name} (세트: {set_name}) 평가 완료 (총 {len(file_data)}개 문제)")
+                        self.logger.info(f"통합 결과 저장 완료: {output_path}")
+                    elif save_results_to_excel:
+                        # fallback: 기본 저장
+                        save_results_to_excel(
+                            df_all, pred_wide, acc, pred_long,
+                            output_path
+                        )
+                        self.logger.info(f"결과 저장 완료: {output_path}")
+                    
+                    # 결과 저장
+                    all_results[set_name] = {
+                        'set_name': set_name,
+                        'total_questions': len(all_exam_data),
+                        'models': models,
+                        'accuracy': acc.to_dict() if hasattr(acc, 'to_dict') else acc,
+                        'output_file': output_path
+                    }
+                    
+                    self.logger.info(f"세트 {set_name} 평가 완료 (총 {len(all_exam_data)}개 문제)")
                 
                 except Exception as e:
                     self.logger.error(f"시험 평가 오류 ({set_name} 세트): {e}")

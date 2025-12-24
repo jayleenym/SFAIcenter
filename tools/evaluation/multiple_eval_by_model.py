@@ -429,6 +429,93 @@ def save_results_to_excel(df_all, pred_wide, acc, pred_long=None, filename=None)
                 # Simple correctness check for domain stats
                 # ... (simplified logic for wrapper) ...
 
+
+def save_combined_results_to_excel(df_all: pd.DataFrame, pred_wide: pd.DataFrame, 
+                                    acc: pd.DataFrame, pred_long: pd.DataFrame,
+                                    models: List[str], filename: str, 
+                                    transformed: bool = False):
+    """
+    통합 평가 결과를 xlsx 파일로 저장
+    
+    시트 구성:
+    1) 전체데이터 - 모든 문제와 정답
+    2) 모델별예측 - 각 모델의 예측 결과
+    3) 정확도 - 전체 정확도 (모델별)
+    4) Subject별정확도 - 금융일반/심화/실무1/실무2 별 정확도
+    5) Domain별정확도 - 경영/경제/내부통제 등 domain별 정확도
+    6) Subdomain별정확도 - 세부 subdomain별 정확도
+    
+    Args:
+        df_all: 전체 데이터 DataFrame (subject, domain, subdomain, id, question 등 포함)
+        pred_wide: 모델별 예측 결과 (wide format)
+        acc: 전체 정확도 DataFrame
+        pred_long: 모델별 예측 결과 (long format)
+        models: 평가에 사용된 모델 리스트
+        filename: 저장할 xlsx 파일 경로
+        transformed: 변형 문제 평가 여부
+    """
+    if df_all is None or df_all.empty:
+        logger.warning("저장할 데이터가 없습니다.")
+        return
+    
+    os.makedirs(os.path.dirname(filename) if os.path.dirname(filename) else '.', exist_ok=True)
+    
+    # 정답 여부 계산을 위한 merged DataFrame 생성
+    merged = pred_long.merge(df_all[['id', 'subject', 'domain', 'subdomain', 'answer_set']], on='id', how='left')
+    
+    def _is_correct(pred, ans_set):
+        if not ans_set:
+            return np.nan
+        if transformed:
+            return float(pred == ans_set) if isinstance(pred, set) else np.nan
+        if pd.isna(pred):
+            return np.nan
+        return float(int(pred) in ans_set)
+    
+    merged['correct'] = merged.apply(lambda r: _is_correct(r['answer'], r['answer_set']), axis=1)
+    
+    with pd.ExcelWriter(filename, engine="openpyxl") as w:
+        # 1. 전체데이터
+        df_all.to_excel(w, index=False, sheet_name="전체데이터")
+        
+        # 2. 모델별예측
+        pred_wide.to_excel(w, index=False, sheet_name="모델별예측")
+        
+        # 3. 정확도 (전체)
+        acc.to_excel(w, index=False, sheet_name="정확도")
+        
+        # 4. Subject별 정확도 (금융일반/심화/실무1/실무2)
+        if 'subject' in df_all.columns:
+            subject_acc = merged.pivot_table(
+                index='subject',
+                columns='model_name',
+                values='correct',
+                aggfunc='mean'
+            ).reset_index()
+            subject_acc.to_excel(w, index=False, sheet_name="Subject별정확도")
+        
+        # 5. Domain별 정확도
+        if 'domain' in df_all.columns:
+            domain_acc = merged.pivot_table(
+                index='domain',
+                columns='model_name',
+                values='correct',
+                aggfunc='mean'
+            ).reset_index()
+            domain_acc.to_excel(w, index=False, sheet_name="Domain별정확도")
+        
+        # 6. Subdomain별 정확도
+        if 'subdomain' in df_all.columns and 'domain' in df_all.columns:
+            subdomain_acc = merged.pivot_table(
+                index=['domain', 'subdomain'],
+                columns='model_name',
+                values='correct',
+                aggfunc='mean'
+            ).reset_index()
+            subdomain_acc.to_excel(w, index=False, sheet_name="Subdomain별정확도")
+    
+    logger.info(f"통합 평가 결과 저장 완료: {filename}")
+
 def print_evaluation_summary(acc, pred_long):
     """요약 출력 래퍼"""
     print("\n=== Evaluation Summary ===")
