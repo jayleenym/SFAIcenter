@@ -75,7 +75,6 @@ def main():
     
     # === 시험 생성 (2단계) ===
     exam = parser.add_argument_group('시험 생성 (create_exam)')
-    exam.add_argument('--num_sets', type=int, default=5, help='시험 세트 개수 (기본값: 5)')
     exam.add_argument('--random', action='store_true', help='랜덤 모드 (새로 문제 뽑기)')
     
     # === 문제 변형 (3단계) ===
@@ -163,7 +162,6 @@ def main():
         steps=args.steps,
         levels=args.levels,
         model=args.model,
-        num_sets=args.num_sets,
         random_mode=args.random,
         eval_models=args.eval_models,
         eval_batch_size=args.eval_batch_size,

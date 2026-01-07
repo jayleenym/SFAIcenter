@@ -1,20 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Q&A 처리 클래스
+Q&A 타입 분류 클래스
+
+문제를 multiple-choice, short-answer, essay, etc으로 분류합니다.
 """
 
 import re
-import os
-import sys
 from typing import Dict
-
-# tools 모듈 import를 위한 경로 설정
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir))) # processing -> qna -> tools -> root
-sys.path.insert(0, project_root)
-from tools import tools_dir
-sys.path.insert(0, tools_dir)
 
 
 class QnATypeClassifier:

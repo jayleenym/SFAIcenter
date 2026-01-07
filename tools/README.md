@@ -51,15 +51,19 @@ tools/
 │   │   ├── questions_info_manager.py   # QuestionsInfoManager (분류 캐시)
 │   │   ├── process_additional_tags.py  # 추가 태그 처리
 │   │   └── answer_type_classifier.py   # AnswerTypeClassifier
-│   └── analysis/            # Q&A 분석
-│       └── statistics_analyzer.py      # QnAStatisticsAnalyzer
+│   └── analysis/            # Q&A 분석 도구 (독립 실행)
+│       ├── statistics_analyzer.py      # QnAStatisticsAnalyzer
+│       ├── analyze_qna_statistics.py   # [도구] 통계 분석 스크립트
+│       ├── analyze_additional_tags_grouped.py  # [도구] 태그 분석
+│       ├── check_real_duplicates.py    # [도구] 중복 확인
+│       └── find_invalid_options.py     # [도구] 잘못된 선지 찾기
 │
-├── exam/                    # 시험지 생성 및 검증 (4개 파일)
+├── exam/                    # 시험지 생성 및 검증
 │   ├── __init__.py              # ExamMaker, ExamValidator export
 │   ├── exam_create.py           # ExamMaker (일반 시험지)
 │   ├── exam_plus_create.py      # ExamPlusMaker (변형 시험지)
 │   ├── exam_validator.py        # ExamValidator (검증 유틸)
-│   └── extract_exam_question_list.py  # 문제 번호 추출 도구
+│   └── extract_exam_question_list.py  # [도구] 문제 번호 추출
 │
 ├── evaluation/              # 평가 관련 (3개 파일)
 │   ├── __init__.py              # MultipleChoiceEvaluator 등 export
@@ -83,7 +87,10 @@ tools/
 │
 ├── data_processing/         # 데이터 처리 및 정제
 │   ├── __init__.py          # JSONCleaner export
-│   └── json_cleaner.py      # JSONCleaner
+│   ├── json_cleaner.py      # JSONCleaner (파이프라인에서 사용)
+│   ├── cleanup_empty_pages.py  # [도구] 빈 페이지 제거 스크립트
+│   ├── crop_analysis.py     # [도구] Crop 파일 분석 스크립트
+│   └── epubstats.py         # [도구] EPUB 변환 및 통계
 │
 └── statistics/              # 통계 저장 및 집계
     └── statistics_saver.py  # StatisticsSaver
@@ -259,7 +266,7 @@ python tools/main_pipeline.py --steps extract_qna_w_domain --cycle 1
 python tools/main_pipeline.py --steps extract_qna_w_domain --cycle 1 --levels Lv2 Lv3_4
 
 # 2단계: 시험문제 만들기 (랜덤 모드)
-python tools/main_pipeline.py --steps create_exam --random --num_sets 5
+python tools/main_pipeline.py --steps create_exam --random
 
 # 3단계: 문제 변형
 python tools/main_pipeline.py --steps transform_questions --transform_data /path/to/classified.json
@@ -308,7 +315,6 @@ python tools/main_pipeline.py --steps evaluate_essay --essay_steps 1 2 3 --essay
 #### 시험 생성 (2단계)
 | 옵션 | 설명 |
 |------|------|
-| `--num_sets` | 시험 세트 개수 (기본값: 5) |
 | `--random` | 랜덤 모드 (새로 문제 뽑기) |
 
 #### 문제 변형 (3단계)
@@ -360,7 +366,6 @@ pipeline = Pipeline()
 # 개별 단계 실행
 results = pipeline.run_full_pipeline(
     steps=['create_exam'],
-    num_sets=5,
     random_mode=True
 )
 
@@ -424,21 +429,13 @@ from ..base import PipelineBase
 
 ### v1.4.0 (리팩토링)
 - **FileManager 경로 중복 제거**: `tools/__init__.py`의 `PathResolver`를 사용하도록 통합
-  - 기존: FileManager에서 플랫폼별 OneDrive 경로 직접 탐지
-  - 변경: `from tools import ONEDRIVE_PATH` 사용
-- **JSONHandler/TextProcessor 클래스 참조 변경**: 모든 메서드가 `@staticmethod`이므로 인스턴스 생성 불필요
-  - `PipelineBase`에서 인스턴스 대신 클래스 참조로 변경
-- **Pipeline step lazy initialization**: 필요할 때만 step 인스턴스 생성
-  - `__init__`에서 모든 step 인스턴스 생성 → `_get_step()` 메서드로 필요시 생성
-- **Step6Evaluate 리팩토링**: 600줄의 `execute()` 메서드 개선
-  - 클래스 상수 추가: `SET_NAMES`, `DEFAULT_MODELS`
-  - 헬퍼 메서드 추출: `_get_api_key()`, `_get_exam_directories()`, `_make_models_filename()`
-  - 중복 코드 제거
+- **JSONHandler/TextProcessor 클래스 참조 변경**: `@staticmethod`이므로 인스턴스 생성 불필요
+- **Pipeline step lazy initialization**: 필요할 때만 step 인스턴스 생성 (`_get_step()` 메서드)
+- **Step6Evaluate 리팩토링**: 헬퍼 메서드 추출, 클래스 상수 추가
 - **import 경로 통일**: `from core.xxx` → `from tools.core.xxx`
-  - `exam/exam_create.py`, `exam/exam_plus_create.py`
-  - `qna/processing/qna_subdomain_classifier.py`, `answer_type_classifier.py`
-  - `transformed/question_transformer.py`, `multiple_change_question_and_options.py`, `multiple_load_transformed_questions.py`
-  - `evaluation/essay_utils.py`
+- **미사용 파라미터 제거**: `num_sets`, `qna_type` 파라미터 제거
+- **qna_type_classifier.py 간소화**: 불필요한 `sys.path.insert` 제거
+- **README 업데이트**: 분석 도구([도구] 표시) 문서화
 
 ### v1.3.0 (코드 정리)
 - `qna/processing/` 미사용 파일 삭제 (5개):

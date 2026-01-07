@@ -55,9 +55,8 @@ class Pipeline(PipelineBase):
         return getattr(self, f'_{step_name}' if step_name != 'step1' else '_step1_domain')
     
     def run_full_pipeline(self, cycle: int = None, steps: List[str] = None,
-                         levels: List[str] = None,
-                         qna_type: str = None, model: str = 'x-ai/grok-4-fast',
-                         num_sets: int = 5, eval_models: List[str] = None,
+                         levels: List[str] = None, model: str = 'x-ai/grok-4-fast',
+                         eval_models: List[str] = None,
                          eval_batch_size: int = 10, eval_use_ox_support: bool = True,
                          eval_use_server_mode: bool = False,
                          eval_exam_dir: str = None, eval_sets: List[int] = None,
@@ -78,13 +77,12 @@ class Pipeline(PipelineBase):
         전체 파이프라인 실행
         
         Args:
-            cycle: 사이클 번호 (1, 2, 3) - 0, 1, 2, 3단계에서만 사용
+            cycle: 사이클 번호 (1, 2, 3) - 1단계에서 사용
             steps: 실행할 단계 리스트 (None이면 전체 실행)
                 가능한 값: 'extract_qna_w_domain', 'create_exam', 'create_transformed_exam', 'evaluate_exams', 'transform_questions', 'evaluate_essay'
-            qna_type: QnA 타입 (4단계에서 사용, None이면 모든 타입 처리: 'multiple', 'short', 'essay')
-            model: 사용할 모델 (4단계에서 사용)
-            num_sets: 시험 세트 개수 (5단계에서 사용)
-            random_mode: 랜덤 모드 (2단계에서 사용, True면 새로 뽑기, False면 저장된 문제 번호 리스트 사용, 기본값: False)
+            levels: 처리할 레벨 목록 (1단계에서 사용, None이면 ['Lv2', 'Lv3_4', 'Lv5'])
+            model: 도메인 분류에 사용할 LLM 모델 (1단계에서 사용)
+            random_mode: 랜덤 모드 (2단계에서 사용, True면 새로 뽑기, False면 저장된 문제 번호 리스트 사용)
             eval_models: 평가할 모델 목록 (6단계에서 사용)
             eval_batch_size: 평가 배치 크기 (6단계에서 사용)
             eval_use_ox_support: O, X 문제 지원 활성화 (6단계에서 사용)
@@ -125,7 +123,7 @@ class Pipeline(PipelineBase):
                 results['extract_qna_w_domain'] = self._get_step('step1').execute(cycle, levels=levels, model=model, debug=debug)
             
             if 'create_exam' in steps:
-                results['create_exam'] = self._get_step('step2').execute(num_sets=num_sets, seed=transform_seed, transformed=False, debug=debug, random_mode=random_mode)
+                results['create_exam'] = self._get_step('step2').execute(seed=transform_seed, transformed=False, debug=debug, random_mode=random_mode)
             
             if 'evaluate_exams' in steps:
                 results['evaluate_exams'] = self._get_step('step6').execute(

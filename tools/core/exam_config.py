@@ -147,6 +147,20 @@ class ExamConfig:
         """모든 도메인 이름 리스트 반환"""
         return list(self.config['all_domains'].keys())
     
+    def get_exams_config(self) -> Dict[str, Any]:
+        """
+        시험 설정의 exams 부분만 반환
+        Returns:
+            {
+                "금융일반": {
+                    "domains": ["경제", "경영"],
+                    "domain_details": {...}
+                },
+                ...
+            }
+        """
+        return self.config['exams']
+    
     def get_full_config(self) -> Dict[str, Any]:
         """전체 설정 반환"""
         return self.config
