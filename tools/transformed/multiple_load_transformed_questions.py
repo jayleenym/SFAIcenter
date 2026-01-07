@@ -7,7 +7,7 @@
 
 import os
 from typing import Dict, Any
-from core.utils import JSONHandler
+from tools.core.utils import JSONHandler
 
 
 def load_transformed_questions(onedrive_path: str, json_handler: JSONHandler, logger) -> Dict[str, Dict[str, Any]]:

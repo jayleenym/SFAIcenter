@@ -12,7 +12,7 @@ import json
 import time
 import random
 from typing import List, Dict, Any, Optional, Tuple, Callable
-from core.llm_query import LLMQuery
+from tools.core.llm_query import LLMQuery
 
 
 class MultipleChoiceTransformer:

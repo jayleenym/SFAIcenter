@@ -78,10 +78,11 @@ class PipelineBase:
         
         self.config_path = config_path
         
-        # 유틸리티 인스턴스 생성
+        # 유틸리티 인스턴스/클래스 참조
         self.file_manager = FileManager(base_path)
-        self.text_processor = TextProcessor()
-        self.json_handler = JSONHandler()
+        # TextProcessor, JSONHandler는 모든 메서드가 @staticmethod이므로 클래스 참조
+        self.text_processor = TextProcessor
+        self.json_handler = JSONHandler
         self.json_cleaner = JSONCleaner()
         
         # LLM 클라이언트 (config가 있을 때만)

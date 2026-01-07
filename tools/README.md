@@ -37,35 +37,49 @@ tools/
 │
 ├── qna/                     # Q&A 관련 처리
 │   ├── __init__.py          # QnAExtractor, TagProcessor 등 export
-│   ├── extraction/          # Q&A 추출
-│   │   ├── qna_extractor.py     # QnAExtractor
-│   │   ├── tag_processor.py     # TagProcessor
-│   │   └── batch_extractor.py   # BatchExtractor
-│   ├── processing/          # Q&A 처리 및 변환
+│   ├── extraction/          # Q&A 추출 (4개 파일)
+│   │   ├── make_extracted_qna.py  # QnAMaker (step1 진입점)
+│   │   ├── batch_extractor.py     # BatchExtractor (일괄 추출)
+│   │   ├── qna_extractor.py       # QnAExtractor (Q&A 추출 핵심)
+│   │   └── tag_processor.py       # TagProcessor (태그 처리)
+│   ├── processing/          # Q&A 처리 및 변환 (8개 파일)
+│   │   ├── organize_qna_by_type.py     # QnAOrganizer (타입별 분류)
+│   │   ├── fill_domain.py              # DomainFiller (전체 흐름 관리)
+│   │   ├── formatting.py               # 포맷화/필터링 유틸리티
 │   │   ├── qna_type_classifier.py      # QnATypeClassifier
-│   │   ├── qna_subdomain_classifier.py # QnASubdomainClassifier
-│   │   ├── organize_qna_by_type.py     # QnAOrganizer
-│   │   └── fill_domain.py              # DomainFiller
+│   │   ├── qna_subdomain_classifier.py # QnASubdomainClassifier (API 호출)
+│   │   ├── questions_info_manager.py   # QuestionsInfoManager (분류 캐시)
+│   │   ├── process_additional_tags.py  # 추가 태그 처리
+│   │   └── answer_type_classifier.py   # AnswerTypeClassifier
 │   └── analysis/            # Q&A 분석
 │       └── statistics_analyzer.py      # QnAStatisticsAnalyzer
 │
-├── exam/                    # 시험지 생성 및 검증
-│   ├── __init__.py          # ExamMaker, ExamValidator export
-│   ├── exam_create.py       # ExamMaker
-│   ├── exam_plus_create.py  # ExamPlusMaker (변형 시험지)
-│   └── exam_validator.py    # ExamValidator
+├── exam/                    # 시험지 생성 및 검증 (4개 파일)
+│   ├── __init__.py              # ExamMaker, ExamValidator export
+│   ├── exam_create.py           # ExamMaker (일반 시험지)
+│   ├── exam_plus_create.py      # ExamPlusMaker (변형 시험지)
+│   ├── exam_validator.py        # ExamValidator (검증 유틸)
+│   └── extract_exam_question_list.py  # 문제 번호 추출 도구
 │
-├── evaluation/              # 평가 관련
-│   ├── __init__.py          # MultipleChoiceEvaluator 등 export
-│   ├── multiple_eval_by_model.py  # MultipleChoiceEvaluator
-│   ├── evaluate_essay_model.py    # 서술형 평가
-│   └── essay_utils.py             # 서술형 유틸리티
+├── evaluation/              # 평가 관련 (3개 파일)
+│   ├── __init__.py              # MultipleChoiceEvaluator 등 export
+│   ├── multiple_eval_by_model.py    # 객관식 문제 평가
+│   ├── evaluate_essay_model.py      # 서술형 문제 평가
+│   └── essay_utils.py               # 서술형 평가 유틸리티
 │
-├── transformed/             # 문제 변형 관련
-│   ├── __init__.py          # MultipleChoiceTransformer 등 export
-│   ├── common.py            # 공통 유틸리티 함수
-│   ├── multiple_*.py        # 객관식 변형 모듈
-│   └── essay_*.py           # 서술형 변형 모듈
+├── transformed/             # 문제 변형 관련 (11개 파일)
+│   ├── __init__.py              # export
+│   ├── common.py                # 공통 유틸리티 함수
+│   ├── question_transformer.py  # QuestionTransformerOrchestrator (step3 진입점)
+│   ├── multiple_change_question_and_options.py  # 객관식 변형
+│   ├── multiple_load_transformed_questions.py   # 변형 문제 로드
+│   ├── multiple_create_transformed_exam.py      # 변형 시험지 생성
+│   ├── essay_filter_full_explanation.py    # 1단계: 문제 선별
+│   ├── essay_classify_by_exam.py           # 2단계: 시험별 분류
+│   ├── essay_change_question_to_essay.py   # 3단계: 서술형 변환
+│   ├── essay_extract_keywords.py           # 4단계: 키워드 추출
+│   ├── essay_create_best_answers.py        # 5단계: 모범답안 생성
+│   └── essay_create_model_answers.py       # 모델 답변 생성
 │
 ├── data_processing/         # 데이터 처리 및 정제
 │   ├── __init__.py          # JSONCleaner export
@@ -85,6 +99,149 @@ tools/
 | 4 | `create_transformed_exam` | 변형 시험지 생성 |
 | 5 | `evaluate_exams` | 시험지 평가 (객관식) |
 | 6 | `evaluate_essay` | 서술형 문제 변환 및 평가 |
+
+### Step 1: extract_qna_w_domain 실행 흐름
+
+```
+Step1ExtractQnAWDomain.execute()
+    │
+    ├─ 1. Q&A 추출 (QnAMaker.process_cycle)
+    │      └─ extraction/batch_extractor.py (BatchExtractor)
+    │              └─ extraction/qna_extractor.py (QnAExtractor)
+    │                      ├─ extraction/tag_processor.py (태그 추출)
+    │                      └─ processing/qna_type_classifier.py (타입 분류)
+    │
+    ├─ 2-3. 타입별 분류 및 저장 (QnAOrganizer.classify_and_save)
+    │      └─ processing/organize_qna_by_type.py
+    │              ├─ processing/formatting.py (포맷화, 필터링)
+    │              └─ processing/qna_type_classifier.py (타입 분류)
+    │
+    └─ 4-5. Domain/Subdomain 채우기 (DomainFiller.fill_domain)
+           └─ processing/fill_domain.py
+                   ├─ processing/questions_info_manager.py (캐시 조회)
+                   └─ processing/qna_subdomain_classifier.py (LLM API 호출)
+```
+
+### Step 2: create_exam 실행 흐름
+
+```
+Step2CreateExams.execute()
+    │
+    ├─ 일반 시험지 생성 (transformed=False)
+    │   └─ ExamMaker.create_exams() - exam/exam_create.py
+    │           └─ qna/extraction/tag_processor.py (태그 대치)
+    │
+    └─ 변형 시험지 생성 (transformed=True)
+        └─ ExamPlusMaker.create_transformed_exams() - exam/exam_plus_create.py
+                ├─ transformed/multiple_load_transformed_questions.py
+                └─ transformed/multiple_create_transformed_exam.py
+```
+
+### Step 3: transform_questions 실행 흐름
+
+```
+Step3TransformQuestions.execute()
+    └─ QuestionTransformerOrchestrator - question_transformer.py
+            │
+            ├─ 분류 (run_classify=True일 때)
+            │   └─ qna/processing/answer_type_classifier.py (right/wrong/abcd 분류)
+            │
+            └─ 변형
+                └─ multiple_change_question_and_options.py
+                        ├─ wrong → right 변형
+                        ├─ right → wrong 변형
+                        └─ abcd 변형
+```
+
+### Step 6: evaluate_exams 실행 흐름
+
+```
+Step6Evaluate.execute()
+    │
+    ├─ 객관식 평가
+    │   └─ evaluation/multiple_eval_by_model.py
+    │           ├─ run_eval_pipeline() (LLM 호출)
+    │           └─ save_combined_results_to_excel() (결과 저장)
+    │
+    └─ 서술형 평가 (essay=True일 때)
+        └─ evaluation/evaluate_essay_model.py
+                └─ evaluation/essay_utils.py (유틸리티)
+```
+
+### Step 9: evaluate_essay 실행 흐름
+
+```
+Step9MultipleEssay.execute()
+    │
+    ├─ 1단계: 해설이 많은 문제 선별
+    │   └─ essay_filter_full_explanation.py
+    │
+    ├─ 2단계: 시험별로 분류
+    │   └─ essay_classify_by_exam.py
+    │
+    ├─ 3단계: 서술형 문제로 변환
+    │   └─ essay_change_question_to_essay.py
+    │
+    ├─ 4단계: 키워드 추출
+    │   └─ essay_extract_keywords.py
+    │
+    ├─ 5단계: 모범답안 생성
+    │   └─ essay_create_best_answers.py
+    │
+    └─ 모델 답변 생성 (models 지정 시)
+        └─ essay_create_model_answers.py
+```
+
+## 📦 Q&A 처리 모듈 (qna/)
+
+### extraction/ - Q&A 추출
+
+| 모듈 | 클래스 | 역할 |
+|------|--------|------|
+| `make_extracted_qna.py` | `QnAMaker` | step1 진입점, BatchExtractor 상속 |
+| `batch_extractor.py` | `BatchExtractor` | 일괄 추출 로직, 재개(resume) 기능 지원 |
+| `qna_extractor.py` | `QnAExtractor` | JSON에서 Q&A 태그 추출 핵심 로직 |
+| `tag_processor.py` | `TagProcessor` | 태그 추출/대치 유틸리티 |
+
+### processing/ - Q&A 처리 및 변환
+
+| 모듈 | 클래스 | 역할 |
+|------|--------|------|
+| `organize_qna_by_type.py` | `QnAOrganizer` | 타입별 분류: multiple-choice, short-answer, essay, etc |
+| `fill_domain.py` | `DomainFiller` | **전체 흐름 관리**: 기존 분류 활용 → API 호출 → is_table 추가 → 저장 → 원본 삭제 |
+| `formatting.py` | - | 포맷화/필터링 유틸리티 함수 |
+| `qna_type_classifier.py` | `QnATypeClassifier` | 문제 유형 분류 (multiple-choice/short-answer/essay/etc) |
+| `qna_subdomain_classifier.py` | `QnASubdomainClassifier` | **API 호출만**: domain/subdomain/is_calculation 분류 |
+| `questions_info_manager.py` | `QuestionsInfoManager` | 분류 결과 캐시 관리 (questions_info.json) |
+| `process_additional_tags.py` | - | 추가 태그 처리 (tb, f, note 태그) |
+| `answer_type_classifier.py` | `AnswerTypeClassifier` | 답변 유형 분류 (transformed에서 사용) |
+
+### 출력 파일 필드 순서
+
+```json
+{
+  "file_id": "...",
+  "tag": "...",
+  "title": "...",
+  "cat1_domain": "...",
+  "cat2_sub": "...",
+  "cat3_specific": "...",
+  "chapter": "...",
+  "page": "...",
+  "qna_type": "multiple-choice",
+  "domain": "금융일반",
+  "subdomain": "금융시장",
+  "is_calculation": false,
+  "is_table": false,
+  "classification_reason": "...",
+  "question": "...",
+  "options": ["①...", "②...", "③...", "④..."],
+  "answer": "...",
+  "explanation": "..."
+}
+```
+
+- `is_table`: `question`에 `{tb_` 패턴이 있으면 `true`
 
 ## 💻 사용법
 
@@ -264,6 +421,52 @@ from ..base import PipelineBase
 ```
 
 ## 📋 변경 이력
+
+### v1.4.0 (리팩토링)
+- **FileManager 경로 중복 제거**: `tools/__init__.py`의 `PathResolver`를 사용하도록 통합
+  - 기존: FileManager에서 플랫폼별 OneDrive 경로 직접 탐지
+  - 변경: `from tools import ONEDRIVE_PATH` 사용
+- **JSONHandler/TextProcessor 클래스 참조 변경**: 모든 메서드가 `@staticmethod`이므로 인스턴스 생성 불필요
+  - `PipelineBase`에서 인스턴스 대신 클래스 참조로 변경
+- **Pipeline step lazy initialization**: 필요할 때만 step 인스턴스 생성
+  - `__init__`에서 모든 step 인스턴스 생성 → `_get_step()` 메서드로 필요시 생성
+- **Step6Evaluate 리팩토링**: 600줄의 `execute()` 메서드 개선
+  - 클래스 상수 추가: `SET_NAMES`, `DEFAULT_MODELS`
+  - 헬퍼 메서드 추출: `_get_api_key()`, `_get_exam_directories()`, `_make_models_filename()`
+  - 중복 코드 제거
+- **import 경로 통일**: `from core.xxx` → `from tools.core.xxx`
+  - `exam/exam_create.py`, `exam/exam_plus_create.py`
+  - `qna/processing/qna_subdomain_classifier.py`, `answer_type_classifier.py`
+  - `transformed/question_transformer.py`, `multiple_change_question_and_options.py`, `multiple_load_transformed_questions.py`
+  - `evaluation/essay_utils.py`
+
+### v1.3.0 (코드 정리)
+- `qna/processing/` 미사용 파일 삭제 (5개):
+  - `reclassify_qna_types.py` - 일회성 재분류 스크립트
+  - `verify_reclassification.py` - 재분류 검증 스크립트
+  - `merger.py` - 미사용 병합 클래스
+  - `tag_fixer.py` - 미사용 태그 대치 클래스
+  - `workbook_groupby_qtype.py` - organize_qna_by_type.py와 중복
+- `evaluation/` 미사용 파일 삭제 (1개):
+  - `check_all_exams_shortage.py` - 미사용 분석 스크립트
+- `transformed/` 미사용 파일 삭제 (1개):
+  - `multiple_process_missing_questions.py` - 어디서도 import되지 않음
+- `questions_info_manager.py` 추가: 분류 결과 캐시 관리
+- 각 스텝별 실행 흐름도 README에 추가
+- 폴더 구조 문서화 정비
+
+### v1.2.0 (Domain 분류 모듈 정리)
+- 출력 파일명 변경: `~_subdomain_classified_ALL.json` → `~_DST.json`
+- `qna_subdomain_classifier.py`: API 호출만 담당하도록 단순화
+  - `classify_questions(questions, batch_size, model)` → `(updated, failed)` 반환
+  - 파일 저장/삭제 로직 제거
+- `fill_domain.py`: 전체 흐름 관리
+  - 기존 분류 파일에서 domain/subdomain 채우기
+  - 빈 항목만 API 호출 (classifier 사용)
+  - 실패 항목 재시도
+  - `is_table` 필드 추가 (`question`에 `{tb_` 패턴 있으면 True)
+  - 결과 저장 및 원본 파일 삭제
+  - 통계 파일 자동 생성 (`STATS_{qna_type}_DST.md`)
 
 ### v1.1.0 (리팩토링)
 - `PathResolver` 클래스로 경로 관리 통합

@@ -74,21 +74,6 @@ class Step1ExtractQnAWDomain(PipelineBase):
                 self.logger.info(f"[{qna_type}] 처리 중...")
                 result = filler.fill_domain(qna_type, model, self.onedrive_path, debug=debug)
                 fill_results[qna_type] = result
-                
-                # 통계 파일 생성
-                if result.get('success'):
-                    try:
-                        from qna.processing.qna_subdomain_classifier import QnASubdomainClassifier
-                        classifier = QnASubdomainClassifier(
-                            config_path=None,
-                            mode=qna_type,
-                            onedrive_path=self.onedrive_path,
-                            logger=self.logger
-                        )
-                        classifier.save_statistics()
-                        self.logger.info(f"[{qna_type}] 통계 파일 생성 완료")
-                    except Exception as e:
-                        self.logger.warning(f"[{qna_type}] 통계 파일 생성 실패: {e}")
             
             self.logger.info("Domain/Subdomain 채우기 완료")
             

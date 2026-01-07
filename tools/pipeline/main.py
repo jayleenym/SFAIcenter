@@ -29,12 +29,30 @@ class Pipeline(PipelineBase):
         """
         super().__init__(base_path, config_path, onedrive_path, project_root_path)
         
-        # 각 단계 인스턴스 생성
-        self.step1_domain = Step1ExtractQnAWDomain(base_path, config_path, onedrive_path, project_root_path)
-        self.step2 = Step2CreateExams(base_path, config_path, onedrive_path, project_root_path)
-        self.step3 = Step3TransformQuestions(base_path, config_path, onedrive_path, project_root_path)
-        self.step6 = Step6Evaluate(base_path, config_path, onedrive_path, project_root_path)
-        self.step9 = Step9MultipleEssay(base_path, config_path, onedrive_path, project_root_path)
+        # 초기화 파라미터 저장 (lazy init용)
+        self._init_params = (base_path, config_path, onedrive_path, project_root_path)
+        
+        # 각 단계 인스턴스 (lazy initialization)
+        self._step1_domain = None
+        self._step2 = None
+        self._step3 = None
+        self._step6 = None
+        self._step9 = None
+    
+    def _get_step(self, step_name: str):
+        """필요할 때만 step 인스턴스 생성 (lazy initialization)"""
+        if step_name == 'step1' and self._step1_domain is None:
+            self._step1_domain = Step1ExtractQnAWDomain(*self._init_params)
+        elif step_name == 'step2' and self._step2 is None:
+            self._step2 = Step2CreateExams(*self._init_params)
+        elif step_name == 'step3' and self._step3 is None:
+            self._step3 = Step3TransformQuestions(*self._init_params)
+        elif step_name == 'step6' and self._step6 is None:
+            self._step6 = Step6Evaluate(*self._init_params)
+        elif step_name == 'step9' and self._step9 is None:
+            self._step9 = Step9MultipleEssay(*self._init_params)
+        
+        return getattr(self, f'_{step_name}' if step_name != 'step1' else '_step1_domain')
     
     def run_full_pipeline(self, cycle: int = None, steps: List[str] = None,
                          levels: List[str] = None,
@@ -104,13 +122,13 @@ class Pipeline(PipelineBase):
         try:
             if 'extract_qna_w_domain' in steps:
                 # cycle이 None이어도 가능 (모든 사이클 자동 처리)
-                results['extract_qna_w_domain'] = self.step1_domain.execute(cycle, levels=levels, model=model, debug=debug)
+                results['extract_qna_w_domain'] = self._get_step('step1').execute(cycle, levels=levels, model=model, debug=debug)
             
             if 'create_exam' in steps:
-                results['create_exam'] = self.step2.execute(num_sets=num_sets, seed=transform_seed, transformed=False, debug=debug, random_mode=random_mode)
+                results['create_exam'] = self._get_step('step2').execute(num_sets=num_sets, seed=transform_seed, transformed=False, debug=debug, random_mode=random_mode)
             
             if 'evaluate_exams' in steps:
-                results['evaluate_exams'] = self.step6.execute(
+                results['evaluate_exams'] = self._get_step('step6').execute(
                     models=eval_models,
                     batch_size=eval_batch_size,
                     use_ox_support=eval_use_ox_support,
@@ -122,7 +140,7 @@ class Pipeline(PipelineBase):
                 )
             
             if 'transform_questions' in steps:
-                results['transform_questions'] = self.step3.execute(
+                results['transform_questions'] = self._get_step('step3').execute(
                     classified_data_path=transform_classified_data_path,
                     input_data_path=transform_input_data_path,
                     questions=transform_questions,
@@ -137,14 +155,14 @@ class Pipeline(PipelineBase):
                 )
             
             if 'create_transformed_exam' in steps:
-                results['create_transformed_exam'] = self.step2.execute(
+                results['create_transformed_exam'] = self._get_step('step2').execute(
                     sets=create_transformed_exam_sets,
                     transformed=True,
                     debug=debug
                 )
             
             if 'evaluate_essay' in steps:
-                results['evaluate_essay'] = self.step9.execute(
+                results['evaluate_essay'] = self._get_step('step9').execute(
                     models=essay_models,
                     sets=essay_sets,
                     use_server_mode=essay_use_server_mode,

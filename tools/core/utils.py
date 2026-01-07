@@ -20,29 +20,11 @@ class FileManager:
     def __init__(self, base_path: str = None):
         """
         Args:
-            base_path: 기본 경로 (None이면 OneDrive 경로 사용)
+            base_path: 기본 경로 (None이면 ONEDRIVE_PATH 사용)
         """
         if base_path is None:
-            # pipeline/config에서 ONEDRIVE_PATH import 시도
-            try:
-                import sys
-                current_dir = os.path.dirname(os.path.abspath(__file__))
-                project_root = os.path.dirname(os.path.dirname(current_dir))
-                sys.path.insert(0, project_root)
-                from tools import ONEDRIVE_PATH
-                self.base_path = ONEDRIVE_PATH
-            except ImportError:
-                # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
-                import platform
-                system = platform.system()
-                home_dir = os.path.expanduser("~")
-                
-                if system == "Windows":
-                    # Windows OneDrive 경로
-                    self.base_path = os.path.join(home_dir, "OneDrive", "데이터L", "selectstar")
-                else:
-                    # macOS 기본 경로
-                    self.base_path = os.path.join(home_dir, "Library", "CloudStorage", "OneDrive-개인", "데이터L", "selectstar")
+            from tools import ONEDRIVE_PATH
+            self.base_path = ONEDRIVE_PATH
         else:
             self.base_path = base_path
         

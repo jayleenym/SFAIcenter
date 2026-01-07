@@ -27,7 +27,7 @@ project_root = os.path.dirname(tools_dir)  # tools -> project_root
 sys.path.insert(0, tools_dir)
 
 # 중앙화된 로깅 유틸리티 사용
-from core.logger import setup_logger
+from tools.core.logger import setup_logger
 
 # 독립 실행 시 파일명 기반 로그 파일명 생성
 _log_file = None
@@ -45,7 +45,7 @@ logger = setup_logger(
     use_console=True,
     use_file=True
 )
-from core.llm_query import LLMQuery
+from tools.core.llm_query import LLMQuery
 
 
 class AnswerTypeClassifier:

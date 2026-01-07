@@ -12,7 +12,7 @@ import os
 import sys
 import json
 from typing import List, Dict, Any, Optional
-from core.logger import setup_step_logger
+from tools.core.logger import setup_step_logger
 
 # AnswerTypeClassifier 및 변형 모듈 import
 current_dir = os.path.dirname(os.path.abspath(__file__))

@@ -42,10 +42,85 @@ except ImportError:
 class Step6Evaluate(PipelineBase):
     """6단계: 시험지 평가"""
     
+    # 세트 이름 매핑 (클래스 상수)
+    SET_NAMES = {1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th'}
+    
+    # 기본 평가 모델 목록
+    DEFAULT_MODELS = [
+        # SOTA 상위버전 모델
+        'openai/gpt-5',
+        'google/gemini-2.5-pro',
+        'anthropic/claude-sonnet-4.5',
+        # SOTA 하위버전 모델
+        'openai/gpt-4.1',
+        'anthropic/claude-3.7-sonnet',
+        'google/gemini-2.5-flash',                
+        # 센터 바닐라모델
+        'google/gemma-3-27b-it:free',
+        # 대형 모델
+        'meta-llama/llama-4-maverick:free'
+    ]
+    
     def __init__(self, base_path: str = None, config_path: str = None, 
                  onedrive_path: str = None, project_root_path: str = None):
         super().__init__(base_path, config_path, onedrive_path, project_root_path)
         self._step_log_handler = None
+    
+    def _get_api_key(self) -> tuple:
+        """API 키를 설정 파일에서 가져옵니다.
+        
+        Returns:
+            (api_key, error_dict) - 성공시 (api_key, None), 실패시 (None, error_dict)
+        """
+        config_path = self.config_path or os.path.join(self.project_root_path, 'llm_config.ini')
+        
+        if not os.path.exists(config_path):
+            return None, {'success': False, 'error': f'설정 파일 없음: {config_path}'}
+        
+        self.logger.info(f"설정 파일 사용: {config_path}")
+        config = configparser.ConfigParser()
+        config.read(config_path, encoding='utf-8')
+        
+        if not config.has_option("OPENROUTER", "key_evaluate"):
+            return None, {'success': False, 'error': 'key_evaluate가 설정 파일에 없습니다.'}
+        
+        return config.get("OPENROUTER", "key_evaluate"), None
+    
+    def _get_exam_directories(self, exam_dir: str, transformed: bool, use_server_mode: bool) -> tuple:
+        """시험지 디렉토리와 출력 디렉토리를 결정합니다.
+        
+        Returns:
+            (exam_dir, output_dir) tuple
+        """
+        if exam_dir is None:
+            exam_dir = os.path.join(
+                self.onedrive_path, 'evaluation', 'eval_data',
+                '8_multiple_exam_+' if transformed else '4_multiple_exam'
+            )
+        elif not os.path.isabs(exam_dir):
+            exam_dir = os.path.join(self.onedrive_path, exam_dir)
+        
+        result_folder = 'exam_+_result' if transformed else 'exam_result'
+        
+        if use_server_mode:
+            if os.path.isfile(exam_dir):
+                output_dir = os.path.join(os.path.dirname(exam_dir), result_folder)
+            else:
+                output_dir = os.path.join(exam_dir, result_folder)
+        elif transformed:
+            output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '8_multiple_exam_+', 'exam_+_result')
+        else:
+            output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '4_multiple_exam', 'exam_result')
+        
+        return exam_dir, output_dir
+    
+    def _make_models_filename(self, models: List[str], max_length: int = 200) -> str:
+        """모델 이름들을 파일명에 사용할 수 있는 문자열로 변환합니다."""
+        model_names = [model.split("/")[-1].replace(':', '_') for model in models]
+        models_str = '_'.join(model_names)
+        if len(models_str) > max_length:
+            models_str = models_str[:max_length] + '_etc'
+        return models_str
     
     def execute(self, models: List[str] = None, batch_size: int = 10, 
                 use_ox_support: bool = True, use_server_mode: bool = False,
@@ -76,103 +151,26 @@ class Step6Evaluate(PipelineBase):
                 self.logger.error("multiple_eval_by_model 모듈을 import할 수 없습니다.")
                 return {'success': False, 'error': 'multiple_eval_by_model import 실패'}
             
-            # llm_config.ini에서 key_evaluate 읽기 (OpenRouter 사용 시 필수)
+            # API 키 가져오기 (OpenRouter 사용 시)
             api_key = None
-            if not use_server_mode:  # OpenRouter API 모드일 때만 key_evaluate 필수
-                try:
-                    # self.config_path 사용 (--config_path로 지정한 경로 또는 기본값)
-                    config_path = self.config_path
-                    if not config_path:
-                        config_path = os.path.join(self.project_root_path, 'llm_config.ini')
-                    
-                    if not os.path.exists(config_path):
-                        self.logger.error(f"설정 파일을 찾을 수 없습니다: {config_path}")
-                        return {'success': False, 'error': f'설정 파일 없음: {config_path}'}
-                    
-                    self.logger.info(f"설정 파일 사용: {config_path}")
-                    config = configparser.ConfigParser()
-                    config.read(config_path, encoding='utf-8')
-                    
-                    if not config.has_option("OPENROUTER", "key_evaluate"):
-                        self.logger.error("key_evaluate가 설정 파일에 없습니다. step6_evaluate에서는 key_evaluate가 필수입니다.")
-                        return {'success': False, 'error': 'key_evaluate가 설정 파일에 없습니다.'}
-                    
-                    api_key = config.get("OPENROUTER", "key_evaluate")
-                    self.logger.info("key_evaluate를 사용하여 LLM 호출합니다.")
-                except Exception as e:
-                    self.logger.error(f"key_evaluate를 읽는 중 오류 발생: {e}")
-                    return {'success': False, 'error': f'key_evaluate 읽기 실패: {str(e)}'}
+            if not use_server_mode:
+                api_key, error = self._get_api_key()
+                if error:
+                    self.logger.error(error['error'])
+                    return error
+                self.logger.info("key_evaluate를 사용하여 LLM 호출합니다.")
             
+            # 기본 모델 목록 사용
             if models is None:
-                models = [
-                    # SOTA 상위버전 모델
-                    'openai/gpt-5',
-                    'google/gemini-2.5-pro',
-                    'anthropic/claude-sonnet-4.5',
-                    
-                    # SOTA 하위버전 모델
-                    'openai/gpt-4.1',
-                    'anthropic/claude-3.7-sonnet',
-                    'google/gemini-2.5-flash',                
-                    
-                    # 센터 바닐라모델
-                    'google/gemma-3-27b-it:free',
-
-                    # 대형 모델
-                    'meta-llama/llama-4-maverick:free'
-                ]
+                models = self.DEFAULT_MODELS
             
-            # 세트 이름 매핑
-            set_names = {
-                1: '1st',
-                2: '2nd',
-                3: '3rd',
-                4: '4th',
-                5: '5th'
-            }
-            
-            # 시험지 디렉토리 (exam_dir가 지정되지 않으면 기본 경로 사용)
-            if exam_dir is None:
-                if transformed:
-                    exam_dir = os.path.join(
-                        self.onedrive_path,
-                        'evaluation', 'eval_data', '8_multiple_exam_+'
-                    )
-                else:
-                    exam_dir = os.path.join(
-                        self.onedrive_path,
-                        'evaluation', 'eval_data', '4_multiple_exam'
-                    )
-            else:
-                # 상대 경로인 경우 onedrive_path 기준으로 변환
-                if not os.path.isabs(exam_dir):
-                    exam_dir = os.path.join(self.onedrive_path, exam_dir)
+            # 시험지 디렉토리 및 출력 디렉토리 설정
+            exam_dir, output_dir = self._get_exam_directories(exam_dir, transformed, use_server_mode)
             
             if not os.path.exists(exam_dir):
                 self.logger.error(f"시험지 디렉토리/파일을 찾을 수 없습니다: {exam_dir}")
                 return {'success': False, 'error': f'시험지 디렉토리/파일 없음: {exam_dir}'}
             
-            # 출력 디렉토리 설정
-            if use_server_mode:
-                # 서버 모드: exam_dir 밑에 결과 폴더
-                result_folder = 'exam_+_result' if transformed else 'exam_result'
-                if os.path.isfile(exam_dir):
-                    # 단일 파일인 경우 부모 디렉토리 사용
-                    output_dir = os.path.join(os.path.dirname(exam_dir), result_folder)
-                else:
-                    output_dir = os.path.join(exam_dir, result_folder)
-            elif transformed:
-                # 변형 모드: 8_multiple_exam_+ 밑에 exam_+_result 폴더
-                output_dir = os.path.join(
-                    self.onedrive_path,
-                    'evaluation', 'eval_data', '8_multiple_exam_+', 'exam_+_result'
-                )
-            else:
-                # 기본 모드: 4_multiple_exam 밑에 exam_result 폴더
-                output_dir = os.path.join(
-                    self.onedrive_path,
-                    'evaluation', 'eval_data', '4_multiple_exam', 'exam_result'
-                )
             os.makedirs(output_dir, exist_ok=True)
             
             # exam_dir가 단일 JSON 파일인지 확인
@@ -234,17 +232,13 @@ class Step6Evaluate(PipelineBase):
                     # 파일명에서 세트 정보 추출 (1st, 2nd, 3rd, 4th, 5th)
                     detected_set = None
                     exam_name_lower = exam_name.lower()
-                    for set_num, set_name in set_names.items():
+                    for set_num, set_name in self.SET_NAMES.items():
                         if set_name.lower() in exam_name_lower:
                             detected_set = set_name
                             break
                     
                     # 결과 저장 경로 설정
-                    # 모델 이름들을 파일명에 사용할 수 있도록 변환
-                    model_names = [model.split("/")[-1].replace(':', '_') for model in models]
-                    models_str = '_'.join(model_names)
-                    if len(models_str) > 200:
-                        models_str = models_str[:200] + '_etc'
+                    models_str = self._make_models_filename(models)
                     
                     if transformed:
                         # 변형 모드: 기본 모드와 같은 파일명 형식에 _transformed 추가
@@ -304,13 +298,13 @@ class Step6Evaluate(PipelineBase):
                     self.logger.error("유효한 세트 번호가 없습니다. (1-5 사이의 숫자만 가능)")
                     return {'success': False, 'error': '유효하지 않은 세트 번호'}
             
-            self.logger.info(f"평가할 세트: {[set_names[s] for s in sets_to_evaluate]}")
+            self.logger.info(f"평가할 세트: {[self.SET_NAMES[s] for s in sets_to_evaluate]}")
             
             # 각 세트별로 평가
             all_results = {}
             
             for set_num in sets_to_evaluate:
-                set_name = set_names[set_num]
+                set_name = self.SET_NAMES[set_num]
                 set_dir = os.path.join(exam_dir, set_name)
                 
                 if not os.path.exists(set_dir):
@@ -366,12 +360,8 @@ class Step6Evaluate(PipelineBase):
                         self.logger.error("load_data_from_directory 함수를 import할 수 없습니다.")
                         continue
                     
-                    # 모델 이름들을 파일명에 사용할 수 있도록 변환 (특수문자 제거)
-                    model_names = [model.split("/")[-1].replace(':', '_') for model in models]
-                    models_str = '_'.join(model_names)
-                    # 파일명이 너무 길어지지 않도록 제한 (최대 200자)
-                    if len(models_str) > 200:
-                        models_str = models_str[:200] + '_etc'
+                    # 모델 파일명 생성
+                    models_str = self._make_models_filename(models)
                     
                     # 모든 시험 파일 데이터를 통합
                     all_exam_data = []
@@ -520,12 +510,9 @@ class Step6Evaluate(PipelineBase):
                             essay_output_dir = os.path.join(essay_base_dir, 'evaluation_results')
                             os.makedirs(essay_output_dir, exist_ok=True)
                             
-                            # 세트 이름 매핑
-                            set_names = {1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th'}
-                            
                             # 각 모델과 세트 조합에 대해 평가 수행
                             for set_num in sets_to_evaluate:
-                                set_name = set_names[set_num]
+                                set_name = self.SET_NAMES[set_num]
                                 
                                 # 각 세트별 문제 파일 경로 (questions/essay_questions_{set_name}.json)
                                 question_file = os.path.join(
