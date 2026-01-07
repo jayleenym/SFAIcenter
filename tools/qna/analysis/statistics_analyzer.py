@@ -58,8 +58,8 @@ class QnAStatisticsAnalyzer:
         if not question_text:
             return None
         
-        # SS0000_q_0000_0000 패턴 찾기
-        pattern = r'SS\d{4}_q_\d{4}_\d{4}'
+        # SS0000_q_0000_0000 또는 SS00000_q_0000_0000 패턴 찾기
+        pattern = r'SS\d+_q_\d+_\d+'
         matches = re.findall(pattern, question_text)
         return matches[0] if matches else None
         

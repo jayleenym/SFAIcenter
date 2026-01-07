@@ -235,7 +235,7 @@ class BatchExtractor:
             json_files = []
             for root, _, files in os.walk(level_path):
                 for f in files:
-                    if re.match(r'^SS\d{4}\.json$', f, re.IGNORECASE):
+                    if re.match(r'^SS\d+\.json$', f, re.IGNORECASE):
                         json_files.append(os.path.join(root, f))
             
             json_files = sorted(json_files)
