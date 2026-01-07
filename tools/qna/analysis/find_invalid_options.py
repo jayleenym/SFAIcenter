@@ -244,15 +244,15 @@ if __name__ == "__main__":
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
         sys.path.insert(0, project_root)
         from tools import ONEDRIVE_PATH
-        file_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '2_subdomain', 'multiple_subdomain_classified_ALL.json')
+        file_path = os.path.join(ONEDRIVE_PATH, 'evaluation', 'eval_data', '2_subdomain', 'multiple-choice_DST.json')
     except ImportError:
         # fallback: pipeline이 없는 경우 플랫폼별 기본값 사용
         import platform
         system = platform.system()
         home_dir = os.path.expanduser("~")
         if system == "Windows":
-            file_path = os.path.join(home_dir, "Desktop", "SFAIcenter", "evaluation", "eval_data", "2_subdomain", "multiple_subdomain_classified_ALL.json")
+            file_path = os.path.join(home_dir, "Desktop", "SFAIcenter", "evaluation", "eval_data", "2_subdomain", "multiple-choice_DST.json")
         else:
-            file_path = os.path.join(home_dir, "Desktop", "Desktop_AICenter✨", "SFAIcenter", "evaluation", "eval_data", "2_subdomain", "multiple_subdomain_classified_ALL.json")
+            file_path = os.path.join(home_dir, "Desktop", "Desktop_AICenter✨", "SFAIcenter", "evaluation", "eval_data", "2_subdomain", "multiple-choice_DST.json")
     
     main(file_path=file_path)
