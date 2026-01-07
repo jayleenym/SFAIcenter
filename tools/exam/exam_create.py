@@ -220,11 +220,14 @@ class ExamMaker:
                     results[exam_name] = 0
             
             # 사용되지 않은 문제 저장
-            self._save_remaining_questions(valid_data, used_questions)
+            self._save_remaining_questions(all_data, used_questions)
             
             # 랜덤 모드일 때 문제 번호 리스트 저장 (나중에 동일하게 재생성 가능하도록)
             if random_mode:
                 self._save_question_lists(exam_dir, exams_config, valid_data, results)
+            
+            # 시험 통계 파일 생성
+            self._save_exam_statistics(exam_dir, exams_config, results)
             
             return {
                 'success': True,
@@ -474,18 +477,169 @@ class ExamMaker:
         self.logger.info(f"태그 대치 완료: 성공={replaced_count}, 찾을 수 없음={not_found_count}, 태그데이터 없음={no_tag_data_count}, 전체={len(exam_data)}")
         return exam_data_with_tags_replaced
 
-    def _save_remaining_questions(self, valid_data: List[Dict], used_questions: Set):
-        """사용되지 않은 문제 저장"""
+    def _save_remaining_questions(self, all_data: List[Dict], used_questions: Set):
+        """사용되지 않은 문제 저장 및 분류"""
+        # 사용되지 않은 모든 문제 필터링
         remaining_data = [
-            item for item in valid_data 
+            item for item in all_data 
             if (item.get('file_id', ''), item.get('tag', '')) not in used_questions
         ]
         
-        remaining_file = os.path.join(
+        exam_dir = os.path.join(
             self.onedrive_path,
-            'evaluation', 'eval_data', '4_multiple_exam', 'multiple_remaining.json'
+            'evaluation', 'eval_data', '4_multiple_exam'
         )
-        os.makedirs(os.path.dirname(remaining_file), exist_ok=True)
+        os.makedirs(exam_dir, exist_ok=True)
+        
+        # multiple_remaining.json 저장 (기존 로직)
+        remaining_file = os.path.join(exam_dir, 'multiple_remaining.json')
         with open(remaining_file, 'w', encoding='utf-8') as f:
             json.dump(remaining_data, f, ensure_ascii=False, indent=4)
         self.logger.info(f"나머지 문제 저장 완료: {len(remaining_data)}개")
+        
+        # is_table = True인 문제들 분류
+        table_data = []
+        non_table_data = []
+        
+        for item in remaining_data:
+            # is_table 확인 (question에 {tb_ 패턴이 있는지)
+            question = item.get('question', '')
+            is_table = '{tb_' in question
+            
+            if is_table:
+                table_data.append(item)
+            else:
+                non_table_data.append(item)
+        
+        # multiple_table.json 저장
+        if table_data:
+            table_file = os.path.join(exam_dir, 'multiple_table.json')
+            with open(table_file, 'w', encoding='utf-8') as f:
+                json.dump(table_data, f, ensure_ascii=False, indent=4)
+            self.logger.info(f"테이블 문제 저장 완료: {len(table_data)}개 -> {table_file}")
+        
+        # 그 외 문제들 중 is_calculation = True인 문제들 분류
+        calculation_data = []
+        for item in non_table_data:
+            # is_calculation 확인 (문자열 "True" 또는 boolean True)
+            is_calculation = item.get('is_calculation', False)
+            if isinstance(is_calculation, str):
+                is_calculation = is_calculation.lower() == 'true'
+            
+            if is_calculation:
+                calculation_data.append(item)
+        
+        # multiple_calculation.json 저장
+        if calculation_data:
+            calculation_file = os.path.join(exam_dir, 'multiple_calculation.json')
+            with open(calculation_file, 'w', encoding='utf-8') as f:
+                json.dump(calculation_data, f, ensure_ascii=False, indent=4)
+            self.logger.info(f"계산 문제 저장 완료: {len(calculation_data)}개 -> {calculation_file}")
+
+    def _save_exam_statistics(self, exam_dir: str, exams_config: Dict[str, Any], results: Dict[str, int]):
+        """
+        시험 통계를 마크다운 파일로 저장
+        
+        Args:
+            exam_dir: 시험 디렉토리 경로
+            exams_config: exam_config.json에서 로드한 설정
+            results: 각 과목별 생성된 문제 수
+        """
+        from datetime import datetime
+        
+        lines = []
+        lines.append("# 시험문제 통계")
+        lines.append("")
+        lines.append(f"생성일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append("")
+        
+        # 전체 요약
+        total_questions = sum(results.values())
+        total_target = self.QUESTIONS_PER_EXAM * len(exams_config)
+        lines.append("## 전체 요약")
+        lines.append("")
+        lines.append("| 과목 | 문제 수 | 목표 | 달성률 |")
+        lines.append("|------|--------|------|--------|")
+        
+        for exam_name in exams_config.keys():
+            count = results.get(exam_name, 0)
+            target = self.QUESTIONS_PER_EXAM
+            rate = f"{count/target*100:.1f}%" if target > 0 else "N/A"
+            lines.append(f"| {exam_name} | {count} | {target} | {rate} |")
+        
+        lines.append(f"| **합계** | **{total_questions}** | **{total_target}** | **{total_questions/total_target*100:.1f}%** |")
+        lines.append("")
+        
+        # 과목별 상세 통계
+        for exam_name, exam_info in exams_config.items():
+            exam_file = os.path.join(exam_dir, f'{exam_name}_exam.json')
+            if not os.path.exists(exam_file):
+                continue
+            
+            try:
+                with open(exam_file, 'r', encoding='utf-8') as f:
+                    exam_data = json.load(f)
+            except Exception as e:
+                self.logger.warning(f"시험 파일 로드 실패 ({exam_name}): {e}")
+                continue
+            
+            lines.append(f"## {exam_name}")
+            lines.append("")
+            lines.append(f"총 문제 수: {len(exam_data)}개")
+            lines.append("")
+            
+            # Domain별 통계
+            domain_stats = {}
+            subdomain_stats = {}
+            
+            for item in exam_data:
+                domain = item.get('domain', '알 수 없음')
+                subdomain = item.get('subdomain', '알 수 없음')
+                
+                domain_stats[domain] = domain_stats.get(domain, 0) + 1
+                key = f"{domain}/{subdomain}"
+                subdomain_stats[key] = subdomain_stats.get(key, 0) + 1
+            
+            # exam_config에서 목표 개수 가져오기
+            domain_details = exam_info.get('domain_details', {})
+            
+            lines.append("### Domain/Subdomain별 문제 분포")
+            lines.append("")
+            lines.append("| Domain | Subdomain | 실제 | 목표 | 상태 |")
+            lines.append("|--------|-----------|------|------|------|")
+            
+            for domain_name, domain_info in domain_details.items():
+                subdomains = domain_info.get('subdomains', {})
+                for subdomain_name, subdomain_info in subdomains.items():
+                    target_count = subdomain_info.get('count', 0)
+                    key = f"{domain_name}/{subdomain_name}"
+                    actual_count = subdomain_stats.get(key, 0)
+                    
+                    if actual_count >= target_count:
+                        status = "✅"
+                    elif actual_count > 0:
+                        status = "⚠️ 부족"
+                    else:
+                        status = "❌ 없음"
+                    
+                    lines.append(f"| {domain_name} | {subdomain_name} | {actual_count} | {target_count} | {status} |")
+            
+            lines.append("")
+            
+            # Domain별 소계
+            lines.append("### Domain별 소계")
+            lines.append("")
+            lines.append("| Domain | 문제 수 |")
+            lines.append("|--------|--------|")
+            
+            for domain_name in sorted(domain_stats.keys()):
+                lines.append(f"| {domain_name} | {domain_stats[domain_name]} |")
+            
+            lines.append("")
+        
+        # 마크다운 파일 저장
+        output_file = os.path.join(exam_dir, 'STATS_exam.md')
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(lines))
+        
+        self.logger.info(f"시험 통계 파일 저장 완료: {output_file}")
