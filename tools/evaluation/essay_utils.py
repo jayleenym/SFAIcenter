@@ -10,7 +10,7 @@ import os
 import json
 import configparser
 from typing import Dict, Tuple, Optional
-from core.llm_query import LLMQuery
+from tools.core.llm_query import LLMQuery
 
 
 def load_best_answers(best_ans_file: str, logger) -> Dict[Tuple[str, str], str]:
