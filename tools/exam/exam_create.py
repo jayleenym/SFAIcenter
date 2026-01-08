@@ -116,7 +116,7 @@ class ExamMaker:
             random.seed(seed)
         
         mode_str = f"랜덤 모드 (seed={seed})" if random_mode else "저장된 리스트 사용 모드"
-        self.logger.info(f"=== 시험문제 만들기 (4개 과목, 각 {self.QUESTIONS_PER_EXAM}문제, {mode_str}) ===")
+        self.logger.info(f"=== 시험문제 만들기 ({mode_str}) ===")
         
         try:
             # exam_config.json 로드
@@ -145,9 +145,9 @@ class ExamMaker:
             valid_data = [item for item in all_data if self._is_valid_question(item)]
             self.logger.info(f"유효한 문제 (is_table=false, is_calculation=false): {len(valid_data)}개")
             
-            # all_data를 (file_id, tag)로 인덱싱 (리스트 모드에서 빠른 검색용)
+            # all_data를 (file_id, tag)로 인덱싱 (리스트 모드에서 빠른 검색용 - 전체 데이터 포함)
             all_data_index = {}
-            for item in valid_data:
+            for item in all_data:
                 file_id = item.get('file_id', '')
                 tag = item.get('tag', '')
                 if file_id and tag:
@@ -181,10 +181,20 @@ class ExamMaker:
                 self.logger.info(f"과목: {exam_name}")
                 
                 if random_mode:
-                    # 랜덤 모드: exam_config.json 조건에 맞게 subdomain별로 문제 랜덤 선택
-                    exam_data = self._create_exam_random(
-                        exam_name, exam_info, valid_data, used_questions
-                    )
+                    # 랜덤 모드: exam_config.json 조건에 맞게 문제 랜덤 선택
+                    if exam_name == '표해석':
+                        exam_data = self._create_table_exam_random(
+                            exam_name, exam_info, all_data, used_questions
+                        )
+                    elif exam_name == '계산':
+                        exam_data = self._create_calculation_exam_random(
+                            exam_name, exam_info, all_data, used_questions
+                        )
+                    else:
+                        # 기존 과목들: subdomain별로 문제 랜덤 선택
+                        exam_data = self._create_exam_random(
+                            exam_name, exam_info, valid_data, used_questions
+                        )
                 else:
                     # 리스트 모드: exam_question_lists.json에서 문제 번호 로드
                     exam_data = self._create_exam_from_list(
@@ -357,6 +367,106 @@ class ExamMaker:
         
         return exam_data
 
+    def _create_table_exam_random(self, exam_name: str, exam_info: Dict[str, Any], 
+                                   all_data: List[Dict], used_questions: Set) -> List[Dict]:
+        """
+        랜덤 모드: 표해석 시험지 생성 (is_table=True인 문제 중에서 선택)
+        
+        Args:
+            exam_name: 과목명 (표해석)
+            exam_info: exam_config에서 가져온 과목 정보
+            all_data: 전체 문제 데이터
+            used_questions: 이미 사용된 문제 set
+            
+        Returns:
+            선택된 문제 리스트
+        """
+        exam_questions = exam_info.get('exam_questions', 500)
+        
+        # is_table=True인 미사용 문제 필터링
+        available_questions = []
+        for item in all_data:
+            question = item.get('question', '')
+            is_table = '{tb_' in question
+            key = (item.get('file_id', ''), item.get('tag', ''))
+            
+            if is_table and key not in used_questions:
+                available_questions.append(item)
+        
+        # 랜덤 섞기
+        random.shuffle(available_questions)
+        
+        # 필요한 만큼 선택
+        if len(available_questions) >= exam_questions:
+            selected = available_questions[:exam_questions]
+        else:
+            selected = available_questions
+            if len(selected) < exam_questions:
+                self.logger.warning(
+                    f"  표해석: 데이터 부족 (필요: {exam_questions}, 가용: {len(selected)})"
+                )
+        
+        # 사용된 문제 등록
+        for item in selected:
+            used_questions.add((item.get('file_id', ''), item.get('tag', '')))
+        
+        self.logger.info(f"  표해석: {len(selected)}/{exam_questions}개 문제 선택")
+        
+        return selected
+
+    def _create_calculation_exam_random(self, exam_name: str, exam_info: Dict[str, Any], 
+                                        all_data: List[Dict], used_questions: Set) -> List[Dict]:
+        """
+        랜덤 모드: 계산 시험지 생성 (is_table=False이고 is_calculation=True인 문제 중에서 선택)
+        
+        Args:
+            exam_name: 과목명 (계산)
+            exam_info: exam_config에서 가져온 과목 정보
+            all_data: 전체 문제 데이터
+            used_questions: 이미 사용된 문제 set
+            
+        Returns:
+            선택된 문제 리스트
+        """
+        exam_questions = exam_info.get('exam_questions', 500)
+        
+        # is_table=False이고 is_calculation=True인 미사용 문제 필터링
+        available_questions = []
+        for item in all_data:
+            question = item.get('question', '')
+            is_table = '{tb_' in question
+            
+            # is_calculation 확인 (문자열 "True" 또는 boolean True)
+            is_calculation = item.get('is_calculation', False)
+            if isinstance(is_calculation, str):
+                is_calculation = is_calculation.lower() == 'true'
+            
+            key = (item.get('file_id', ''), item.get('tag', ''))
+            
+            if not is_table and is_calculation and key not in used_questions:
+                available_questions.append(item)
+        
+        # 랜덤 섞기
+        random.shuffle(available_questions)
+        
+        # 필요한 만큼 선택
+        if len(available_questions) >= exam_questions:
+            selected = available_questions[:exam_questions]
+        else:
+            selected = available_questions
+            if len(selected) < exam_questions:
+                self.logger.warning(
+                    f"  계산: 데이터 부족 (필요: {exam_questions}, 가용: {len(selected)})"
+                )
+        
+        # 사용된 문제 등록
+        for item in selected:
+            used_questions.add((item.get('file_id', ''), item.get('tag', '')))
+        
+        self.logger.info(f"  계산: {len(selected)}/{exam_questions}개 문제 선택")
+        
+        return selected
+
     def _create_exam_from_list(self, exam_name: str, question_lists: Dict[str, List[Dict[str, str]]], 
                                 all_data_index: Dict, used_questions: Set) -> List[Dict]:
         """
@@ -407,56 +517,40 @@ class ExamMaker:
         not_found_count = 0
         no_tag_data_count = 0
         
+        # 태그 패턴 (tb, f, note, etc, img 모두 포함)
+        tag_pattern = r'\{(tb|f|note|etc|img)_\d{4}_\d{4}\}'
+        
+        def has_tags(item: Dict) -> bool:
+            """아이템에 대치할 태그가 있는지 확인"""
+            content_fields = [
+                item.get('question', ''),
+                item.get('answer', ''),
+                item.get('explanation', '')
+            ]
+            opts = item.get('options')
+            if opts:
+                content_fields.extend(opts if isinstance(opts, list) else [opts])
+            
+            return any(
+                field and re.search(tag_pattern, str(field))
+                for field in content_fields
+            )
+        
         for item in exam_data:
             file_id = item.get('file_id', '')
             tag = item.get('tag', '')
-            
-            # 깊은 복사로 원본 데이터 보호
             item_copy = copy.deepcopy(item)
             
-            # 태그 대치 전에 태그가 있는지 확인 (TagProcessor와 동일한 패턴 사용)
-            tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|note_\d{4}_\d{4}|etc_\d{4}_\d{4})\}'
-            has_tags_before = False
-            qna_data = item_copy.get('qna_data', {})
-            if 'description' in qna_data:
-                desc = qna_data['description']
-                content_fields = [
-                    desc.get('question', ''),
-                    desc.get('answer', ''),
-                    desc.get('explanation', '')
-                ]
-                if desc.get('options'):
-                    content_fields.extend(desc['options'] if isinstance(desc['options'], list) else [desc['options']])
-                
-                for field_content in content_fields:
-                    if field_content and re.search(tag_pattern, str(field_content)):
-                        has_tags_before = True
-                        break
+            has_tags_before = has_tags(item_copy)
             
             extracted_qna_item = self._load_extracted_qna_item(file_id, tag)
             if extracted_qna_item:
                 additional_tag_data = extracted_qna_item.get('additional_tag_data', [])
                 if additional_tag_data:
-                    # 태그 대치 수행
+                    # TagProcessor를 사용하여 태그 대치 수행
                     item_copy = TagProcessor.replace_tags_in_qna_data(item_copy, additional_tag_data)
                     
-                    # 태그 대치 후 확인
-                    has_tags_after = False
-                    qna_data_after = item_copy.get('qna_data', {})
-                    if 'description' in qna_data_after:
-                        desc_after = qna_data_after['description']
-                        content_fields_after = [
-                            desc_after.get('question', ''),
-                            desc_after.get('answer', ''),
-                            desc_after.get('explanation', '')
-                        ]
-                        if desc_after.get('options'):
-                            content_fields_after.extend(desc_after['options'] if isinstance(desc_after['options'], list) else [desc_after['options']])
-                        
-                        for field_content in content_fields_after:
-                            if field_content and re.search(tag_pattern, str(field_content)):
-                                has_tags_after = True
-                                break
+                    has_tags_after = has_tags(item_copy)
                     
                     if has_tags_before and not has_tags_after:
                         replaced_count += 1
@@ -490,12 +584,7 @@ class ExamMaker:
             'evaluation', 'eval_data', '4_multiple_exam'
         )
         os.makedirs(exam_dir, exist_ok=True)
-        
-        # multiple_remaining.json 저장 (기존 로직)
-        remaining_file = os.path.join(exam_dir, 'multiple_remaining.json')
-        with open(remaining_file, 'w', encoding='utf-8') as f:
-            json.dump(remaining_data, f, ensure_ascii=False, indent=4)
-        self.logger.info(f"나머지 문제 저장 완료: {len(remaining_data)}개")
+        os.makedirs(os.path.join(exam_dir, 'remaining'), exist_ok=True)
         
         # is_table = True인 문제들 분류
         table_data = []
@@ -513,13 +602,15 @@ class ExamMaker:
         
         # multiple_table.json 저장
         if table_data:
-            table_file = os.path.join(exam_dir, 'multiple_table.json')
+            table_file = os.path.join(exam_dir, 'remaining', 'multiple_table.json')
             with open(table_file, 'w', encoding='utf-8') as f:
                 json.dump(table_data, f, ensure_ascii=False, indent=4)
             self.logger.info(f"테이블 문제 저장 완료: {len(table_data)}개 -> {table_file}")
         
         # 그 외 문제들 중 is_calculation = True인 문제들 분류
         calculation_data = []
+        remaining_final = []  # is_table=False이고 is_calculation=False인 문제들
+        
         for item in non_table_data:
             # is_calculation 확인 (문자열 "True" 또는 boolean True)
             is_calculation = item.get('is_calculation', False)
@@ -528,13 +619,22 @@ class ExamMaker:
             
             if is_calculation:
                 calculation_data.append(item)
+            else:
+                # is_table=False이고 is_calculation=False인 문제들만 remaining_final에 추가
+                remaining_final.append(item)
         
         # multiple_calculation.json 저장
         if calculation_data:
-            calculation_file = os.path.join(exam_dir, 'multiple_calculation.json')
+            calculation_file = os.path.join(exam_dir, 'remaining', 'multiple_calculation.json')
             with open(calculation_file, 'w', encoding='utf-8') as f:
                 json.dump(calculation_data, f, ensure_ascii=False, indent=4)
             self.logger.info(f"계산 문제 저장 완료: {len(calculation_data)}개 -> {calculation_file}")
+        
+        # multiple_others.json 저장 (is_table=False이고 is_calculation=False인 문제들만)
+        remaining_file = os.path.join(exam_dir, 'remaining', 'multiple_others.json')
+        with open(remaining_file, 'w', encoding='utf-8') as f:
+            json.dump(remaining_final, f, ensure_ascii=False, indent=4)
+        self.logger.info(f"나머지 문제 저장 완료: {len(remaining_final)}개 (is_table=False, is_calculation=False)")
 
     def _save_exam_statistics(self, exam_dir: str, exams_config: Dict[str, Any], results: Dict[str, int]):
         """
@@ -555,15 +655,20 @@ class ExamMaker:
         
         # 전체 요약
         total_questions = sum(results.values())
-        total_target = self.QUESTIONS_PER_EXAM * len(exams_config)
+        total_target = 0
         lines.append("## 전체 요약")
         lines.append("")
         lines.append("| 과목 | 문제 수 | 목표 | 달성률 |")
         lines.append("|------|--------|------|--------|")
         
-        for exam_name in exams_config.keys():
+        for exam_name, exam_info in exams_config.items():
             count = results.get(exam_name, 0)
-            target = self.QUESTIONS_PER_EXAM
+            # exam_questions가 있으면 사용, 없으면 QUESTIONS_PER_EXAM 사용
+            if 'exam_questions' in exam_info:
+                target = exam_info.get('exam_questions', 0)
+            else:
+                target = self.QUESTIONS_PER_EXAM
+            total_target += target
             rate = f"{count/target*100:.1f}%" if target > 0 else "N/A"
             lines.append(f"| {exam_name} | {count} | {target} | {rate} |")
         
@@ -588,7 +693,10 @@ class ExamMaker:
             lines.append(f"총 문제 수: {len(exam_data)}개")
             lines.append("")
             
-            # Domain별 통계
+            # exam_config에서 domain_details 확인
+            domain_details = exam_info.get('domain_details', {})
+            
+            # Domain별 통계 수집 (항상 수행)
             domain_stats = {}
             subdomain_stats = {}
             
@@ -600,42 +708,43 @@ class ExamMaker:
                 key = f"{domain}/{subdomain}"
                 subdomain_stats[key] = subdomain_stats.get(key, 0) + 1
             
-            # exam_config에서 목표 개수 가져오기
-            domain_details = exam_info.get('domain_details', {})
+            # domain_details가 있는 경우 Domain/Subdomain별 상세 통계 표시
+            if domain_details:
+                lines.append("### Domain/Subdomain별 문제 분포")
+                lines.append("")
+                lines.append("| Domain | Subdomain | 실제 | 목표 | 상태 |")
+                lines.append("|--------|-----------|------|------|------|")
+                
+                for domain_name, domain_info in domain_details.items():
+                    subdomains = domain_info.get('subdomains', {})
+                    for subdomain_name, subdomain_info in subdomains.items():
+                        target_count = subdomain_info.get('count', 0)
+                        key = f"{domain_name}/{subdomain_name}"
+                        actual_count = subdomain_stats.get(key, 0)
+                        
+                        if actual_count >= target_count:
+                            status = "✅"
+                        elif actual_count > 0:
+                            status = "⚠️ 부족"
+                        else:
+                            status = "❌ 없음"
+                        
+                        lines.append(f"| {domain_name} | {subdomain_name} | {actual_count} | {target_count} | {status} |")
+                
+                lines.append("")
             
-            lines.append("### Domain/Subdomain별 문제 분포")
-            lines.append("")
-            lines.append("| Domain | Subdomain | 실제 | 목표 | 상태 |")
-            lines.append("|--------|-----------|------|------|------|")
-            
-            for domain_name, domain_info in domain_details.items():
-                subdomains = domain_info.get('subdomains', {})
-                for subdomain_name, subdomain_info in subdomains.items():
-                    target_count = subdomain_info.get('count', 0)
-                    key = f"{domain_name}/{subdomain_name}"
-                    actual_count = subdomain_stats.get(key, 0)
-                    
-                    if actual_count >= target_count:
-                        status = "✅"
-                    elif actual_count > 0:
-                        status = "⚠️ 부족"
-                    else:
-                        status = "❌ 없음"
-                    
-                    lines.append(f"| {domain_name} | {subdomain_name} | {actual_count} | {target_count} | {status} |")
-            
-            lines.append("")
-            
-            # Domain별 소계
-            lines.append("### Domain별 소계")
-            lines.append("")
-            lines.append("| Domain | 문제 수 |")
-            lines.append("|--------|--------|")
-            
-            for domain_name in sorted(domain_stats.keys()):
-                lines.append(f"| {domain_name} | {domain_stats[domain_name]} |")
-            
-            lines.append("")
+            # Domain별 소계 (domain_stats가 있으면 항상 표시)
+            if domain_stats:
+                lines.append("### Domain별 소계")
+                lines.append("")
+                lines.append("| Domain | 문제 수 |")
+                lines.append("|--------|--------|")
+                
+                # 문제 수 기준으로 내림차순 정렬
+                for domain_name, count in sorted(domain_stats.items(), key=lambda x: -x[1]):
+                    lines.append(f"| {domain_name} | {count} |")
+                
+                lines.append("")
         
         # 마크다운 파일 저장
         output_file = os.path.join(exam_dir, 'STATS_exam.md')
