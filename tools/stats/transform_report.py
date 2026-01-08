@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-통계 저장 및 집계 유틸리티
-- 마크다운 형식 통계 저장
-- 통계 집계 및 로깅
+변형 통계 리포트 생성
+- 변형 통계 저장 및 집계
+- pick_abcd, pick_right, pick_wrong 등의 변형 타입별 통계
 """
 
 import os
 from typing import Dict, Any, List
 
+from .markdown_writer import MarkdownWriter
 
-class StatisticsSaver:
-    """통계 저장 및 집계 클래스"""
+
+class TransformReportGenerator:
+    """변형 통계 저장 및 집계 클래스"""
     
     @staticmethod
     def save_statistics_markdown(stats: Dict[str, Any], set_name: str, output_path: str):
@@ -26,73 +28,85 @@ class StatisticsSaver:
         lines = []
         lines.append(f"# {set_name} 세트 변형 통계")
         lines.append("")
-        lines.append("## 전체 요약")
-        lines.append("")
-        lines.append("| 항목 | 개수 |")
-        lines.append("|------|------|")
-        lines.append(f"| 총 문제 수 | {stats['total_questions']} |")
-        lines.append(f"| 변형된 문제 | {stats['transformed_count']} |")
-        lines.append(f"| 변형되지 않은 문제 | {stats['not_transformed_count']} |")
+        
+        # 전체 요약
+        lines.extend(MarkdownWriter.create_section("전체 요약", level=2))
+        lines.extend(MarkdownWriter.create_table(
+            ["항목", "개수"],
+            [
+                ["총 문제 수", str(stats['total_questions'])],
+                ["변형된 문제", str(stats['transformed_count'])],
+                ["변형되지 않은 문제", str(stats['not_transformed_count'])],
+            ]
+        ))
         lines.append("")
         
-        lines.append("## 변형 타입별 통계")
-        lines.append("")
-        lines.append("| 변형 타입 | 개수 |")
-        lines.append("|----------|------|")
-        lines.append(f"| pick_abcd | {stats['pick_abcd']} |")
-        lines.append(f"| pick_right_2 | {stats['pick_right_2']} |")
-        lines.append(f"| pick_right_3 | {stats['pick_right_3']} |")
-        lines.append(f"| pick_right_4 | {stats['pick_right_4']} |")
-        lines.append(f"| pick_right_5 | {stats['pick_right_5']} |")
-        lines.append(f"| pick_wrong_2 | {stats['pick_wrong_2']} |")
-        lines.append(f"| pick_wrong_3 | {stats['pick_wrong_3']} |")
-        lines.append(f"| pick_wrong_4 | {stats['pick_wrong_4']} |")
-        lines.append(f"| pick_wrong_5 | {stats['pick_wrong_5']} |")
-        lines.append("")
-        
-        # pick_right 합계
-        pick_right_total = stats['pick_right_2'] + stats['pick_right_3'] + stats['pick_right_4'] + stats['pick_right_5']
-        # pick_wrong 합계
-        pick_wrong_total = stats['pick_wrong_2'] + stats['pick_wrong_3'] + stats['pick_wrong_4'] + stats['pick_wrong_5']
-        
-        lines.append("### 변형 타입별 합계")
-        lines.append("")
-        lines.append("| 변형 타입 | 개수 |")
-        lines.append("|----------|------|")
-        lines.append(f"| pick_abcd | {stats['pick_abcd']} |")
-        lines.append(f"| pick_right (전체) | {pick_right_total} |")
-        lines.append(f"| pick_wrong (전체) | {pick_wrong_total} |")
+        # 변형 타입별 통계
+        lines.extend(MarkdownWriter.create_section("변형 타입별 통계", level=2))
+        lines.extend(MarkdownWriter.create_table(
+            ["변형 타입", "개수"],
+            [
+                ["pick_abcd", str(stats['pick_abcd'])],
+                ["pick_right_2", str(stats['pick_right_2'])],
+                ["pick_right_3", str(stats['pick_right_3'])],
+                ["pick_right_4", str(stats['pick_right_4'])],
+                ["pick_right_5", str(stats['pick_right_5'])],
+                ["pick_wrong_2", str(stats['pick_wrong_2'])],
+                ["pick_wrong_3", str(stats['pick_wrong_3'])],
+                ["pick_wrong_4", str(stats['pick_wrong_4'])],
+                ["pick_wrong_5", str(stats['pick_wrong_5'])],
+            ]
+        ))
         lines.append("")
         
-        lines.append("## 시험지별 상세 통계")
+        # pick_right, pick_wrong 합계
+        pick_right_total = sum(stats.get(f'pick_right_{i}', 0) for i in range(2, 6))
+        pick_wrong_total = sum(stats.get(f'pick_wrong_{i}', 0) for i in range(2, 6))
+        
+        lines.extend(MarkdownWriter.create_section("변형 타입별 합계", level=3))
+        lines.extend(MarkdownWriter.create_table(
+            ["변형 타입", "개수"],
+            [
+                ["pick_abcd", str(stats['pick_abcd'])],
+                ["pick_right (전체)", str(pick_right_total)],
+                ["pick_wrong (전체)", str(pick_wrong_total)],
+            ]
+        ))
         lines.append("")
+        
+        # 시험지별 상세 통계
+        lines.extend(MarkdownWriter.create_section("시험지별 상세 통계", level=2))
         
         for exam_name, exam_stats in stats.get('by_exam', {}).items():
-            lines.append(f"### {exam_name}")
+            lines.extend(MarkdownWriter.create_section(exam_name, level=3))
+            lines.extend(MarkdownWriter.create_table(
+                ["항목", "개수"],
+                [
+                    ["총 문제 수", str(exam_stats.get('total_questions', 0))],
+                    ["변형된 문제", str(exam_stats.get('transformed_count', 0))],
+                    ["변형되지 않은 문제", str(exam_stats.get('not_transformed_count', 0))],
+                ]
+            ))
             lines.append("")
-            lines.append("| 항목 | 개수 |")
-            lines.append("|------|------|")
-            lines.append(f"| 총 문제 수 | {exam_stats.get('total_questions', 0)} |")
-            lines.append(f"| 변형된 문제 | {exam_stats.get('transformed_count', 0)} |")
-            lines.append(f"| 변형되지 않은 문제 | {exam_stats.get('not_transformed_count', 0)} |")
-            lines.append("")
-            lines.append("| 변형 타입 | 개수 |")
-            lines.append("|----------|------|")
-            lines.append(f"| pick_abcd | {exam_stats.get('pick_abcd', 0)} |")
-            lines.append(f"| pick_right_2 | {exam_stats.get('pick_right_2', 0)} |")
-            lines.append(f"| pick_right_3 | {exam_stats.get('pick_right_3', 0)} |")
-            lines.append(f"| pick_right_4 | {exam_stats.get('pick_right_4', 0)} |")
-            lines.append(f"| pick_right_5 | {exam_stats.get('pick_right_5', 0)} |")
-            lines.append(f"| pick_wrong_2 | {exam_stats.get('pick_wrong_2', 0)} |")
-            lines.append(f"| pick_wrong_3 | {exam_stats.get('pick_wrong_3', 0)} |")
-            lines.append(f"| pick_wrong_4 | {exam_stats.get('pick_wrong_4', 0)} |")
-            lines.append(f"| pick_wrong_5 | {exam_stats.get('pick_wrong_5', 0)} |")
+            
+            lines.extend(MarkdownWriter.create_table(
+                ["변형 타입", "개수"],
+                [
+                    ["pick_abcd", str(exam_stats.get('pick_abcd', 0))],
+                    ["pick_right_2", str(exam_stats.get('pick_right_2', 0))],
+                    ["pick_right_3", str(exam_stats.get('pick_right_3', 0))],
+                    ["pick_right_4", str(exam_stats.get('pick_right_4', 0))],
+                    ["pick_right_5", str(exam_stats.get('pick_right_5', 0))],
+                    ["pick_wrong_2", str(exam_stats.get('pick_wrong_2', 0))],
+                    ["pick_wrong_3", str(exam_stats.get('pick_wrong_3', 0))],
+                    ["pick_wrong_4", str(exam_stats.get('pick_wrong_4', 0))],
+                    ["pick_wrong_5", str(exam_stats.get('pick_wrong_5', 0))],
+                ]
+            ))
             lines.append("")
         
         # 마크다운 파일 저장
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(lines))
+        MarkdownWriter.save('\n'.join(lines), output_path)
     
     @staticmethod
     def aggregate_set_statistics(set_statistics: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
@@ -163,4 +177,8 @@ class StatisticsSaver:
         logger.info(f"      - pick_wrong_3: {stats['pick_wrong_3']}개")
         logger.info(f"      - pick_wrong_4: {stats['pick_wrong_4']}개")
         logger.info(f"      - pick_wrong_5: {stats['pick_wrong_5']}개")
+
+
+# 하위 호환성을 위한 별칭
+StatisticsSaver = TransformReportGenerator
 

@@ -92,8 +92,12 @@ tools/
 │   ├── crop_analysis.py     # [도구] Crop 파일 분석 스크립트
 │   └── epubstats.py         # [도구] EPUB 변환 및 통계
 │
-└── statistics/              # 통계 저장 및 집계
-    └── statistics_saver.py  # StatisticsSaver
+└── stats/                   # 통계 분석 및 리포트 생성
+    ├── __init__.py          # MarkdownWriter, ExamReportGenerator 등 export
+    ├── markdown_writer.py   # MarkdownWriter (공통 마크다운 유틸)
+    ├── exam_report.py       # ExamReportGenerator (시험 통계/README)
+    ├── transform_report.py  # TransformReportGenerator (변형 통계)
+    └── qna_report.py        # QnAReportGenerator (QnA 통계)
 ```
 
 ## 🔄 파이프라인 단계

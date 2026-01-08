@@ -9,8 +9,7 @@ import os
 import glob
 import re
 import json
-from collections import defaultdict, Counter
-from datetime import datetime
+from collections import defaultdict
 from typing import Dict, List, Any, Optional
 import logging
 
@@ -175,124 +174,12 @@ class QnAStatisticsAnalyzer:
         return stats
 
     def save_report(self, stats: Dict[str, Any], output_file: str):
-        """상세 보고서를 마크다운 파일로 저장합니다."""
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        """
+        상세 보고서를 마크다운 파일로 저장합니다.
         
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write("# QnA 통계 분석 상세\n\n")
-            f.write(f"**생성일시**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-            f.write("---\n\n")
-            
-            # 전체 통계
-            f.write("## 1. 전체 통계\n\n")
-            f.write("| 항목 | 값 |\n")
-            f.write("|------|-----|\n")
-            f.write(f"| 처리된 파일 수 | {stats['total_files']:,}개 |\n")
-            f.write(f"| 총 QnA 항목 수 | {stats['total_qna_items']:,}개 |\n")
-            f.write(f"| 유효한 도메인 항목 | {stats['valid_domain_items']:,}개 |\n")
-            f.write(f"| 유효하지 않은 도메인 항목 | {stats['invalid_domain_items']:,}개 |\n\n")
-            
-            # 유효한 도메인별 통계
-            f.write("## 2. 유효한 QnA Domain별 통계\n\n")
-            f.write("| 도메인 | 개수 | 비율 |\n")
-            f.write("|--------|------|------|\n")
-            domain_stats = sorted(stats['qna_domain_stats'].items(), key=lambda x: x[1], reverse=True)
-            for domain, count in domain_stats:
-                percentage = (count / stats['valid_domain_items']) * 100 if stats['valid_domain_items'] > 0 else 0
-                f.write(f"| {domain} | {count:,}개 | {percentage:.1f}% |\n")
-            f.write("\n")
-            
-            # QnA Type별 통계
-            f.write("## 3. QnA Type별 통계\n\n")
-            f.write("| 타입 | 개수 | 비율 |\n")
-            f.write("|------|------|------|\n")
-            type_stats = sorted(stats['qna_type_stats'].items(), key=lambda x: x[1], reverse=True)
-            for qna_type, count in type_stats:
-                percentage = (count / stats['valid_domain_items']) * 100 if stats['valid_domain_items'] > 0 else 0
-                f.write(f"| {qna_type} | {count:,}개 | {percentage:.1f}% |\n")
-            f.write("\n")
-            
-            # Domain-Type 조합별 통계
-            f.write("## 4. Domain-Type 조합별 통계\n\n")
-            for domain in sorted(stats['domain_type_combination'].keys()):
-                f.write(f"### {domain}\n\n")
-                f.write("| 타입 | 개수 | 비율 |\n")
-                f.write("|------|------|------|\n")
-                type_combinations = sorted(stats['domain_type_combination'][domain].items(), 
-                                         key=lambda x: x[1], reverse=True)
-                for qna_type, count in type_combinations:
-                    percentage = (count / stats['qna_domain_stats'][domain]) * 100
-                    f.write(f"| {qna_type} | {count:,}개 | {percentage:.1f}% |\n")
-                f.write("\n")
-            
-            # 유효하지 않은 도메인 통계
-            if stats['invalid_domain_items'] > 0:
-                f.write("## 5. 유효하지 않은 도메인 통계\n\n")
-                f.write("| 도메인 | 개수 | 비율 |\n")
-                f.write("|--------|------|------|\n")
-                invalid_domain_stats = Counter()
-                for domain, items in stats['invalid_domain_details'].items():
-                    invalid_domain_stats[domain] = len(items)
-                for domain, count in invalid_domain_stats.most_common():
-                    percentage = (count / stats['invalid_domain_items']) * 100
-                    f.write(f"| {domain} | {count:,}개 | {percentage:.1f}% |\n")
-                f.write("\n")
-                
-                # SS 패턴별 분석
-                if stats['ss_pattern_details']:
-                    f.write("## 6. SS 패턴별 분석 (유효하지 않은 도메인)\n\n")
-                    for ss_pattern, items in sorted(stats['ss_pattern_details'].items()):
-                        f.write(f"### {ss_pattern} - {len(items)}개\n\n")
-                        for item in items[:5]:  # 상위 5개만 표시
-                            f.write(f"- **파일**: {item['file_id']}, **도메인**: {item['domain']}, **타입**: {item['type']}\n")
-                            f.write(f"  - 질문: {item['question']}\n")
-                        if len(items) > 5:
-                            f.write(f"\n... 외 {len(items) - 5}개\n")
-                        f.write("\n")
-            
-            # 파일별 통계
-            f.write("## 7. 파일별 통계\n\n")
-            f.write("| 파일ID | 총QnA | 유효도메인 | 무효도메인 |\n")
-            f.write("|--------|-------|-----------|-----------|\n")
-            for file_stat in sorted(stats['file_stats'], key=lambda x: x['file_id']):
-                f.write(f"| {file_stat['file_id']} | {file_stat['qna_count']} | {file_stat['valid_domain_count']} | {file_stat['invalid_domain_count']} |\n")
-            f.write("\n")
-            
-            # 유효하지 않은 도메인 상세 정보
-            if stats['invalid_domain_details']:
-                f.write("## 8. 유효하지 않은 도메인 상세 정보\n\n")
-                for domain, items in sorted(stats['invalid_domain_details'].items()):
-                    f.write(f"### {domain} - {len(items)}개\n\n")
-                    for i, item in enumerate(items[:10]):  # 상위 10개만 표시
-                        f.write(f"{i+1}. **파일**: {item['file_id']}, **페이지**: {item['page']}\n")
-                        f.write(f"   - 제목: {item['title']}\n")
-                        f.write(f"   - 챕터: {item['chapter']}\n")
-                        f.write(f"   - 원래 도메인: '{item['original_domain']}'\n")
-                        f.write(f"   - QnA 타입: {item['qna_type']}\n")
-                        f.write(f"   - 질문: {item['question']}\n")
-                        if item['ss_pattern']:
-                            f.write(f"   - SS패턴: {item['ss_pattern']}\n")
-                        f.write("\n")
-                    if len(items) > 10:
-                        f.write(f"... 외 {len(items) - 10}개\n\n")
-            
-            # Domain-Type 조합별 상세 정보
-            if 'domain_type_details' in stats and stats['domain_type_details']:
-                f.write("## 9. Domain-Type 조합별 상세 정보\n\n")
-                for domain in sorted(stats['domain_type_details'].keys()):
-                    f.write(f"### {domain}\n\n")
-                    for qna_type in sorted(stats['domain_type_details'][domain].keys()):
-                        items = stats['domain_type_details'][domain][qna_type]
-                        f.write(f"#### {qna_type} ({len(items)}개)\n\n")
-                        f.write("| 파일ID | 제목 | 챕터 | 페이지 |\n")
-                        f.write("|--------|------|------|--------|\n")
-                        for item in items[:20]:  # 상위 20개만 표시
-                            title = item.get('title', '')[:50]  # 제목 길이 제한
-                            chapter = item.get('chapter', '')[:30]  # 챕터 길이 제한
-                            f.write(f"| {item.get('file_id', '')} | {title} | {chapter} | {item.get('page', '')} |\n")
-                        if len(items) > 20:
-                            f.write(f"\n... 외 {len(items) - 20}개\n")
-                        f.write("\n")
-        
+        Note: 리포트 생성은 tools.stats.QnAReportGenerator로 위임됩니다.
+        """
+        from tools.stats import QnAReportGenerator
+        QnAReportGenerator.save_report(stats, output_file)
         self.logger.info(f"상세 마크다운 보고서가 저장되었습니다: {output_file}")
 

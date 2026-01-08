@@ -14,6 +14,7 @@ import copy
 from typing import Dict, Any, List, Tuple, Set, Optional
 from tools.core.exam_config import ExamConfig
 from tools.qna.extraction.tag_processor import TagProcessor
+from tools.stats import ExamReportGenerator
 
 
 class ExamMaker:
@@ -650,139 +651,11 @@ class ExamMaker:
             calculation_data: 계산형 문제 리스트
             others_data: 일반 객관식 문제 리스트
         """
-        from datetime import datetime
-        
-        def get_domain_stats(data: List[Dict]) -> Dict[str, int]:
-            """Domain별 통계 계산"""
-            stats = {}
-            for item in data:
-                domain = item.get('domain', '알 수 없음')
-                stats[domain] = stats.get(domain, 0) + 1
-            return stats
-        
-        def get_subdomain_stats(data: List[Dict]) -> Dict[str, int]:
-            """Subdomain별 통계 계산"""
-            stats = {}
-            for item in data:
-                domain = item.get('domain', '알 수 없음')
-                subdomain = item.get('subdomain', '알 수 없음')
-                key = f"{domain} > {subdomain}"
-                stats[key] = stats.get(key, 0) + 1
-            return stats
-        
-        lines = []
-        lines.append("# 남은 문제 데이터 (Remaining Questions)")
-        lines.append("")
-        lines.append(f"생성일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        lines.append("")
-        lines.append("## 개요")
-        lines.append("")
-        lines.append("이 폴더에는 시험 문제 선정 후 남은 문제들이 포함되어 있습니다.")
-        lines.append("추후 문제 보충이나 교체 시 활용할 수 있습니다.")
-        lines.append("")
-        
-        # 파일 구성 요약
-        total_count = len(table_data) + len(calculation_data) + len(others_data)
-        lines.append("## 파일 구성")
-        lines.append("")
-        lines.append("| 파일명 | 문제 수 | 설명 |")
-        lines.append("|--------|--------|------|")
-        lines.append(f"| multiple_calculation.json | {len(calculation_data):,} | 계산형 문제 (is_calculation=true) |")
-        lines.append(f"| multiple_table.json | {len(table_data):,} | 표 해석형 문제 (is_table=true) |")
-        lines.append(f"| multiple_others.json | {len(others_data):,} | 일반 객관식 문제 |")
-        lines.append(f"| **합계** | **{total_count:,}** | |")
-        lines.append("")
-        lines.append("---")
-        lines.append("")
-        
-        # 계산형 문제 통계
-        if calculation_data:
-            lines.append("## multiple_calculation.json (계산형 문제)")
-            lines.append("")
-            lines.append(f"총 {len(calculation_data):,}문제")
-            lines.append("")
-            lines.append("### Domain별 분포")
-            lines.append("")
-            lines.append("| Domain | 문제 수 | 비율 |")
-            lines.append("|--------|--------|------|")
-            
-            calc_stats = get_domain_stats(calculation_data)
-            for domain, count in sorted(calc_stats.items(), key=lambda x: -x[1]):
-                ratio = count / len(calculation_data) * 100
-                lines.append(f"| {domain} | {count:,} | {ratio:.1f}% |")
-            
-            lines.append("")
-            lines.append("---")
-            lines.append("")
-        
-        # 표 해석형 문제 통계
-        if table_data:
-            lines.append("## multiple_table.json (표 해석형 문제)")
-            lines.append("")
-            lines.append(f"총 {len(table_data):,}문제")
-            lines.append("")
-            lines.append("### Domain별 분포")
-            lines.append("")
-            lines.append("| Domain | 문제 수 | 비율 |")
-            lines.append("|--------|--------|------|")
-            
-            table_stats = get_domain_stats(table_data)
-            for domain, count in sorted(table_stats.items(), key=lambda x: -x[1]):
-                ratio = count / len(table_data) * 100
-                lines.append(f"| {domain} | {count:,} | {ratio:.1f}% |")
-            
-            lines.append("")
-            lines.append("---")
-            lines.append("")
-        
-        # 일반 객관식 문제 통계
-        if others_data:
-            lines.append("## multiple_others.json (일반 객관식 문제)")
-            lines.append("")
-            lines.append(f"총 {len(others_data):,}문제")
-            lines.append("")
-            lines.append("### Domain별 분포")
-            lines.append("")
-            lines.append("| Domain | 문제 수 | 비율 |")
-            lines.append("|--------|--------|------|")
-            
-            others_stats = get_domain_stats(others_data)
-            for domain, count in sorted(others_stats.items(), key=lambda x: -x[1]):
-                ratio = count / len(others_data) * 100
-                lines.append(f"| {domain} | {count:,} | {ratio:.1f}% |")
-            
-            lines.append("")
-            
-            # Subdomain별 상세 분포 (상위 20개)
-            lines.append("### Subdomain별 상세 분포 (상위 20개)")
-            lines.append("")
-            lines.append("| Domain | Subdomain | 문제 수 |")
-            lines.append("|--------|-----------|--------|")
-            
-            subdomain_stats = get_subdomain_stats(others_data)
-            for key, count in sorted(subdomain_stats.items(), key=lambda x: -x[1])[:20]:
-                parts = key.split(' > ')
-                domain = parts[0]
-                subdomain = parts[1] if len(parts) > 1 else '알 수 없음'
-                lines.append(f"| {domain} | {subdomain} | {count:,} |")
-            
-            lines.append("")
-            lines.append("---")
-            lines.append("")
-        
-        # 활용 방법
-        lines.append("## 활용 방법")
-        lines.append("")
-        lines.append("1. **문제 교체**: 검수 과정에서 부적합 판정된 문제를 이 풀에서 교체")
-        lines.append("2. **부족 영역 보충**: 목표 수량에 미달하는 subdomain에서 추가 선정")
-        lines.append("3. **시험 확장**: 향후 시험 문제 추가 시 활용")
-        lines.append("")
-        
-        # 파일 저장
+        content = ExamReportGenerator.generate_remaining_readme(
+            table_data, calculation_data, others_data
+        )
         readme_file = os.path.join(exam_dir, 'remaining', 'README.md')
-        with open(readme_file, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(lines))
-        
+        ExamReportGenerator.save_markdown(content, readme_file)
         self.logger.info(f"README.md 저장 완료: {readme_file}")
 
     def _save_exam_statistics(self, exam_dir: str, exams_config: Dict[str, Any], results: Dict[str, int]):
@@ -794,110 +667,21 @@ class ExamMaker:
             exams_config: exam_config.json에서 로드한 설정
             results: 각 과목별 생성된 문제 수
         """
-        from datetime import datetime
-        
-        lines = []
-        lines.append("# 시험문제 통계")
-        lines.append("")
-        lines.append(f"생성일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        lines.append("")
-        
-        # 전체 요약
-        total_questions = sum(results.values())
-        total_target = 0
-        lines.append("## 전체 요약")
-        lines.append("")
-        lines.append("| 과목 | 문제 수 | 목표 | 달성률 |")
-        lines.append("|------|--------|------|--------|")
-        
-        for exam_name, exam_info in exams_config.items():
-            count = results.get(exam_name, 0)
-            # exam_questions가 있으면 사용, 없으면 QUESTIONS_PER_EXAM 사용
-            if 'exam_questions' in exam_info:
-                target = exam_info.get('exam_questions', 0)
-            else:
-                target = self.QUESTIONS_PER_EXAM
-            total_target += target
-            rate = f"{count/target*100:.1f}%" if target > 0 else "N/A"
-            lines.append(f"| {exam_name} | {count} | {target} | {rate} |")
-        
-        lines.append(f"| **합계** | **{total_questions}** | **{total_target}** | **{total_questions/total_target*100:.1f}%** |")
-        lines.append("")
-        
-        # 과목별 상세 통계
-        for exam_name, exam_info in exams_config.items():
+        def exam_data_loader(exam_name: str) -> Optional[List[Dict]]:
+            """시험 데이터 로드 콜백"""
             exam_file = os.path.join(exam_dir, f'{exam_name}_exam.json')
             if not os.path.exists(exam_file):
-                continue
-            
+                return None
             try:
                 with open(exam_file, 'r', encoding='utf-8') as f:
-                    exam_data = json.load(f)
+                    return json.load(f)
             except Exception as e:
                 self.logger.warning(f"시험 파일 로드 실패 ({exam_name}): {e}")
-                continue
-            
-            lines.append(f"## {exam_name}")
-            lines.append("")
-            lines.append(f"총 문제 수: {len(exam_data)}개")
-            lines.append("")
-            
-            # exam_config에서 domain_details 확인
-            domain_details = exam_info.get('domain_details', {})
-            
-            # Domain별 통계 수집 (항상 수행)
-            domain_stats = {}
-            subdomain_stats = {}
-            
-            for item in exam_data:
-                domain = item.get('domain', '알 수 없음')
-                subdomain = item.get('subdomain', '알 수 없음')
-                
-                domain_stats[domain] = domain_stats.get(domain, 0) + 1
-                key = f"{domain}/{subdomain}"
-                subdomain_stats[key] = subdomain_stats.get(key, 0) + 1
-            
-            # domain_details가 있는 경우 Domain/Subdomain별 상세 통계 표시
-            if domain_details:
-                lines.append("### Domain/Subdomain별 문제 분포")
-                lines.append("")
-                lines.append("| Domain | Subdomain | 실제 | 목표 | 상태 |")
-                lines.append("|--------|-----------|------|------|------|")
-                
-                for domain_name, domain_info in domain_details.items():
-                    subdomains = domain_info.get('subdomains', {})
-                    for subdomain_name, subdomain_info in subdomains.items():
-                        target_count = subdomain_info.get('count', 0)
-                        key = f"{domain_name}/{subdomain_name}"
-                        actual_count = subdomain_stats.get(key, 0)
-                        
-                        if actual_count >= target_count:
-                            status = "✅"
-                        elif actual_count > 0:
-                            status = "⚠️ 부족"
-                        else:
-                            status = "❌ 없음"
-                        
-                        lines.append(f"| {domain_name} | {subdomain_name} | {actual_count} | {target_count} | {status} |")
-                
-                lines.append("")
-            
-            # Domain별 소계 (domain_stats가 있으면 항상 표시)
-            if domain_stats:
-                lines.append("### Domain별 소계")
-                lines.append("")
-                lines.append("| Domain | 문제 수 |")
-                lines.append("|--------|--------|")
-                
-                # 문제 수 기준으로 내림차순 정렬
-                for domain_name, count in sorted(domain_stats.items(), key=lambda x: -x[1]):
-                    lines.append(f"| {domain_name} | {count} |")
-                
-                lines.append("")
+                return None
         
-        # 마크다운 파일 저장
+        content = ExamReportGenerator.generate_exam_statistics(
+            exams_config, results, exam_data_loader
+        )
         output_file = os.path.join(exam_dir, 'STATS_exam.md')
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(lines))
-        
+        ExamReportGenerator.save_markdown(content, output_file)
         self.logger.info(f"시험 통계 파일 저장 완료: {output_file}")

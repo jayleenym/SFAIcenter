@@ -9,7 +9,7 @@
 import os
 import sys
 from typing import Dict, List, Any
-from tools.stats_utils import StatisticsSaver
+from tools.stats import StatisticsSaver
 from tools.transformed.multiple_load_transformed_questions import load_transformed_questions
 from tools.transformed.multiple_create_transformed_exam import create_transformed_exam
 
