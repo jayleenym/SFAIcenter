@@ -126,7 +126,8 @@ class BatchExtractor:
                 single_page_json['contents'] = [page]
                 
                 try:
-                    result = self.extractor.extract_qna_from_json(single_page_json, file_name)
+                    # 전체 파일의 contents를 all_contents로 전달하여 다른 페이지의 태그도 찾을 수 있게 함
+                    result = self.extractor.extract_qna_from_json(single_page_json, file_name, all_contents=contents)
                     extracted_items = result.get('extracted_qna', [])
                     
                     if extracted_items:

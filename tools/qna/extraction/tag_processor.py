@@ -12,27 +12,49 @@ from typing import List, Dict, Any, Optional
 class TagProcessor:
     """태그 처리 클래스"""
     
+    # 지원하는 태그 타입들
+    TAG_TYPES = ['tb', 'f', 'note', 'etc', 'img']
+    
     @staticmethod
     def extract_tags_from_qna_content(qna_item: Dict) -> List[str]:
-        """Q&A 내용에서 태그 추출 (img, etc 태그 제외)"""
-        qna_content = ""
-        if 'qna_data' in qna_item and 'description' in qna_item['qna_data']:
-            desc = qna_item['qna_data']['description']
-            # question, answer, explanation, options에서 태그 추출
-            for field in ['question', 'answer', 'explanation', 'options']:
-                if field in desc and desc[field]:
-                    if field == 'options' and isinstance(desc[field], list):
-                        for option in desc[field]:
-                            qna_content += str(option) + " "
-                    else:
-                        qna_content += str(desc[field]) + " "
+        """
+        Q&A 내용에서 태그 추출
         
-        # tb, f, note 태그만 추출 (img, etc 제외)
-        tb_tags = re.findall(r'\{tb_\d{4}_\d{4}\}', qna_content)
-        f_tags = re.findall(r'\{f_\d{4}_\d{4}\}', qna_content)
-        footnote_tags = re.findall(r'\{note_\d{4}_\d{4}\}', qna_content)
+        question, answer, explanation, options 필드에서 태그를 추출합니다.
+        지원 태그: tb, f, note, etc, img
         
-        return tb_tags + f_tags + footnote_tags
+        Args:
+            qna_item: Q&A 데이터 (최상위 레벨에 question, answer, explanation, options 포함)
+        
+        Raises:
+            ValueError: qna_data.description 구조가 전달된 경우
+        """
+        # qna_data.description 구조는 지원하지 않음
+        if 'qna_data' in qna_item and 'description' in qna_item.get('qna_data', {}):
+            raise ValueError(
+                "qna_data.description 구조는 지원되지 않습니다. "
+                "최상위 레벨에 question, answer, explanation, options 필드를 사용하세요."
+            )
+        
+        content_parts = []
+        
+        # question, answer, explanation, options 필드에서 추출
+        for field in ['question', 'answer', 'explanation']:
+            if field in qna_item and qna_item[field]:
+                content_parts.append(str(qna_item[field]))
+        
+        if 'options' in qna_item and qna_item['options']:
+            opts = qna_item['options']
+            if isinstance(opts, list):
+                content_parts.extend(str(opt) for opt in opts)
+            else:
+                content_parts.append(str(opts))
+        
+        qna_content = " ".join(content_parts)
+        
+        # 모든 태그 타입 추출 (tb, f, note, etc, img)
+        tag_types = '|'.join(TagProcessor.TAG_TYPES)
+        return re.findall(rf'\{{(?:{tag_types})_\d{{4}}_\d{{4}}\}}', qna_content)
     
     @staticmethod
     def extract_page_from_tag(tag: str) -> Optional[str]:
@@ -134,8 +156,10 @@ class TagProcessor:
     @staticmethod
     def replace_tags_in_text(text: str, additional_tag_data: list, max_depth: int = 3) -> str:
         """
-        텍스트에서 {f_0000_0000}이나 {tb_0000_0000} 같은 태그를 additional_tag_data에서 찾아서 대치합니다.
+        텍스트에서 태그를 additional_tag_data에서 찾아서 대치합니다.
         중첩된 태그도 재귀적으로 처리합니다.
+        
+        지원 태그: tb, f, note, etc, img
         
         Args:
             text: 대치할 텍스트
@@ -148,8 +172,9 @@ class TagProcessor:
         if not text or not additional_tag_data or max_depth <= 0:
             return text
         
-        # 태그 패턴 매칭: {f_0000_0000}, {tb_0000_0000}, {note_0000_0000}
-        tag_pattern = r'\{(f_\d{4}_\d{4}|tb_\d{4}_\d{4}|note_\d{4}_\d{4})\}'
+        # 태그 패턴 매칭: {tb_0000_0000}, {f_0000_0000}, {note_0000_0000}, {etc_0000_0000}, {img_0000_0000}
+        tag_types = '|'.join(TagProcessor.TAG_TYPES)
+        tag_pattern = rf'\{{({tag_types})_\d{{4}}_\d{{4}}\}}'
         
         def replace_tag(match):
             tag_with_braces = match.group(0)  # {f_0000_0000}
@@ -209,43 +234,44 @@ class TagProcessor:
         Q&A 데이터의 question, answer, explanation, options에서 태그를 대치합니다.
         
         Args:
-            qna_item: Q&A 데이터 딕셔너리
+            qna_item: Q&A 데이터 (최상위 레벨에 question, answer, explanation, options 포함)
             additional_tag_data: 추가 태그 데이터 리스트
         
         Returns:
             태그가 대치된 Q&A 데이터
+            
+        Raises:
+            ValueError: qna_data.description 구조가 전달된 경우
         """
         if not qna_item or not additional_tag_data:
             return qna_item
         
-        # qna_data가 전체 qna 객체인 경우 qna_data 부분을 추출
-        if 'qna_data' in qna_item:
-            qna_info = qna_item['qna_data']
-        else:
-            # 이미 qna_data 부분만 전달된 경우
-            qna_info = qna_item
+        # qna_data.description 구조는 지원하지 않음
+        if 'qna_data' in qna_item and 'description' in qna_item.get('qna_data', {}):
+            raise ValueError(
+                "qna_data.description 구조는 지원되지 않습니다. "
+                "최상위 레벨에 question, answer, explanation, options 필드를 사용하세요."
+            )
         
-        if 'description' in qna_info:
-            desc = qna_info['description']
-            
-            # question 필드 처리
-            if 'question' in desc and desc['question']:
-                desc['question'] = TagProcessor.replace_tags_in_text(desc['question'], additional_tag_data)
-            
-            # options 필드 처리 (리스트)
-            if 'options' in desc and desc['options']:
-                if isinstance(desc['options'], list):
-                    desc['options'] = [TagProcessor.replace_tags_in_text(option, additional_tag_data) for option in desc['options']]
-                else:
-                    desc['options'] = TagProcessor.replace_tags_in_text(desc['options'], additional_tag_data)
-            
-            # answer 필드 처리
-            if 'answer' in desc and desc['answer']:
-                desc['answer'] = TagProcessor.replace_tags_in_text(desc['answer'], additional_tag_data)
-            
-            # explanation 필드 처리
-            if 'explanation' in desc and desc['explanation']:
-                desc['explanation'] = TagProcessor.replace_tags_in_text(desc['explanation'], additional_tag_data)
+        # question, answer, explanation 필드 처리
+        for field in ['question', 'answer', 'explanation']:
+            if field in qna_item and qna_item[field]:
+                qna_item[field] = TagProcessor.replace_tags_in_text(
+                    qna_item[field], additional_tag_data
+                )
+        
+        # options 필드 처리
+        if 'options' in qna_item and qna_item['options']:
+            opts = qna_item['options']
+            if isinstance(opts, list):
+                qna_item['options'] = [
+                    TagProcessor.replace_tags_in_text(opt, additional_tag_data)
+                    for opt in opts
+                ]
+            else:
+                qna_item['options'] = TagProcessor.replace_tags_in_text(
+                    opts, additional_tag_data
+                )
         
         return qna_item
 
