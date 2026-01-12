@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 시험지 검증 및 업데이트 유틸리티
+
+이 모듈은 시험지 검증 및 업데이트 기능을 제공합니다:
+- ExamValidator: 시험지 검증 및 업데이트 클래스
+- Multiple Choice 문제 형식 검증
+- exam_config 요구사항 검증
 """
 
 import re
@@ -303,6 +308,8 @@ class ExamValidator:
         """
         검증 결과를 보기 좋게 출력
         
+        Note: 이 메서드는 tools.report.MultipleChoiceValidationReportGenerator로 위임됩니다.
+        
         Args:
             validation_result: validate_multiple_choice_format의 반환값
             verbose: 상세 정보 출력 여부
@@ -310,38 +317,6 @@ class ExamValidator:
         Returns:
             포맷된 리포트 문자열
         """
-        summary = validation_result['summary']
-        lines = []
-        
-        lines.append("=" * 60)
-        lines.append("Multiple Choice 문제 형식 검증 결과")
-        lines.append("=" * 60)
-        lines.append(f"전체 multiple-choice 문제 수: {summary['total_multiple_choice']}")
-        lines.append(f"options 형식 오류: {summary['invalid_options_count']}개")
-        lines.append(f"answer 형식 오류: {summary['invalid_answer_count']}개")
-        lines.append(f"총 오류 문제 수 (중복 제거): {summary['total_invalid_count']}개")
-        lines.append("-" * 60)
-        
-        if verbose and validation_result['invalid_options']:
-            lines.append("\n[Options 형식 오류 목록]")
-            for item in validation_result['invalid_options']:
-                lines.append(f"\n  file_id: {item['file_id']}, tag: {item['tag']}")
-                for detail in item['details']:
-                    lines.append(f"    - {detail['reason']}")
-                    if 'option' in detail:
-                        lines.append(f"      옵션 내용: {detail['option']}")
-        
-        if verbose and validation_result['invalid_answer']:
-            lines.append("\n[Answer 형식 오류 목록]")
-            for item in validation_result['invalid_answer']:
-                lines.append(f"\n  file_id: {item['file_id']}, tag: {item['tag']}")
-                lines.append(f"    - {item['details']}")
-        
-        lines.append("\n" + "=" * 60)
-        lines.append("[수정 필요 문제 목록 (file_id, tag)]")
-        lines.append("-" * 60)
-        for item in validation_result['all_invalid']:
-            lines.append(f"  {item['file_id']}, {item['tag']}")
-        
-        return "\n".join(lines)
+        from tools.report import MultipleChoiceValidationReportGenerator
+        return MultipleChoiceValidationReportGenerator.generate_report(validation_result, verbose)
 

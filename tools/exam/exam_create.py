@@ -2,9 +2,20 @@
 # -*- coding: utf-8 -*-
 """
 시험문제 생성 모듈
+
+이 모듈은 시험문제 생성 기능을 제공합니다:
 - 금융일반/금융심화/금융실무1/금융실무2 총 4개의 시험문제 파일 생성
 - exam_config.json 파일 참고하여 domain/subdomain별 갯수 지정
 - is_table=false, is_calculation=false 인 문제만 대상
+
+출력 경로:
+    - 시험지: {onedrive_path}/evaluation/eval_data/4_multiple_exam/
+    - 남은 문제: {onedrive_path}/evaluation/eval_data/4_multiple_exam/remaining/
+    - 통계: {onedrive_path}/evaluation/eval_data/4_multiple_exam/STATS_exam.md
+
+관련 모듈:
+    - tools.core.exam_config.ExamConfig: 시험 설정 로드
+    - tools.report.ExamReportGenerator: 통계 리포트 생성
 """
 
 import os
@@ -14,11 +25,26 @@ import copy
 from typing import Dict, Any, List, Tuple, Set, Optional
 from tools.core.exam_config import ExamConfig
 from tools.qna.extraction.tag_processor import TagProcessor
-from tools.stats import ExamReportGenerator
+from tools.report import ExamReportGenerator
 
 
 class ExamMaker:
-    """시험문제 생성 클래스"""
+    """
+    시험문제 생성 클래스
+    
+    exam_config.json의 설정에 따라 시험문제를 선택하고 시험지를 생성합니다.
+    
+    Attributes:
+        QUESTIONS_PER_EXAM (int): 과목당 기본 문제 수 (1250개)
+        onedrive_path (str): OneDrive 데이터 경로
+        logger: 로거 인스턴스
+        
+    Example:
+        >>> maker = ExamMaker(onedrive_path, logger)
+        >>> result = maker.create_exams(seed=42, random_mode=True)
+        >>> print(result['results'])
+        {'금융일반': 1250, '금융심화': 1250, ...}
+    """
     
     # 과목별 총 문제 수
     QUESTIONS_PER_EXAM = 1250

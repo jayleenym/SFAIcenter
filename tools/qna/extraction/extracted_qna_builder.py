@@ -16,7 +16,7 @@ from tools.core.utils import FileManager, JSONHandler
 from tools.qna.extraction.qna_extractor import QnAExtractor
 from tools.qna.validation.check_duplicates import check_duplicates_single_file
 from tools.qna.validation.find_invalid_options import find_invalid_options_in_file
-from tools.stats import ValidationReportGenerator
+from tools.report import ValidationReportGenerator
 
 
 class ExtractedQnABuilder:

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-시험 통계 리포트 생성
+시험 관련 리포트 생성
 - 시험 통계 마크다운 생성 (STATS_exam.md)
 - Remaining 문제 README 생성
+- Multiple Choice 검증 리포트 생성
 """
 
 import os
@@ -13,12 +14,136 @@ from typing import Dict, Any, List, Optional, Callable
 from .markdown_writer import MarkdownWriter
 
 
+class MultipleChoiceValidationReportGenerator:
+    """Multiple Choice 문제 검증 리포트 생성 클래스"""
+    
+    @classmethod
+    def generate_report(cls, validation_result: Dict[str, Any], verbose: bool = True) -> str:
+        """
+        검증 결과를 보기 좋게 포맷된 리포트 문자열로 반환
+        
+        Args:
+            validation_result: ExamValidator.validate_multiple_choice_format()의 반환값
+            verbose: 상세 정보 출력 여부
+            
+        Returns:
+            포맷된 리포트 문자열
+        """
+        summary = validation_result['summary']
+        lines = []
+        
+        lines.append("=" * 60)
+        lines.append("Multiple Choice 문제 형식 검증 결과")
+        lines.append("=" * 60)
+        lines.append(f"전체 multiple-choice 문제 수: {summary['total_multiple_choice']}")
+        lines.append(f"options 형식 오류: {summary['invalid_options_count']}개")
+        lines.append(f"answer 형식 오류: {summary['invalid_answer_count']}개")
+        lines.append(f"총 오류 문제 수 (중복 제거): {summary['total_invalid_count']}개")
+        lines.append("-" * 60)
+        
+        if verbose and validation_result['invalid_options']:
+            lines.append("\n[Options 형식 오류 목록]")
+            for item in validation_result['invalid_options']:
+                lines.append(f"\n  file_id: {item['file_id']}, tag: {item['tag']}")
+                for detail in item['details']:
+                    lines.append(f"    - {detail['reason']}")
+                    if 'option' in detail:
+                        lines.append(f"      옵션 내용: {detail['option']}")
+        
+        if verbose and validation_result['invalid_answer']:
+            lines.append("\n[Answer 형식 오류 목록]")
+            for item in validation_result['invalid_answer']:
+                lines.append(f"\n  file_id: {item['file_id']}, tag: {item['tag']}")
+                lines.append(f"    - {item['details']}")
+        
+        lines.append("\n" + "=" * 60)
+        lines.append("[수정 필요 문제 목록 (file_id, tag)]")
+        lines.append("-" * 60)
+        for item in validation_result['all_invalid']:
+            lines.append(f"  {item['file_id']}, {item['tag']}")
+        
+        return "\n".join(lines)
+    
+    @classmethod
+    def generate_markdown_report(cls, validation_result: Dict[str, Any]) -> str:
+        """
+        검증 결과를 마크다운 형식으로 반환
+        
+        Args:
+            validation_result: ExamValidator.validate_multiple_choice_format()의 반환값
+            
+        Returns:
+            마크다운 형식의 리포트 문자열
+        """
+        summary = validation_result['summary']
+        lines = []
+        
+        lines.append("# Multiple Choice 문제 형식 검증 결과")
+        lines.append("")
+        lines.append(f"생성일시: {MarkdownWriter.get_timestamp()}")
+        lines.append("")
+        
+        # 요약 테이블
+        lines.extend(MarkdownWriter.create_section("요약", level=2))
+        lines.extend(MarkdownWriter.create_table(
+            ["항목", "값"],
+            [
+                ["전체 multiple-choice 문제 수", str(summary['total_multiple_choice'])],
+                ["options 형식 오류", f"{summary['invalid_options_count']}개"],
+                ["answer 형식 오류", f"{summary['invalid_answer_count']}개"],
+                ["총 오류 문제 수 (중복 제거)", f"{summary['total_invalid_count']}개"],
+            ]
+        ))
+        lines.append("")
+        
+        # 오류 상세
+        if validation_result['invalid_options']:
+            lines.extend(MarkdownWriter.create_section("Options 형식 오류 목록", level=2))
+            for item in validation_result['invalid_options']:
+                lines.append(f"### `{item['file_id']}` / `{item['tag']}`")
+                for detail in item['details']:
+                    lines.append(f"- {detail['reason']}")
+                    if 'option' in detail:
+                        lines.append(f"  - 옵션 내용: `{detail['option']}`")
+                lines.append("")
+        
+        if validation_result['invalid_answer']:
+            lines.extend(MarkdownWriter.create_section("Answer 형식 오류 목록", level=2))
+            for item in validation_result['invalid_answer']:
+                lines.append(f"### `{item['file_id']}` / `{item['tag']}`")
+                lines.append(f"- {item['details']}")
+                lines.append("")
+        
+        # 수정 필요 문제 목록
+        lines.extend(MarkdownWriter.create_section("수정 필요 문제 목록", level=2))
+        rows = [[item['file_id'], item['tag']] for item in validation_result['all_invalid']]
+        lines.extend(MarkdownWriter.create_table(["file_id", "tag"], rows))
+        
+        return "\n".join(lines)
+    
+    @classmethod
+    def save_report(cls, validation_result: Dict[str, Any], output_path: str, 
+                    format: str = 'markdown') -> None:
+        """
+        검증 결과를 파일로 저장
+        
+        Args:
+            validation_result: ExamValidator.validate_multiple_choice_format()의 반환값
+            output_path: 출력 파일 경로
+            format: 'markdown' 또는 'text'
+        """
+        if format == 'markdown':
+            content = cls.generate_markdown_report(validation_result)
+        else:
+            content = cls.generate_report(validation_result, verbose=True)
+        
+        MarkdownWriter.save(content, output_path)
+
+
 class ExamReportGenerator:
     """시험 관련 리포트 생성 클래스"""
     
-    # MarkdownWriter의 유틸리티 메서드를 클래스 메서드로 노출 (하위 호환성)
-    get_domain_stats = staticmethod(MarkdownWriter.get_domain_stats)
-    get_subdomain_stats = staticmethod(MarkdownWriter.get_subdomain_stats)
+    # MarkdownWriter의 유틸리티 메서드를 클래스 메서드로 노출
     save_markdown = staticmethod(MarkdownWriter.save)
     
     @classmethod

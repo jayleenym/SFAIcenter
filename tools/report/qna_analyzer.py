@@ -180,7 +180,7 @@ class QnAStatisticsAnalyzer:
         
         Note: 리포트 생성은 tools.stats.QnAReportGenerator로 위임됩니다.
         """
-        from tools.stats import QnAReportGenerator
+        from tools.report import QnAReportGenerator
         QnAReportGenerator.save_report(stats, output_file)
         self.logger.info(f"상세 마크다운 보고서가 저장되었습니다: {output_file}")
 

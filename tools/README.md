@@ -87,10 +87,11 @@ tools/
 │   ├── crop_analysis.py     # [도구] Crop 파일 분석 스크립트
 │   └── epubstats.py         # [도구] EPUB 변환 및 통계
 │
-└── stats/                   # 통계 분석 및 리포트 생성
+└── report/                  # 통계 분석 및 리포트 생성
     ├── __init__.py          # MarkdownWriter, ExamReportGenerator 등 export
     ├── markdown_writer.py   # MarkdownWriter (공통 마크다운 유틸)
     ├── exam_report.py       # ExamReportGenerator (시험 통계/README)
+    │                        # MultipleChoiceValidationReportGenerator (객관식 검증 리포트)
     ├── transform_report.py  # TransformReportGenerator (변형 통계)
     ├── qna_analyzer.py      # QnAStatisticsAnalyzer (QnA 통계 분석)
     ├── qna_report.py        # QnAReportGenerator (QnA 통계 리포트)
@@ -424,6 +425,14 @@ from ..base import PipelineBase
 ```
 
 ## 📋 변경 이력
+
+### v1.5.0 (리팩토링)
+- **`tools/stats` → `tools/report` 이름 변경**: 보고서/통계 생성 모듈의 폴더명을 `report`로 변경
+- **`MultipleChoiceValidationReportGenerator` 추가**: `exam_validator.py`의 리포트 생성 코드를 `report/exam_report.py`로 분리
+- **하위 호환성 코드 제거**: `StatisticsSaver` 별칭 등 사용하지 않는 하위 호환성 코드 정리
+- **`exam_plus_create.py` 직접 참조**: `StatisticsSaver` → `TransformReportGenerator` 직접 사용
+- **`step2_create_exams.py` 리팩토링**: 헬퍼 메서드 분리, docstring 개선
+- **`tools/exam/__init__.py` 개선**: 유틸리티 함수 export 추가, 상세 docstring
 
 ### v1.4.0 (리팩토링)
 - **FileManager 경로 중복 제거**: `tools/__init__.py`의 `PathResolver`를 사용하도록 통합

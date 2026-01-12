@@ -2,19 +2,55 @@
 # -*- coding: utf-8 -*-
 """
 변형 문제 포함 시험지 생성 모듈
+
+이 모듈은 변형 문제를 포함한 시험지를 생성합니다:
 - 4_multiple_exam의 각 세트(1st~5th) 시험지의 객관식들을 변형된 문제로 교체
 - 8_multiple_exam_+에 저장
+
+변형 유형:
+    - pick_abcd: A/B/C/D 선택형
+    - pick_right_{2-5}: 옳은 것 2~5개 고르기
+    - pick_wrong_{2-5}: 틀린 것 2~5개 고르기
+
+입력 경로:
+    - 원본 시험지: {onedrive_path}/evaluation/eval_data/4_multiple_exam/{set_name}/
+    - 변형된 문제: {onedrive_path}/evaluation/eval_data/7_multiple_rw/
+
+출력 경로:
+    - 변형 시험지: {onedrive_path}/evaluation/eval_data/8_multiple_exam_+/{set_name}/
+    - 통계: {onedrive_path}/evaluation/eval_data/8_multiple_exam_+/{set_name}/STATS_{set_name}.md
+
+관련 모듈:
+    - tools.transformed.multiple_load_transformed_questions: 변형된 문제 로드
+    - tools.transformed.multiple_create_transformed_exam: 변형 시험지 생성
+    - tools.report.TransformReportGenerator: 변형 통계 리포트 생성
 """
 
 import os
 import sys
 from typing import Dict, List, Any
-from tools.stats import StatisticsSaver
+from tools.report import TransformReportGenerator
 from tools.transformed.multiple_load_transformed_questions import load_transformed_questions
 from tools.transformed.multiple_create_transformed_exam import create_transformed_exam
 
+
 class ExamPlusMaker:
-    """변형 문제 포함 시험지 생성 클래스"""
+    """
+    변형 문제 포함 시험지 생성 클래스
+    
+    원본 시험지의 객관식 문제들을 변형된 문제로 교체하여 새로운 시험지를 생성합니다.
+    
+    Attributes:
+        onedrive_path (str): OneDrive 데이터 경로
+        json_handler: JSON 처리 핸들러
+        logger: 로거 인스턴스
+        
+    Example:
+        >>> maker = ExamPlusMaker(onedrive_path, json_handler, logger)
+        >>> result = maker.create_transformed_exams(sets=[1, 2, 3])
+        >>> print(result)
+        {'success': True, 'message': '변형 문제를 포함한 시험지 생성 완료'}
+    """
     
     def __init__(self, onedrive_path: str, json_handler: Any, logger: Any):
         self.onedrive_path = onedrive_path
@@ -120,8 +156,8 @@ class ExamPlusMaker:
                 self.json_handler.save(missing_questions, missing_path)
             
             set_statistics[exam_name] = transform_stats
-            StatisticsSaver.log_statistics(transform_stats, exam_name, self.logger)
+            TransformReportGenerator.log_statistics(transform_stats, exam_name, self.logger)
         
-        set_stats = StatisticsSaver.aggregate_set_statistics(set_statistics)
+        set_stats = TransformReportGenerator.aggregate_set_statistics(set_statistics)
         markdown_path = os.path.join(output_dir, f"STATS_{set_name}.md")
-        StatisticsSaver.save_statistics_markdown(set_stats, set_name, markdown_path)
+        TransformReportGenerator.save_statistics_markdown(set_stats, set_name, markdown_path)

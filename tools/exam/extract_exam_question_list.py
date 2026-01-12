@@ -1,7 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-4_multiple_exam의 회차별 시험지에서 문제 번호(file_id, tag) 리스트를 추출하여 JSON 파일로 저장
+시험지 문제 번호 추출 유틸리티
+
+이 모듈은 시험지에서 문제 번호(file_id, tag)를 추출하는 기능을 제공합니다.
+
+기능:
+    - extract_question_ids_from_exam: 단일 시험지에서 문제 번호 추출
+    - extract_all_exam_question_lists: 모든 회차별 시험지에서 문제 번호 추출
+    - save_question_lists: 문제 번호 리스트를 JSON 파일로 저장
+    - load_question_lists: 저장된 문제 번호 리스트 로드
+
+사용 예:
+    # 커맨드라인에서 실행
+    python -m tools.exam.extract_exam_question_list --onedrive_path /path/to/onedrive
+    
+    # 코드에서 사용
+    from tools.exam import extract_all_exam_question_lists, save_question_lists
+    question_lists = extract_all_exam_question_lists(onedrive_path)
+    save_question_lists(question_lists, output_file)
 """
 
 import os

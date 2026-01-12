@@ -178,7 +178,3 @@ class TransformReportGenerator:
         logger.info(f"      - pick_wrong_4: {stats['pick_wrong_4']}개")
         logger.info(f"      - pick_wrong_5: {stats['pick_wrong_5']}개")
 
-
-# 하위 호환성을 위한 별칭
-StatisticsSaver = TransformReportGenerator
-
