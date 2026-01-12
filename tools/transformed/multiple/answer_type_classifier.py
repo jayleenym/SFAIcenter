@@ -2,50 +2,53 @@
 # -*- coding: utf-8 -*-
 """
 Q&A Answer Type 분류기
-- 선택형 문제를 right/wrong/abcd로 분류
-- 10문제 단위로 API 호출 (기본값)
-- answer_type 키를 추가하여 업데이트
+
+이 모듈은 선택형 문제를 right/wrong/abcd로 분류하는 기능을 제공합니다:
+- right: 옳은 것을 고르는 일반형 문제
+- wrong: 옳지 않은 것을 고르는 문제
+- abcd: 보기에서 해당되는 것들을 모두 골라 조합을 선택하는 문제
+
+주요 기능:
+- 10문제 단위로 LLM API 호출 (배치 처리)
+- answer_type 키를 추가하여 원본 데이터 업데이트
+- 중간 결과 저장 (재시작 가능)
+
+출력 경로:
+    - 분류 결과: {onedrive_path}/evaluation/eval_data/7_multiple_rw/answer_type_classified.json
+    
+Example:
+    # 커맨드라인 실행
+    python -m tools.transformed.multiple.answer_type_classifier --data_path /path/to/data.json
+    
+    # 코드에서 사용
+    from tools.transformed.multiple import AnswerTypeClassifier
+    classifier = AnswerTypeClassifier(onedrive_path=onedrive_path)
+    result = classifier.process_all_questions(data_path=data_path)
 """
 
 import os
-import sys
 import json
 import time
 import logging
 from typing import List, Dict, Any, Tuple
 from tqdm import tqdm
 
-# 프로젝트 루트 경로 찾기 (로깅과 import에 사용)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# tools 모듈 import를 위한 경로 설정
-_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # processing -> qna -> tools
-sys.path.insert(0, _temp_tools_dir)
-from tools import tools_dir
-project_root = os.path.dirname(tools_dir)  # tools -> project_root
-
-# llm_query 모듈 import
-sys.path.insert(0, tools_dir)
-
-# 중앙화된 로깅 유틸리티 사용
 from tools.core.logger import setup_logger
-
-# 독립 실행 시 파일명 기반 로그 파일명 생성
-_log_file = None
-if __name__ == "__main__":
-    # 독립 실행 시: 파일명.log
-    script_name = os.path.splitext(os.path.basename(__file__))[0]
-    _log_file = f'{script_name}.log'
-else:
-    # 모듈로 import 시: 기존 이름 유지
-    _log_file = 'multiple_answer_classify.log'
-
-logger = setup_logger(
-    name=__name__,
-    log_file=_log_file,
-    use_console=True,
-    use_file=True
-)
 from tools.core.llm_query import LLMQuery
+
+
+# 모듈 레벨 로거 설정 (독립 실행 시에만 사용)
+def _get_module_logger():
+    """모듈 레벨 로거 생성"""
+    log_file = 'answer_type_classifier.log' if __name__ == "__main__" else 'multiple_answer_classify.log'
+    return setup_logger(
+        name=__name__,
+        log_file=log_file,
+        use_console=True,
+        use_file=True
+    )
+
+_module_logger = _get_module_logger()
 
 
 class AnswerTypeClassifier:
@@ -57,10 +60,10 @@ class AnswerTypeClassifier:
         Args:
             config_path: 설정 파일 경로
             onedrive_path: OneDrive 경로
-            logger: 사용할 로거 (None이면 자체 로거 사용)
+            logger: 사용할 로거 (None이면 모듈 레벨 로거 사용)
         """
         # 로거 설정 (step에서 호출될 때는 step 로거 사용)
-        self.logger = logger if logger is not None else globals().get('logger', logging.getLogger(__name__))
+        self.logger = logger if logger is not None else _module_logger
         
         # LLMQuery 초기화
         self.llm_query = LLMQuery(config_path=config_path)
@@ -423,16 +426,16 @@ def main():
     
     # 처리 실행
     try:
-        logger.info(f"모델: {args.model}, 배치 크기: {args.batch_size}")
+        _module_logger.info(f"모델: {args.model}, 배치 크기: {args.batch_size}")
         results = classifier.process_all_questions(
             data_path=args.data_path,
             model=str(args.model).strip(),
             batch_size=args.batch_size
         )
-        logger.info("처리 완료!")
+        _module_logger.info("처리 완료!")
         
     except Exception as e:
-        logger.error(f"처리 중 오류 발생: {e}")
+        _module_logger.error(f"처리 중 오류 발생: {e}")
         raise
 
 

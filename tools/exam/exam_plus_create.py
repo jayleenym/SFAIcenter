@@ -30,8 +30,7 @@ import os
 import sys
 from typing import Dict, List, Any
 from tools.report import TransformReportGenerator
-from tools.transformed.multiple_load_transformed_questions import load_transformed_questions
-from tools.transformed.multiple_create_transformed_exam import create_transformed_exam
+from tools.transformed.multiple import load_transformed_questions, create_transformed_exam
 
 
 class ExamPlusMaker:

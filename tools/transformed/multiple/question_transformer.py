@@ -1,47 +1,74 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-객관식 문제 변형 모듈
+객관식 문제 변형 오케스트레이터
+
+이 모듈은 객관식 문제 변형 프로세스 전체를 관리합니다:
 - AnswerTypeClassifier로 문제를 right/wrong/abcd로 분류
-- wrong -> right 변형 (옳지 않은 것 -> 옳은 것)
-- right -> wrong 변형 (옳은 것 -> 옳지 않은 것)
-- abcd 변형 (단일정답형 -> 복수정답형)
+- wrong -> right 변형 (옳지 않은 것 → 옳은 것을 모두 고르시오)
+- right -> wrong 변형 (옳은 것 → 옳지 않은 것을 모두 고르시오)
+- abcd 변형 (단일정답형 → 복수정답형)
+
+변형 흐름:
+    1. 문제 분류 (run_classify=True 시)
+       → AnswerTypeClassifier로 right/wrong/abcd 분류
+    2. 변형 수행
+       → MultipleChoiceTransformer로 각 유형별 변형
+
+관련 모듈:
+    - .answer_type_classifier.AnswerTypeClassifier: 문제 분류
+    - .change_question_and_options.MultipleChoiceTransformer: 변형 수행
 """
 
 import os
-import sys
 import json
 from typing import List, Dict, Any, Optional
+
 from tools.core.logger import setup_step_logger
+from .answer_type_classifier import AnswerTypeClassifier
+from .change_question_and_options import MultipleChoiceTransformer
 
-# AnswerTypeClassifier 및 변형 모듈 import
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# tools 모듈 import를 위한 경로 설정
-_temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # tools
-sys.path.insert(0, _temp_tools_dir)
-
-try:
-    from tools.transformed.answer_type_classifier import AnswerTypeClassifier
-    from tools.transformed.multiple_change_question_and_options import MultipleChoiceTransformer
-except ImportError:
-    AnswerTypeClassifier = None
-    MultipleChoiceTransformer = None
 
 class QuestionTransformerOrchestrator:
-    """객관식 문제 변형 관리 클래스"""
+    """
+    객관식 문제 변형 오케스트레이터 클래스
+    
+    분류 및 변형 프로세스 전체를 관리하며, Step3에서 호출됩니다.
+    
+    Attributes:
+        onedrive_path (str): OneDrive 데이터 경로
+        project_root_path (str): 프로젝트 루트 경로
+        json_handler: JSON 처리 핸들러
+        logger: 로거 인스턴스
+        llm_query: LLM API 쿼리 인스턴스
+        
+    Example:
+        >>> orchestrator = QuestionTransformerOrchestrator(
+        ...     onedrive_path, project_root_path, json_handler, logger, llm_query
+        ... )
+        >>> result = orchestrator.transform_questions(
+        ...     classified_data_path='/path/to/classified.json',
+        ...     transform_model='openai/gpt-4'
+        ... )
+    """
     
     def __init__(self, onedrive_path: str, project_root_path: str, json_handler: Any, logger: Any, llm_query: Any):
+        """
+        QuestionTransformerOrchestrator 초기화
+        
+        Args:
+            onedrive_path: OneDrive 경로
+            project_root_path: 프로젝트 루트 경로
+            json_handler: JSON 처리 핸들러
+            logger: 로거 인스턴스
+            llm_query: LLM API 쿼리 인스턴스
+        """
         self.onedrive_path = onedrive_path
         self.project_root_path = project_root_path
         self.json_handler = json_handler
         self.logger = logger
         self.llm_query = llm_query
         self._step_log_handlers = {}
-        
-        if AnswerTypeClassifier is None:
-            self.logger.warning("AnswerTypeClassifier를 import할 수 없습니다.")
-        if MultipleChoiceTransformer is None:
-            self.logger.warning("MultipleChoiceTransformer를 import할 수 없습니다.")
 
     def transform_questions(self, classified_data_path: str = None,
                           input_data_path: str = None, questions: List[Dict[str, Any]] = None,
@@ -52,23 +79,36 @@ class QuestionTransformerOrchestrator:
                           transform_right_to_wrong: bool = True,
                           transform_abcd: bool = True,
                           seed: int = 42) -> Dict[str, Any]:
-        """객관식 문제 변형 실행"""
+        """
+        객관식 문제 변형 실행
+        
+        Args:
+            classified_data_path: 이미 분류된 데이터 파일 경로 (run_classify=False 시)
+            input_data_path: 분류할 입력 데이터 경로 (run_classify=True 시)
+            questions: 직접 전달할 문제 리스트
+            run_classify: 분류 단계 실행 여부
+            classify_model: 분류에 사용할 LLM 모델
+            classify_batch_size: 분류 배치 크기
+            transform_model: 변형에 사용할 LLM 모델
+            transform_wrong_to_right: wrong → right 변형 수행 여부
+            transform_right_to_wrong: right → wrong 변형 수행 여부
+            transform_abcd: abcd 변형 수행 여부
+            seed: 랜덤 시드
+            
+        Returns:
+            Dict[str, Any]: 변형 결과
+                - success (bool): 성공 여부
+                - classified (int): 분류된 문제 수
+                - transformations (dict): 각 변형 타입별 결과
+        """
         self.logger.info("=== 객관식 문제 변형 시작 ===")
         
         if self.llm_query is None:
             self.logger.error("LLMQuery가 초기화되지 않았습니다.")
             return {'success': False, 'error': 'LLMQuery 초기화 실패'}
         
-        if MultipleChoiceTransformer is None:
-            self.logger.error("MultipleChoiceTransformer를 import할 수 없습니다.")
-            return {'success': False, 'error': 'MultipleChoiceTransformer import 실패'}
-        
         # 분류된 데이터 로드 또는 분류 수행
         if run_classify:
-            if AnswerTypeClassifier is None:
-                self.logger.error("AnswerTypeClassifier를 import할 수 없습니다.")
-                return {'success': False, 'error': 'AnswerTypeClassifier import 실패'}
-            
             questions = self._load_questions(input_data_path, questions)
             if not questions:
                 self.logger.error("로드된 문제가 없습니다.")
@@ -285,3 +325,4 @@ class QuestionTransformerOrchestrator:
             self.logger.info(f"중복 제거 후 {question_type} 문제 수: {len(unique_questions)} (원본: {len(questions)})")
         
         return unique_questions
+

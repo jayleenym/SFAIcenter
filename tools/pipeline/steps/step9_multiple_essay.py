@@ -10,22 +10,30 @@
 4. 키워드 추출
 5. 모범답안 생성
 6. 모델 답변 생성 (선택적)
+
+관련 모듈:
+    - tools.transformed.essay: 서술형 문제 변환 기능
 """
 
 import os
 import json
 import logging
+import random
 from typing import List, Dict, Any, Optional
 from ..base import PipelineBase
 
-# transformed 모듈 import
+# essay 모듈 import
 try:
-    from tools.transformed.essay_filter_full_explanation import filter_full_explanation
-    from tools.transformed.essay_change_question_to_essay import change_question_to_essay
-    from tools.transformed.essay_extract_keywords import extract_keywords
-    from tools.transformed.essay_create_best_answers import create_best_answers
-    from tools.transformed.essay_classify_by_exam import main as classify_essay_by_exam_main
-    from tools.transformed.essay_create_model_answers import process_essay_questions, get_api_key
+    from tools.transformed.essay import (
+        filter_full_explanation,
+        classify_by_exam as classify_essay_by_exam_main,
+        change_question_to_essay,
+        extract_keywords,
+        create_best_answers,
+        process_essay_questions,
+        get_api_key,
+        ROUND_NUMBER_TO_FOLDER,
+    )
     from tools.core.llm_query import LLMQuery
 except ImportError as e:
     # 디버깅을 위해 에러 로깅
@@ -41,6 +49,7 @@ except ImportError as e:
     process_essay_questions = None
     get_api_key = None
     LLMQuery = None
+    ROUND_NUMBER_TO_FOLDER = {'1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th'}
 
 
 class Step9MultipleEssay(PipelineBase):
@@ -81,7 +90,7 @@ class Step9MultipleEssay(PipelineBase):
                 return {'success': False, 'error': 'LLMQuery 초기화 실패'}
             
             if filter_full_explanation is None:
-                self.logger.error("transformed.essay_filter_full_explanation 모듈을 import할 수 없습니다.")
+                self.logger.error("transformed.essay 모듈을 import할 수 없습니다.")
                 return {'success': False, 'error': '필수 모듈 import 실패'}
             
             # 경로 설정
@@ -100,9 +109,6 @@ class Step9MultipleEssay(PipelineBase):
                     return {'success': False, 'error': '유효하지 않은 단계 번호'}
             
             self.logger.info(f"실행할 단계: {steps}")
-            
-            # 회차에 따른 폴더명 매핑
-            round_number_to_folder = {'1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th'}
             
             # sets가 있으면 해당 회차만 처리, 없으면 모든 회차 처리
             if sets is not None:
@@ -123,10 +129,6 @@ class Step9MultipleEssay(PipelineBase):
             # 1단계: 해설이 많은 문제 선별
             if 1 in steps:
                 self.logger.info("1단계: 해설이 많은 문제 선별 중...")
-                if filter_full_explanation is None:
-                    self.logger.error("filter_full_explanation 함수를 import할 수 없습니다.")
-                    return {'success': False, 'error': 'filter_full_explanation import 실패'}
-                
                 try:
                     count = filter_full_explanation(
                         llm=self.llm_query,
@@ -145,7 +147,7 @@ class Step9MultipleEssay(PipelineBase):
                 self.logger.info("2단계: 시험별로 분류 중...")
                 try:
                     if classify_essay_by_exam_main is None:
-                        self.logger.error("essay_classify_by_exam 모듈을 import할 수 없습니다.")
+                        self.logger.error("essay.classify_by_exam 모듈을 import할 수 없습니다.")
                         return {'success': False, 'error': 'essay_classify_by_exam import 실패'}
                     
                     # classify_essay_by_exam_main은 모든 회차를 한 번에 처리하므로
@@ -162,12 +164,12 @@ class Step9MultipleEssay(PipelineBase):
             if 3 in steps:
                 self.logger.info("3단계: 서술형 문제로 변환 중...")
                 if change_question_to_essay is None:
-                    self.logger.error("essay_change_question_to_essay 함수를 import할 수 없습니다.")
+                    self.logger.error("essay.change_question_to_essay 함수를 import할 수 없습니다.")
                     return {'success': False, 'error': 'essay_change_question_to_essay import 실패'}
                 
                 step3_total = 0
                 for round_number in round_numbers:
-                    round_folder = round_number_to_folder[round_number]
+                    round_folder = ROUND_NUMBER_TO_FOLDER[round_number]
                     input_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}.json')
                     
                     if not os.path.exists(input_file):
@@ -195,12 +197,12 @@ class Step9MultipleEssay(PipelineBase):
             if 4 in steps:
                 self.logger.info("4단계: 키워드 추출 중...")
                 if extract_keywords is None:
-                    self.logger.error("essay_extract_keywords 함수를 import할 수 없습니다.")
+                    self.logger.error("essay.extract_keywords 함수를 import할 수 없습니다.")
                     return {'success': False, 'error': 'essay_extract_keywords import 실패'}
                 
                 step4_total = 0
                 for round_number in round_numbers:
-                    round_folder = round_number_to_folder[round_number]
+                    round_folder = ROUND_NUMBER_TO_FOLDER[round_number]
                     input_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}_서술형문제로변환.json')
                     
                     if not os.path.exists(input_file):
@@ -228,12 +230,12 @@ class Step9MultipleEssay(PipelineBase):
             if 5 in steps:
                 self.logger.info("5단계: 모범답안 생성 중...")
                 if create_best_answers is None:
-                    self.logger.error("essay_create_best_answers 함수를 import할 수 없습니다.")
+                    self.logger.error("essay.create_best_answers 함수를 import할 수 없습니다.")
                     return {'success': False, 'error': 'essay_create_best_answers import 실패'}
                 
                 step5_total = 0
                 for round_number in round_numbers:
-                    round_folder = round_number_to_folder[round_number]
+                    round_folder = ROUND_NUMBER_TO_FOLDER[round_number]
                     input_file = os.path.join(essay_dir, 'questions', f'essay_questions_w_keyword_{round_folder}_서술형답변에서키워드추출.json')
                     output_file = os.path.join(essay_dir, 'answers', f'best_ans_{round_folder}.json')
                     
@@ -265,8 +267,8 @@ class Step9MultipleEssay(PipelineBase):
                 self.logger.info("모델 답변 생성 중...")
                 
                 if process_essay_questions is None:
-                    self.logger.error("transformed.multi_essay_answer 모듈을 import할 수 없습니다.")
-                    return {'success': False, 'error': 'multi_essay_answer import 실패'}
+                    self.logger.error("essay.create_model_answers 모듈을 import할 수 없습니다.")
+                    return {'success': False, 'error': 'create_model_answers import 실패'}
                 
                 # 세트 번호 설정 (이미 위에서 설정됨)
                 if sets is None:
@@ -295,7 +297,7 @@ class Step9MultipleEssay(PipelineBase):
                 for model_name in models:
                     for set_num in sets:
                         round_number = str(set_num)
-                        round_folder = round_number_to_folder.get(round_number, '1st')
+                        round_folder = ROUND_NUMBER_TO_FOLDER.get(round_number, '1st')
                         
                         # 각 회차별 파일에서 데이터 로드 (4단계 출력 파일 사용)
                         input_file = os.path.join(
@@ -311,7 +313,6 @@ class Step9MultipleEssay(PipelineBase):
                             full_explanation = json.load(f)
                         
                         # seed 고정하여 랜덤으로 150문제 추출 (각 회차마다 독립적으로)
-                        import random
                         random.seed(42)
                         selected_questions = random.sample(full_explanation, min(150, len(full_explanation)))
                         self.logger.info(f"선택된 문제 수: {len(selected_questions)}개 (전체: {len(full_explanation)}개)")
@@ -343,5 +344,3 @@ class Step9MultipleEssay(PipelineBase):
             return {'success': False, 'error': f'변환 오류: {str(e)}'}
         finally:
             self._remove_step_logging()
-
-

@@ -1,20 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+서술형 문제 모델 답변 생성
+"""
+
 import os
-import sys
 import json
 import argparse
 import random
 import configparser
 from tqdm import tqdm
 
-# tools 모듈 import를 위한 경로 설정 (모듈로 사용될 때를 대비)
-if __name__ != '__main__' or 'tools' not in sys.modules:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    _temp_tools_dir = os.path.dirname(current_dir)  # transformed -> tools
-    if _temp_tools_dir not in sys.path:
-        sys.path.insert(0, _temp_tools_dir)
-
 from tools import ONEDRIVE_PATH, PROJECT_ROOT_PATH
 from tools.core.llm_query import LLMQuery
+
 
 def get_api_key():
     """llm_config.ini에서 API 키 읽기"""
@@ -32,6 +31,7 @@ def get_api_key():
         except Exception as e:
             print(f"경고: 설정 파일에서 API 키를 읽는 중 오류 발생: {e}")
     return None
+
 
 def process_essay_questions(model, round_number, round_folder, selected_questions, api_key=None, use_server_mode=False):
     """특정 모델과 회차에 대해 서술형 문제를 처리하는 함수
@@ -92,6 +92,12 @@ def process_essay_questions(model, round_number, round_folder, selected_question
         json.dump(eval_model_answer, f, ensure_ascii=False, indent=4)
     
     print(f"결과가 {output_path}에 저장되었습니다.")
+
+
+def generate_essay_answers(model, round_number, round_folder, selected_questions, api_key=None, use_server_mode=False):
+    """process_essay_questions의 별칭 (하위 호환성)"""
+    return process_essay_questions(model, round_number, round_folder, selected_questions, api_key, use_server_mode)
+
 
 def main():
     parser = argparse.ArgumentParser(description='서술형 문제 답변 생성')
@@ -154,5 +160,7 @@ def main():
         # 해당 회차 처리 및 저장
         process_essay_questions(model, round_number, round_folder, selected_questions, api_key, use_server_mode)
 
+
 if __name__ == '__main__':
     main()
+

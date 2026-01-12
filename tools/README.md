@@ -65,20 +65,24 @@ tools/
 │   ├── evaluate_essay_model.py      # 서술형 문제 평가
 │   └── essay_utils.py               # 서술형 평가 유틸리티
 │
-├── transformed/             # 문제 변형 관련 (12개 파일)
-│   ├── __init__.py              # export
-│   ├── common.py                # 공통 유틸리티 함수
-│   ├── answer_type_classifier.py  # AnswerTypeClassifier (right/wrong/abcd 분류)
-│   ├── question_transformer.py  # QuestionTransformerOrchestrator (step3 진입점)
-│   ├── multiple_change_question_and_options.py  # 객관식 변형
-│   ├── multiple_load_transformed_questions.py   # 변형 문제 로드
-│   ├── multiple_create_transformed_exam.py      # 변형 시험지 생성
-│   ├── essay_filter_full_explanation.py    # 1단계: 문제 선별
-│   ├── essay_classify_by_exam.py           # 2단계: 시험별 분류
-│   ├── essay_change_question_to_essay.py   # 3단계: 서술형 변환
-│   ├── essay_extract_keywords.py           # 4단계: 키워드 추출
-│   ├── essay_create_best_answers.py        # 5단계: 모범답안 생성
-│   └── essay_create_model_answers.py       # 모델 답변 생성
+├── transformed/             # 문제 변형 관련
+│   ├── __init__.py              # 통합 export (multiple + essay)
+│   ├── multiple/                # 객관식 문제 변형 (Step3)
+│   │   ├── __init__.py              # QuestionTransformerOrchestrator 등 export
+│   │   ├── question_transformer.py  # QuestionTransformerOrchestrator (Step3 오케스트레이터)
+│   │   ├── answer_type_classifier.py  # AnswerTypeClassifier (right/wrong/abcd 분류)
+│   │   ├── change_question_and_options.py  # MultipleChoiceTransformer (변형 로직)
+│   │   ├── load_transformed_questions.py   # 변형 문제 로드
+│   │   └── create_transformed_exam.py      # 변형 시험지 생성
+│   └── essay/                   # 서술형 문제 변환 (Step9)
+│       ├── __init__.py              # 서술형 함수들 export
+│       ├── common.py                # 공통 유틸리티 (라운드 검증, 파일 I/O)
+│       ├── filter_full_explanation.py    # 1단계: 문제 선별
+│       ├── classify_by_exam.py           # 2단계: 시험별 분류
+│       ├── change_question_to_essay.py   # 3단계: 서술형 변환
+│       ├── extract_keywords.py           # 4단계: 키워드 추출
+│       ├── create_best_answers.py        # 5단계: 모범답안 생성
+│       └── create_model_answers.py       # 모델 답변 생성
 │
 ├── data_processing/         # 데이터 처리 및 정제
 │   ├── __init__.py          # JSONCleaner export
@@ -142,21 +146,21 @@ Step2CreateExams.execute()
     │
     └─ 변형 시험지 생성 (transformed=True)
         └─ ExamPlusMaker.create_transformed_exams() - exam/exam_plus_create.py
-                ├─ transformed/multiple_load_transformed_questions.py
-                └─ transformed/multiple_create_transformed_exam.py
+                ├─ transformed/multiple/load_transformed_questions.py
+                └─ transformed/multiple/create_transformed_exam.py
 ```
 
 ### Step 3: transform_questions 실행 흐름
 
 ```
 Step3TransformQuestions.execute()
-    └─ QuestionTransformerOrchestrator - question_transformer.py
+    └─ QuestionTransformerOrchestrator - transformed/multiple/question_transformer.py
             │
             ├─ 분류 (run_classify=True일 때)
-            │   └─ qna/processing/answer_type_classifier.py (right/wrong/abcd 분류)
+            │   └─ transformed/multiple/answer_type_classifier.py (right/wrong/abcd 분류)
             │
             └─ 변형
-                └─ multiple_change_question_and_options.py
+                └─ transformed/multiple/change_question_and_options.py
                         ├─ wrong → right 변형
                         ├─ right → wrong 변형
                         └─ abcd 변형
@@ -183,22 +187,22 @@ Step6Evaluate.execute()
 Step9MultipleEssay.execute()
     │
     ├─ 1단계: 해설이 많은 문제 선별
-    │   └─ essay_filter_full_explanation.py
+    │   └─ transformed/essay/filter_full_explanation.py
     │
     ├─ 2단계: 시험별로 분류
-    │   └─ essay_classify_by_exam.py
+    │   └─ transformed/essay/classify_by_exam.py
     │
     ├─ 3단계: 서술형 문제로 변환
-    │   └─ essay_change_question_to_essay.py
+    │   └─ transformed/essay/change_question_to_essay.py
     │
     ├─ 4단계: 키워드 추출
-    │   └─ essay_extract_keywords.py
+    │   └─ transformed/essay/extract_keywords.py
     │
     ├─ 5단계: 모범답안 생성
-    │   └─ essay_create_best_answers.py
+    │   └─ transformed/essay/create_best_answers.py
     │
     └─ 모델 답변 생성 (models 지정 시)
-        └─ essay_create_model_answers.py
+        └─ transformed/essay/create_model_answers.py
 ```
 
 ## 📦 Q&A 처리 모듈 (qna/)
@@ -426,6 +430,26 @@ from ..base import PipelineBase
 
 ## 📋 변경 이력
 
+### v1.6.0 (리팩토링 - transformed 폴더 구조 개편)
+- **`tools/transformed` 하위 폴더 분리**:
+  - `multiple/`: 객관식 문제 변형 (Step3)
+    - `question_transformer.py`: 변형 오케스트레이터
+    - `answer_type_classifier.py`: right/wrong/abcd 분류
+    - `change_question_and_options.py`: 변형 로직 (기존 `multiple_` 접두사 제거)
+    - `load_transformed_questions.py`: 변형 문제 로드
+    - `create_transformed_exam.py`: 변형 시험지 생성
+  - `essay/`: 서술형 문제 변환 (Step9)
+    - `common.py`: 공통 유틸리티 (기존 루트 `common.py` 이동)
+    - `filter_full_explanation.py`: 1단계 (기존 `essay_` 접두사 제거)
+    - `classify_by_exam.py`: 2단계
+    - `change_question_to_essay.py`: 3단계
+    - `extract_keywords.py`: 4단계
+    - `create_best_answers.py`: 5단계
+    - `create_model_answers.py`: 모델 답변 생성
+- **`sys.path` 조작 제거**: 모든 essay 파일에서 `sys.path.insert` 제거, 깔끔한 import 구조
+- **`step3_transform_questions.py` 업데이트**: `from tools.transformed.multiple import` 사용
+- **`step9_multiple_essay.py` 업데이트**: `from tools.transformed.essay import` 사용
+
 ### v1.5.0 (리팩토링)
 - **`tools/stats` → `tools/report` 이름 변경**: 보고서/통계 생성 모듈의 폴더명을 `report`로 변경
 - **`MultipleChoiceValidationReportGenerator` 추가**: `exam_validator.py`의 리포트 생성 코드를 `report/exam_report.py`로 분리
@@ -433,6 +457,11 @@ from ..base import PipelineBase
 - **`exam_plus_create.py` 직접 참조**: `StatisticsSaver` → `TransformReportGenerator` 직접 사용
 - **`step2_create_exams.py` 리팩토링**: 헬퍼 메서드 분리, docstring 개선
 - **`tools/exam/__init__.py` 개선**: 유틸리티 함수 export 추가, 상세 docstring
+- **`tools/transformed` 리팩토링**:
+  - `answer_type_classifier.py`: `sys.path` 조작 제거, import 정리, docstring 개선
+  - `question_transformer.py`: `sys.path` 조작 제거, docstring 개선
+  - `step3_transform_questions.py`: docstring 개선
+  - `__init__.py`: `QuestionTransformerOrchestrator` export 추가, docstring 개선
 
 ### v1.4.0 (리팩토링)
 - **FileManager 경로 중복 제거**: `tools/__init__.py`의 `PathResolver`를 사용하도록 통합

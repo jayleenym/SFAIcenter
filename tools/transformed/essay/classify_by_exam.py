@@ -6,20 +6,13 @@
 """
 
 import os
-import sys
 import json
 import random
 from collections import defaultdict
 
-# tools 모듈 import를 위한 경로 설정
-current_dir = os.path.dirname(os.path.abspath(__file__))
-_temp_tools_dir = os.path.dirname(current_dir)  # transformed -> tools
-sys.path.insert(0, _temp_tools_dir)
-from tools import tools_dir, ONEDRIVE_PATH
-project_root = os.path.dirname(tools_dir)  # tools -> project_root
-sys.path.insert(0, tools_dir)
-sys.path.insert(0, project_root)
-    
+from tools import ONEDRIVE_PATH
+
+
 def load_exam_questions(exam_dir, exam_set_name):
     """
     특정 exam 세트의 모든 문제를 로드하고 (file_id, tag)를 키로 하는 딕셔너리 생성
@@ -48,6 +41,7 @@ def load_exam_questions(exam_dir, exam_set_name):
     
     print(f"{exam_set_name} 세트: {len(exam_questions)}개 문제 로드 완료")
     return exam_questions
+
 
 def main():
     
@@ -290,6 +284,7 @@ def main():
         print(f"매칭되지 않은 문제 저장: {unmatched_file} ({len(unmatched_essays)}개 문제)")
     
     print("\n완료!")
+
 
 if __name__ == '__main__':
     main()

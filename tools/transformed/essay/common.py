@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-transformed 패키지 공통 유틸리티
+essay 패키지 공통 유틸리티
 
-문제 변형 모듈에서 공통으로 사용하는 상수와 헬퍼 함수들을 제공합니다.
+서술형 문제 변환 모듈에서 공통으로 사용하는 상수와 헬퍼 함수들을 제공합니다.
 """
 
 import os
 import json
-from typing import Dict, Any, Optional, Callable
+from typing import Dict, Any, Optional, Callable, List
 
 # 라운드 번호 → 폴더명 매핑
 ROUND_NUMBER_TO_FOLDER = {
@@ -42,7 +42,7 @@ def get_essay_dir(onedrive_path: str) -> str:
     return os.path.join(onedrive_path, 'evaluation', 'eval_data', '9_multiple_to_essay')
 
 
-def load_questions(input_file: str, log_func: Callable = print, step_name: str = "") -> Optional[list]:
+def load_questions(input_file: str, log_func: Callable = print, step_name: str = "") -> Optional[List[Dict[str, Any]]]:
     """
     입력 파일에서 질문 데이터 로드
     
@@ -65,7 +65,7 @@ def load_questions(input_file: str, log_func: Callable = print, step_name: str =
     return questions
 
 
-def save_questions(questions: list, output_file: str, log_func: Callable = print, step_name: str = "") -> None:
+def save_questions(questions: List[Dict[str, Any]], output_file: str, log_func: Callable = print, step_name: str = "") -> None:
     """
     질문 데이터를 파일에 저장
     

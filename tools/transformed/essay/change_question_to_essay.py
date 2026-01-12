@@ -5,80 +5,35 @@
 """
 
 import os
-import json
-import sys
 from tqdm import tqdm
 
-# tools 모듈 import를 위한 경로 설정 (모듈로 사용될 때를 대비)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-_temp_tools_dir = os.path.dirname(current_dir)  # transformed -> tools
-if _temp_tools_dir not in sys.path:
-    sys.path.insert(0, _temp_tools_dir)
+from tools.core.llm_query import LLMQuery
+from tools.core.logger import setup_logger
+from .common import (
+    ROUND_NUMBER_TO_FOLDER,
+    init_common,
+    validate_round_number,
+    get_essay_dir,
+    load_questions,
+    save_questions,
+    clean_question_data
+)
 
-# 독립 실행 시와 모듈로 사용 시 import 처리
-if __name__ == '__main__':
-    # 독립 실행 시: 절대 경로 import
-    project_root = os.path.dirname(_temp_tools_dir)  # tools -> project_root
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
-    from tools import ONEDRIVE_PATH
-    from tools.core.llm_query import LLMQuery
-    from tools.core.logger import setup_logger
-    
-    # 독립 실행 시 파일명.log로 로깅 설정
-    script_name = os.path.splitext(os.path.basename(__file__))[0]
-    logger = setup_logger(
-        name=__name__,
-        log_file=f'{script_name}.log',
-        use_console=True,
-        use_file=True
-    )
-else:
-    # 모듈로 사용 시: tools 경로가 이미 설정되어 있다고 가정
-    try:
-        from tools import ONEDRIVE_PATH
-        from tools.core.llm_query import LLMQuery
-    except ImportError:
-        # fallback: 상대 경로 import 시도
-        from ..core.llm_query import LLMQuery
-        # ONEDRIVE_PATH는 tools.__init__에서 가져와야 하므로 경로 설정 필요
-        from tools import tools_dir
-        if tools_dir not in sys.path:
-            sys.path.insert(0, tools_dir)
-        from tools import ONEDRIVE_PATH
-    logger = None
+# 모듈 레벨 로거 (독립 실행 시 사용)
+_module_logger = None
 
-# 공통 함수 import
-try:
-    from . import (
-        ROUND_NUMBER_TO_FOLDER,
-        _init_common,
-        _validate_round_number,
-        _get_essay_dir,
-        _load_questions,
-        _save_questions,
-        _clean_question_data
-    )
-except ImportError:
-    # fallback: 직접 import 시도
-    try:
-        from tools.transformed import (
-            ROUND_NUMBER_TO_FOLDER,
-            _init_common,
-            _validate_round_number,
-            _get_essay_dir,
-            _load_questions,
-            _save_questions,
-            _clean_question_data
+
+def _get_module_logger():
+    """모듈 레벨 로거 생성"""
+    global _module_logger
+    if _module_logger is None:
+        _module_logger = setup_logger(
+            name=__name__,
+            log_file='essay_change_question_to_essay.log',
+            use_console=True,
+            use_file=True
         )
-    except ImportError:
-        ROUND_NUMBER_TO_FOLDER = {'1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th'}
-        _init_common = None
-        _validate_round_number = None
-        _get_essay_dir = None
-        _load_questions = None
-        _save_questions = None
-        _clean_question_data = None
+    return _module_logger
 
 
 def change_question_to_essay(llm=None, onedrive_path=None, log_func=None, round_number=None, input_file=None, output_file=None):
@@ -95,19 +50,20 @@ def change_question_to_essay(llm=None, onedrive_path=None, log_func=None, round_
     Returns:
         int: 처리된 문제 개수
     """
-    llm, onedrive_path, log_func = _init_common(llm, onedrive_path, log_func, logger)
+    logger = _get_module_logger() if log_func is None else None
+    llm, onedrive_path, log_func = init_common(llm, onedrive_path, log_func, logger)
     
-    round_folder = _validate_round_number(round_number, log_func)
+    round_folder = validate_round_number(round_number, log_func)
     if round_folder is None:
         return 0
     
-    essay_dir = _get_essay_dir(onedrive_path)
+    essay_dir = get_essay_dir(onedrive_path)
     if input_file is None:
         input_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}.json')
     if output_file is None:
         output_file = os.path.join(essay_dir, 'questions', f'essay_questions_{round_folder}_서술형문제로변환.json')
     
-    questions = _load_questions(input_file, log_func, '1단계')
+    questions = load_questions(input_file, log_func, '1단계')
     if questions is None:
         return 0
     
@@ -129,7 +85,7 @@ def change_question_to_essay(llm=None, onedrive_path=None, log_func=None, round_
     """
     log_func("서술형 문제 변환 중...")
     for q in tqdm(questions, desc="서술형 문제 변환"):
-        _clean_question_data(q)
+        clean_question_data(q)
         
         user_prompt = f"""
         입력:
@@ -139,7 +95,7 @@ def change_question_to_essay(llm=None, onedrive_path=None, log_func=None, round_
         response = llm.query_openrouter(system_prompt, user_prompt, model_name='google/gemini-2.5-flash')
         q['essay_question'] = response.replace('서술형 문제: ', '').replace("[", "").replace("]", "").replace("-", "").strip()
     
-    _save_questions(questions, output_file, log_func, '1단계')
+    save_questions(questions, output_file, log_func, '1단계')
     return len(questions)
 
 

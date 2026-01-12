@@ -6,57 +6,27 @@
 
 import os
 import json
-import sys
 from tqdm import tqdm
 
-# tools 모듈 import를 위한 경로 설정 (모듈로 사용될 때를 대비)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-_temp_tools_dir = os.path.dirname(current_dir)  # transformed -> tools
-if _temp_tools_dir not in sys.path:
-    sys.path.insert(0, _temp_tools_dir)
+from tools.core.llm_query import LLMQuery
+from tools.core.logger import setup_logger
+from .common import init_common
 
-# 독립 실행 시와 모듈로 사용 시 import 처리
-if __name__ == '__main__':
-    # 독립 실행 시: 절대 경로 import
-    project_root = os.path.dirname(_temp_tools_dir)  # tools -> project_root
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
-    from tools import ONEDRIVE_PATH
-    from tools.core.llm_query import LLMQuery
-    from tools.core.logger import setup_logger
-    
-    # 독립 실행 시 파일명.log로 로깅 설정
-    script_name = os.path.splitext(os.path.basename(__file__))[0]
-    logger = setup_logger(
-        name=__name__,
-        log_file=f'{script_name}.log',
-        use_console=True,
-        use_file=True
-    )
-else:
-    # 모듈로 사용 시: tools 경로가 이미 설정되어 있다고 가정
-    try:
-        from tools import ONEDRIVE_PATH
-        from tools.core.llm_query import LLMQuery
-    except ImportError:
-        # fallback: 상대 경로 import 시도
-        from ..core.llm_query import LLMQuery
-        # ONEDRIVE_PATH는 tools.__init__에서 가져와야 하므로 경로 설정 필요
-        from tools import tools_dir
-        if tools_dir not in sys.path:
-            sys.path.insert(0, tools_dir)
-        from tools import ONEDRIVE_PATH
-    logger = None
+# 모듈 레벨 로거 (독립 실행 시 사용)
+_module_logger = None
 
-# 공통 함수 import
-try:
-    from . import _init_common
-except ImportError:
-    # fallback: 직접 import 시도
-    try:
-        from tools.transformed import _init_common
-    except ImportError:
-        _init_common = None
+
+def _get_module_logger():
+    """모듈 레벨 로거 생성"""
+    global _module_logger
+    if _module_logger is None:
+        _module_logger = setup_logger(
+            name=__name__,
+            log_file='essay_filter_full_explanation.log',
+            use_console=True,
+            use_file=True
+        )
+    return _module_logger
 
 
 def is_full_explanation(llm, question, answer, options, explanation):
@@ -86,7 +56,8 @@ def filter_full_explanation(llm=None, onedrive_path=None, log_func=None):
     Returns:
         int: 선별된 문제 개수
     """
-    llm, onedrive_path, log_func = _init_common(llm, onedrive_path, log_func, logger)
+    logger = _get_module_logger() if log_func is None else None
+    llm, onedrive_path, log_func = init_common(llm, onedrive_path, log_func, logger)
     
     classified_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '7_multiple_rw')
     essay_dir = os.path.join(onedrive_path, 'evaluation', 'eval_data', '9_multiple_to_essay')
