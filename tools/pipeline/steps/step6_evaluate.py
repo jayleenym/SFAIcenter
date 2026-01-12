@@ -92,25 +92,24 @@ class Step6Evaluate(PipelineBase):
         Returns:
             (exam_dir, output_dir) tuple
         """
+        result_folder = 'exam_+_result' if transformed else 'exam_result'
+        
         if exam_dir is None:
+            # exam_dir가 주어지지 않으면 기본 경로 사용
             exam_dir = os.path.join(
                 self.onedrive_path, 'evaluation', 'eval_data',
                 '8_multiple_exam_+' if transformed else '4_multiple_exam'
             )
-        elif not os.path.isabs(exam_dir):
-            exam_dir = os.path.join(self.onedrive_path, exam_dir)
-        
-        result_folder = 'exam_+_result' if transformed else 'exam_result'
-        
-        if use_server_mode:
+            output_dir = os.path.join(exam_dir, result_folder)
+        else:
+            # exam_dir가 주어지면 그 밑에 저장
+            if not os.path.isabs(exam_dir):
+                exam_dir = os.path.join(self.onedrive_path, exam_dir)
+            
             if os.path.isfile(exam_dir):
                 output_dir = os.path.join(os.path.dirname(exam_dir), result_folder)
             else:
                 output_dir = os.path.join(exam_dir, result_folder)
-        elif transformed:
-            output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '8_multiple_exam_+', 'exam_+_result')
-        else:
-            output_dir = os.path.join(self.onedrive_path, 'evaluation', 'eval_data', '4_multiple_exam', 'exam_result')
         
         return exam_dir, output_dir
     
