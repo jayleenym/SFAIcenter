@@ -1,69 +1,115 @@
 #!/usr/bin/env python3
 """
-Q&A 일괄 추출 모듈 (Batch Extractor)
+Q&A 추출 빌더 (Extracted QnA Builder)
 - 여러 JSON 파일에서 Q&A를 추출하여 _extracted_qna.json 생성
 - 중단된 작업 재개 (Resume) 기능 지원
-- 페이지별 임시 저장 기능 지원
+- Validation 리포트 생성
 """
 
 import os
-import json
 import glob
 import re
 import logging
-from typing import List, Dict, Any, Optional, Tuple
-from pathlib import Path
+from typing import List, Dict, Any, Optional
 
 from tools.core.utils import FileManager, JSONHandler
 from tools.qna.extraction.qna_extractor import QnAExtractor
+from tools.qna.validation.check_duplicates import check_duplicates_single_file
+from tools.qna.validation.find_invalid_options import find_invalid_options_in_file
+from tools.stats import ValidationReportGenerator
 
-class BatchExtractor:
-    """Q&A 일괄 추출 클래스"""
+
+class ExtractedQnABuilder:
+    """
+    Q&A 추출 빌더
+    
+    원본 JSON 파일들에서 Q&A를 추출하여 _extracted_qna.json 파일을 생성합니다.
+    - 일괄 처리 (여러 파일/사이클)
+    - Resume 지원 (중단된 작업 재개)
+    - Validation (중복, 선택지 검증)
+    - 리포트 생성
+    """
     
     def __init__(self, file_manager: FileManager = None, json_handler: JSONHandler = None, logger: logging.Logger = None):
         self.file_manager = file_manager or FileManager()
         self.json_handler = json_handler or JSONHandler()
         self.logger = logger or logging.getLogger(__name__)
         self.extractor = QnAExtractor(self.file_manager)
-        
-    def find_last_processed_page(self, output_dir: str, file_name: str) -> int:
+    
+    def validate_extracted_qna(self, file_path: str) -> Dict[str, Any]:
         """
-        특정 파일의 마지막으로 처리된 페이지 번호를 찾습니다.
+        추출된 QnA 파일에 대해 validation을 수행합니다.
         
         Args:
-            output_dir: 출력 디렉토리 경로
-            file_name: 파일명 (확장자 제외)
+            file_path: extracted_qna.json 파일 경로
             
         Returns:
-            마지막으로 처리된 페이지 번호 (없으면 0)
+            validation 결과 딕셔너리
         """
-        # tmp 파일 패턴: {file_name}_temp_page_{page_number}.json
+        validation_result = {
+            'file': file_path,
+            'duplicates': {'total': 0, 'groups': 0},
+            'invalid_options': {'total': 0, 'empty': 0, 'invalid_format': 0},
+            'issues': []
+        }
+        
+        if not os.path.exists(file_path):
+            return validation_result
+        
+        # 1. 중복 검사
+        try:
+            total_qna, duplicate_groups, _ = check_duplicates_single_file(file_path, return_details=True)
+            validation_result['duplicates'] = {
+                'total': total_qna,
+                'groups': duplicate_groups
+            }
+            if duplicate_groups > 0:
+                validation_result['issues'].append(f"중복 {duplicate_groups}개 그룹 발견")
+        except Exception as e:
+            self.logger.warning(f"중복 검사 오류: {e}")
+        
+        # 2. 유효하지 않은 선택지 검사
+        try:
+            invalid_cases = find_invalid_options_in_file(file_path)
+            empty_count = sum(1 for c in invalid_cases if c.get('invalid_type') == 'empty')
+            invalid_format_count = sum(1 for c in invalid_cases if c.get('invalid_type') == 'invalid_format')
+            
+            validation_result['invalid_options'] = {
+                'total': len(invalid_cases),
+                'empty': empty_count,
+                'invalid_format': invalid_format_count
+            }
+            if invalid_cases:
+                validation_result['issues'].append(f"유효하지 않은 선택지 {len(invalid_cases)}개")
+        except Exception as e:
+            self.logger.warning(f"선택지 검사 오류: {e}")
+        
+        return validation_result
+        
+    def find_last_processed_page(self, output_dir: str, file_name: str) -> int:
+        """특정 파일의 마지막으로 처리된 페이지 번호를 찾습니다."""
         pattern = os.path.join(output_dir, f"{file_name}_temp_page_*.json")
         tmp_files = glob.glob(pattern)
         
         if not tmp_files:
             return 0
         
-        # 페이지 번호 추출
         page_numbers = []
         for tmp_file in tmp_files:
             match = re.search(r'_temp_page_(\d+)\.json$', tmp_file)
             if match:
                 page_numbers.append(int(match.group(1)))
         
-        if not page_numbers:
-            return 0
-        
-        return max(page_numbers)
+        return max(page_numbers) if page_numbers else 0
 
-    def process_file_with_resume(self, input_file: str, output_file: str, debug: bool = False) -> Dict[str, Any]:
+    def process_file(self, input_file: str, output_file: str, debug: bool = False) -> Dict[str, Any]:
         """
         단일 파일 처리 (재개 기능 포함)
         
         Args:
             input_file: 입력 JSON 파일 경로
             output_file: 출력 JSON 파일 경로
-            debug: 디버그 모드 (기존 파일 백업 및 활용, 기본값: False)
+            debug: 디버그 모드
             
         Returns:
             처리 결과
@@ -74,14 +120,14 @@ class BatchExtractor:
         
         final_qna_file = output_file.replace('.json', '_extracted_qna.json')
         
-        # debug 모드일 때는 기존 파일 백업, 아니면 덮어쓰기
+        # 기존 파일 처리
         if os.path.exists(final_qna_file):
             if debug:
                 from datetime import datetime
+                import shutil
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 backup_path = f"{final_qna_file}.backup_{timestamp}"
                 try:
-                    import shutil
                     shutil.copy2(final_qna_file, backup_path)
                     self.logger.info(f"기존 extracted_qna 파일 백업: {backup_path}")
                 except Exception as e:
@@ -89,7 +135,6 @@ class BatchExtractor:
             else:
                 self.logger.info(f"기존 extracted_qna 파일을 덮어쓰기: {os.path.basename(final_qna_file)}")
         
-        # 마지막으로 처리된 페이지 확인 (resume 기능 유지)
         last_page = self.find_last_processed_page(output_dir, file_name)
         
         try:
@@ -100,7 +145,7 @@ class BatchExtractor:
             
         all_qna = []
         
-        # 이전에 처리된 임시 파일 로드 (resume 기능)
+        # Resume: 이전 임시 파일 로드
         if last_page > 0:
             self.logger.info(f"재개: {file_name} (마지막 페이지: {last_page})")
             temp_files = glob.glob(os.path.join(output_dir, f"{file_name}_temp_page_*.json"))
@@ -119,93 +164,79 @@ class BatchExtractor:
         if not remaining_contents and last_page > 0:
             self.logger.info("모든 페이지가 이미 처리되었습니다.")
         elif remaining_contents:
-            # 남은 페이지 처리
             for page in remaining_contents:
                 page_num = page.get('page', 0)
                 single_page_json = json_data.copy()
                 single_page_json['contents'] = [page]
                 
                 try:
-                    # 전체 파일의 contents를 all_contents로 전달하여 다른 페이지의 태그도 찾을 수 있게 함
                     result = self.extractor.extract_qna_from_json(single_page_json, file_name, all_contents=contents)
                     extracted_items = result.get('extracted_qna', [])
                     
                     if extracted_items:
                         all_qna.extend(extracted_items)
-                        
-                        # 임시 저장 (resume을 위해)
                         temp_output = os.path.join(output_dir, f"{file_name}_temp_page_{page_num}.json")
                         self.json_handler.save(extracted_items, temp_output)
-                        self.logger.debug(f"페이지 {page_num} 처리 및 임시 저장 ({len(extracted_items)}개)")
+                        self.logger.debug(f"페이지 {page_num} 처리 ({len(extracted_items)}개)")
                 except Exception as e:
                     self.logger.error(f"페이지 {page_num} 처리 중 오류: {e}")
                     continue
 
-        # 5. 최종 저장
+        # 최종 저장
         if all_qna:
-            # debug 모드일 때는 기존 파일과 병합
             if debug and os.path.exists(final_qna_file):
                 try:
                     existing_qna = self.json_handler.load(final_qna_file)
                     if isinstance(existing_qna, list):
-                        # file_id와 tag 기준으로 중복 제거
-                        existing_keys = set()
-                        for item in existing_qna:
-                            file_id = item.get('file_id', '')
-                            tag = item.get('qna_data', {}).get('tag', '')
-                            existing_keys.add((file_id, tag))
-                        
-                        # 새 항목 중 중복이 아닌 것만 추가
-                        new_items = []
-                        for item in all_qna:
-                            file_id = item.get('file_id', '')
-                            tag = item.get('qna_data', {}).get('tag', '')
-                            key = (file_id, tag)
-                            if key not in existing_keys:
-                                new_items.append(item)
-                                existing_keys.add(key)
-                        
-                        # 기존 항목과 새 항목 병합
+                        existing_keys = {(item.get('file_id', ''), item.get('qna_data', {}).get('tag', '')) for item in existing_qna}
+                        new_items = [item for item in all_qna if (item.get('file_id', ''), item.get('qna_data', {}).get('tag', '')) not in existing_keys]
                         all_qna = existing_qna + new_items
                         self.logger.info(f"기존 파일과 병합: 기존 {len(existing_qna)}개, 신규 {len(new_items)}개")
                 except Exception as e:
-                    self.logger.warning(f"기존 파일 병합 실패, 새로 생성: {e}")
+                    self.logger.warning(f"기존 파일 병합 실패: {e}")
             
             self.json_handler.save(all_qna, final_qna_file, backup=debug, logger=self.logger)
             self.logger.info(f"처리 완료: {final_qna_file} (총 {len(all_qna)}개)")
             
             # 임시 파일 삭제
-            temp_files = glob.glob(os.path.join(output_dir, f"{file_name}_temp_page_*.json"))
-            for f in temp_files:
+            for f in glob.glob(os.path.join(output_dir, f"{file_name}_temp_page_*.json")):
                 try:
                     os.remove(f)
                 except Exception:
                     pass
         else:
             self.logger.info(f"추출된 Q&A 없음: {file_name}")
+        
+        # Validation 수행
+        validation_result = None
+        if all_qna and os.path.exists(final_qna_file):
+            validation_result = self.validate_extracted_qna(final_qna_file)
+            if validation_result['issues']:
+                self.logger.warning(f"Validation 이슈: {', '.join(validation_result['issues'])}")
             
-        return {'extracted_qna': all_qna, 'status': 'completed'}
+        return {'extracted_qna': all_qna, 'status': 'completed', 'validation': validation_result}
 
-    def process_directory(self, cycle: Optional[int], levels: List[str], onedrive_path: str, debug: bool = False) -> Dict[str, Any]:
+    def build(self, cycle: Optional[int], levels: List[str], onedrive_path: str, debug: bool = False) -> Dict[str, Any]:
         """
-        디렉토리 단위 일괄 처리
+        지정된 사이클과 레벨의 파일들에서 Q&A를 추출하여 _extracted_qna.json 생성
         
         Args:
-            cycle: 사이클 번호
-            levels: 레벨 목록
+            cycle: 사이클 번호 (None이면 모든 사이클)
+            levels: 처리할 레벨 목록
             onedrive_path: OneDrive 경로
-            debug: 디버그 모드 (기존 파일 백업 및 활용, 기본값: False)
+            debug: 디버그 모드
             
         Returns:
-            통계 정보
+            처리 결과 통계
         """
         data_path = self.file_manager.final_data_path
         processed_count = 0
         total_extracted = 0
+        all_validation_results = []
         
         target_dirs = []
         
-        # 대상 디렉토리 수집 (QnAMaker와 동일 로직)
+        # 대상 디렉토리 수집
         if cycle is None:
             if os.path.exists(data_path):
                 for cycle_dir in os.listdir(data_path):
@@ -217,7 +248,7 @@ class BatchExtractor:
                         level_path = os.path.join(cycle_dir_path, level)
                         if os.path.exists(level_path):
                             output_path = os.path.join(onedrive_path, 'evaluation', 'workbook_data', cycle_dir, level)
-                            target_dirs.append((level_path, output_path))
+                            target_dirs.append((level_path, output_path, cycle_dir))
         else:
             cycle_path_name = self.file_manager.cycle_path.get(cycle)
             if cycle_path_name:
@@ -226,13 +257,12 @@ class BatchExtractor:
                     level_path = os.path.join(cycle_dir_path, level)
                     if os.path.exists(level_path):
                         output_path = os.path.join(onedrive_path, 'evaluation', 'workbook_data', cycle_path_name, level)
-                        target_dirs.append((level_path, output_path))
+                        target_dirs.append((level_path, output_path, cycle_path_name))
                         
         # 파일 처리
-        for level_path, output_path in target_dirs:
+        for level_path, output_path, cycle_name in target_dirs:
             os.makedirs(output_path, exist_ok=True)
             
-            # JSON 파일 찾기
             json_files = []
             for root, _, files in os.walk(level_path):
                 for f in files:
@@ -246,14 +276,24 @@ class BatchExtractor:
                 file_name = os.path.splitext(os.path.basename(json_file))[0]
                 file_output_path = os.path.join(output_path, f"{file_name}.json")
                 
-                result = self.process_file_with_resume(json_file, file_output_path, debug=debug)
+                result = self.process_file(json_file, file_output_path, debug=debug)
                 
                 if result.get('extracted_qna'):
                     processed_count += 1
                     total_extracted += len(result['extracted_qna'])
+                
+                if result.get('validation'):
+                    all_validation_results.append(result['validation'])
+        
+        # Validation 리포트 저장 (workbook_data 바로 밑에)
+        if all_validation_results:
+            workbook_data_path = os.path.join(onedrive_path, 'evaluation', 'workbook_data')
+            report_path = os.path.join(workbook_data_path, 'VALIDATION_REPORT.md')
+            ValidationReportGenerator.save_report(all_validation_results, report_path)
+            self.logger.info(f"Validation 리포트 저장: {report_path}")
                     
         return {
             'processed_files': processed_count,
-            'total_extracted': total_extracted
+            'total_extracted': total_extracted,
+            'validation_issues': sum(1 for r in all_validation_results if r.get('issues'))
         }
-

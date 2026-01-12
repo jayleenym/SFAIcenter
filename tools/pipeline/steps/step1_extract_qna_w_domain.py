@@ -4,18 +4,18 @@
 1단계: Q&A 추출 및 Domain 분류 (통합)
 
 처리 흐름:
-1. ~_extracted_qna 파일들을 만들고 (qna/make_extracted_qna.py)
-2. 필터링 조건에 따라 multiple/short-answer/essay/etc 로 구분하고 (qna/classify_qna_type.py)
-3. 각각 2_subdomain에 저장해서 (qna/classify_qna_type.py)
-4. domain/subdomain/is_calculation 을 채워서 (qna/fill_domain.py)
-5. 2_subdomain 폴더에 ~_classified_ALL.json으로 저장 (qna/fill_domain.py)
+1. ~_extracted_qna 파일들을 만들고 (qna/extraction/batch_extractor.py)
+2. 필터링 조건에 따라 multiple/short-answer/essay/etc 로 구분하고 (qna/processing/organize_qna_by_type.py)
+3. 각각 2_subdomain에 저장해서 (qna/processing/organize_qna_by_type.py)
+4. domain/subdomain/is_calculation 을 채워서 (qna/processing/fill_domain.py)
+5. 2_subdomain 폴더에 ~_classified_ALL.json으로 저장 (qna/processing/fill_domain.py)
 """
 
 from typing import Dict, Any, Optional, List
 from ..base import PipelineBase
 
 # qna 모듈 import
-from tools.qna.extraction.make_extracted_qna import QnAMaker
+from tools.qna.extraction import ExtractedQnABuilder
 from tools.qna.processing.organize_qna_by_type import QnAOrganizer
 from tools.qna.processing.fill_domain import DomainFiller
 
@@ -48,10 +48,10 @@ class Step1ExtractQnAWDomain(PipelineBase):
             if levels is None:
                 levels = ['Lv2', 'Lv3_4', 'Lv5']
                 
-            # 1. Q&A 추출 (make_extracted_qna.py)
+            # 1. Q&A 추출
             self.logger.info("--- 1. Q&A 추출 시작 ---")
-            maker = QnAMaker(self.file_manager, self.json_handler, self.logger)
-            extract_result = maker.process_cycle(cycle, levels, self.onedrive_path, debug=debug)
+            builder = ExtractedQnABuilder(self.file_manager, self.json_handler, self.logger)
+            extract_result = builder.build(cycle, levels, self.onedrive_path, debug=debug)
             self.logger.info(f"Q&A 추출 완료: {extract_result}")
             
             # 2-3. 타입별 분류 및 저장 (organize_qna_by_type.py)

@@ -21,7 +21,7 @@ _temp_tools_dir = os.path.dirname(os.path.dirname(current_dir))  # tools
 sys.path.insert(0, _temp_tools_dir)
 
 try:
-    from qna.processing.answer_type_classifier import AnswerTypeClassifier
+    from tools.transformed.answer_type_classifier import AnswerTypeClassifier
     from tools.transformed.multiple_change_question_and_options import MultipleChoiceTransformer
 except ImportError:
     AnswerTypeClassifier = None

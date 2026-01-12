@@ -4,6 +4,7 @@
 transformed 패키지 - 문제 변형 관련 기능
 
 이 패키지는 객관식/서술형 문제 변형 기능을 제공합니다:
+- AnswerTypeClassifier: 답변 유형 분류 (right/wrong/abcd)
 - MultipleChoiceTransformer: 객관식 문제 변형 (right↔wrong, ABCD)
 - 서술형 변환: 객관식 → 서술형 문제 변환
 - 모범답안 생성: 키워드 추출 및 답안 생성
@@ -19,6 +20,12 @@ from .common import (
     clean_question_data,
     init_common,
 )
+
+# 답변 유형 분류
+try:
+    from .answer_type_classifier import AnswerTypeClassifier
+except ImportError:
+    AnswerTypeClassifier = None
 
 # 객관식 문제 변형
 try:
@@ -54,6 +61,8 @@ __all__ = [
     'save_questions',
     'clean_question_data',
     'init_common',
+    # 답변 유형 분류
+    'AnswerTypeClassifier',
     # 객관식 변형
     'MultipleChoiceTransformer',
     'load_transformed_questions',

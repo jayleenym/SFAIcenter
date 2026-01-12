@@ -37,26 +37,20 @@ tools/
 │
 ├── qna/                     # Q&A 관련 처리
 │   ├── __init__.py          # QnAExtractor, TagProcessor 등 export
-│   ├── extraction/          # Q&A 추출 (4개 파일)
-│   │   ├── make_extracted_qna.py  # QnAMaker (step1 진입점)
-│   │   ├── batch_extractor.py     # BatchExtractor (일괄 추출)
-│   │   ├── qna_extractor.py       # QnAExtractor (Q&A 추출 핵심)
-│   │   └── tag_processor.py       # TagProcessor (태그 처리)
-│   ├── processing/          # Q&A 처리 및 변환 (8개 파일)
+│   ├── extraction/          # Q&A 추출 (3개 파일)
+│   │   ├── extracted_qna_builder.py  # ExtractedQnABuilder (일괄 추출 + validation + 리포트)
+│   │   ├── qna_extractor.py          # QnAExtractor (Q&A 추출 핵심)
+│   │   └── tag_processor.py          # TagProcessor (태그 처리)
+│   ├── processing/          # Q&A 처리 및 변환 (6개 파일)
 │   │   ├── organize_qna_by_type.py     # QnAOrganizer (타입별 분류)
 │   │   ├── fill_domain.py              # DomainFiller (전체 흐름 관리)
 │   │   ├── formatting.py               # 포맷화/필터링 유틸리티
 │   │   ├── qna_type_classifier.py      # QnATypeClassifier
 │   │   ├── qna_subdomain_classifier.py # QnASubdomainClassifier (API 호출)
-│   │   ├── questions_info_manager.py   # QuestionsInfoManager (분류 캐시)
-│   │   ├── process_additional_tags.py  # 추가 태그 처리
-│   │   └── answer_type_classifier.py   # AnswerTypeClassifier
-│   └── analysis/            # Q&A 분석 도구 (독립 실행)
-│       ├── statistics_analyzer.py      # QnAStatisticsAnalyzer
-│       ├── analyze_qna_statistics.py   # [도구] 통계 분석 스크립트
-│       ├── analyze_additional_tags_grouped.py  # [도구] 태그 분석
-│       ├── check_real_duplicates.py    # [도구] 중복 확인
-│       └── find_invalid_options.py     # [도구] 잘못된 선지 찾기
+│   │   └── questions_info_manager.py   # QuestionsInfoManager (분류 캐시)
+│   └── validation/          # Q&A 검증 도구 (독립 실행)
+│       ├── check_duplicates.py         # [도구] 중복 QnA 검사/삭제
+│       └── find_invalid_options.py     # [도구] 유효하지 않은 선택지 찾기
 │
 ├── exam/                    # 시험지 생성 및 검증
 │   ├── __init__.py              # ExamMaker, ExamValidator export
@@ -71,9 +65,10 @@ tools/
 │   ├── evaluate_essay_model.py      # 서술형 문제 평가
 │   └── essay_utils.py               # 서술형 평가 유틸리티
 │
-├── transformed/             # 문제 변형 관련 (11개 파일)
+├── transformed/             # 문제 변형 관련 (12개 파일)
 │   ├── __init__.py              # export
 │   ├── common.py                # 공통 유틸리티 함수
+│   ├── answer_type_classifier.py  # AnswerTypeClassifier (right/wrong/abcd 분류)
 │   ├── question_transformer.py  # QuestionTransformerOrchestrator (step3 진입점)
 │   ├── multiple_change_question_and_options.py  # 객관식 변형
 │   ├── multiple_load_transformed_questions.py   # 변형 문제 로드
@@ -97,7 +92,9 @@ tools/
     ├── markdown_writer.py   # MarkdownWriter (공통 마크다운 유틸)
     ├── exam_report.py       # ExamReportGenerator (시험 통계/README)
     ├── transform_report.py  # TransformReportGenerator (변형 통계)
-    └── qna_report.py        # QnAReportGenerator (QnA 통계)
+    ├── qna_analyzer.py      # QnAStatisticsAnalyzer (QnA 통계 분석)
+    ├── qna_report.py        # QnAReportGenerator (QnA 통계 리포트)
+    └── validation_report.py # ValidationReportGenerator (추출 validation 리포트)
 ```
 
 ## 🔄 파이프라인 단계
@@ -116,8 +113,8 @@ tools/
 ```
 Step1ExtractQnAWDomain.execute()
     │
-    ├─ 1. Q&A 추출 (QnAMaker.process_cycle)
-    │      └─ extraction/batch_extractor.py (BatchExtractor)
+    ├─ 1. Q&A 추출 (ExtractedQnABuilder.build)
+    │      └─ extraction/extracted_qna_builder.py
     │              └─ extraction/qna_extractor.py (QnAExtractor)
     │                      ├─ extraction/tag_processor.py (태그 추출)
     │                      └─ processing/qna_type_classifier.py (타입 분류)
@@ -209,8 +206,7 @@ Step9MultipleEssay.execute()
 
 | 모듈 | 클래스 | 역할 |
 |------|--------|------|
-| `make_extracted_qna.py` | `QnAMaker` | step1 진입점, BatchExtractor 상속 |
-| `batch_extractor.py` | `BatchExtractor` | 일괄 추출 로직, 재개(resume) 기능 지원 |
+| `extracted_qna_builder.py` | `ExtractedQnABuilder` | 일괄 추출, 재개(resume), validation 리포트 생성 |
 | `qna_extractor.py` | `QnAExtractor` | JSON에서 Q&A 태그 추출 핵심 로직 |
 | `tag_processor.py` | `TagProcessor` | 태그 추출/대치 유틸리티 |
 
@@ -224,8 +220,6 @@ Step9MultipleEssay.execute()
 | `qna_type_classifier.py` | `QnATypeClassifier` | 문제 유형 분류 (multiple-choice/short-answer/essay/etc) |
 | `qna_subdomain_classifier.py` | `QnASubdomainClassifier` | **API 호출만**: domain/subdomain/is_calculation 분류 |
 | `questions_info_manager.py` | `QuestionsInfoManager` | 분류 결과 캐시 관리 (questions_info.json) |
-| `process_additional_tags.py` | - | 추가 태그 처리 (tb, f, note 태그) |
-| `answer_type_classifier.py` | `AnswerTypeClassifier` | 답변 유형 분류 (transformed에서 사용) |
 
 ### 출력 파일 필드 순서
 

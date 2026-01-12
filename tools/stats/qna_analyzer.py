@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 QnA 통계 분석 클래스
 - workbook_data 하위의 extracted_qna.json 파일들을 분석하여
@@ -8,12 +9,12 @@ QnA 통계 분석 클래스
 import os
 import glob
 import re
-import json
 from collections import defaultdict
 from typing import Dict, List, Any, Optional
 import logging
 
 from tools.core.utils import JSONHandler
+
 
 class QnAStatisticsAnalyzer:
     """QnA 통계 분석 클래스"""
@@ -51,7 +52,7 @@ class QnAStatisticsAnalyzer:
     def is_valid_domain(self, domain: str) -> bool:
         """도메인이 유효한지 확인합니다."""
         return domain in self.VALID_DOMAINS
-        
+    
     def extract_ss_pattern_from_question(self, question_text: str) -> Optional[str]:
         """질문에서 SS0000_q_0000_0000 패턴을 추출합니다."""
         if not question_text:
