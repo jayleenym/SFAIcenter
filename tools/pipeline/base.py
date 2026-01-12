@@ -5,9 +5,28 @@
 
 모든 파이프라인 단계의 기본이 되는 클래스를 정의합니다.
 공통 유틸리티 인스턴스와 로깅 설정을 제공합니다.
+
+사용 예시:
+    class Step1(PipelineBase):
+        def execute(self, **kwargs):
+            self._setup_step_logging('step1', 1)
+            try:
+                self.logger.info("Step 1 시작")
+                # 처리 로직
+            finally:
+                self._remove_step_logging()
+
+제공 유틸리티:
+    - file_manager: 파일 I/O (FileManager 인스턴스)
+    - text_processor: 텍스트 처리 (TextProcessor 클래스)
+    - json_handler: JSON 처리 (JSONHandler 클래스)
+    - json_cleaner: JSON 정리 (JSONCleaner 인스턴스)
+    - llm_query: LLM API 클라이언트 (LLMQuery 인스턴스)
+    - logger: 로깅 (logging.Logger)
 """
 
-from typing import Optional, Any
+import os
+from typing import Optional, Any, Tuple
 
 # 프로젝트 경로 설정 (tools 패키지에서 관리)
 from tools import ONEDRIVE_PATH, PROJECT_ROOT_PATH
@@ -59,8 +78,6 @@ class PipelineBase:
             onedrive_path: OneDrive 경로 (None이면 전역 ONEDRIVE_PATH 사용)
             project_root_path: 프로젝트 루트 경로 (None이면 전역 PROJECT_ROOT_PATH 사용)
         """
-        import os
-        
         # 경로 설정
         self.onedrive_path = onedrive_path or ONEDRIVE_PATH
         self.project_root_path = project_root_path or PROJECT_ROOT_PATH

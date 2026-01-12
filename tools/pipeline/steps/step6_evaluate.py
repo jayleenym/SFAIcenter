@@ -3,14 +3,31 @@
 """
 6단계: 시험지 평가
 
-- 객관식 문제 평가 (일반/변형)
-- 서술형 문제 평가
+이 모듈은 시험지 평가 파이프라인 단계를 구현합니다.
+
+평가 유형:
+    - 객관식 문제 평가 (일반/변형)
+    - 서술형 문제 평가 (essay=True 시)
+
+입력:
+    - 객관식: {onedrive_path}/evaluation/eval_data/4_multiple_exam/ (일반)
+             {onedrive_path}/evaluation/eval_data/8_multiple_exam_+/ (변형)
+    - 서술형: {onedrive_path}/evaluation/eval_data/9_multiple_to_essay/
+
+출력:
+    - 객관식: exam_result/ 또는 exam_+_result/ 디렉토리에 Excel 파일
+    - 서술형: evaluation_results/ 디렉토리에 JSON 파일
+
+관련 모듈:
+    - tools.evaluation.multiple_eval_by_model: 객관식 평가 파이프라인
+    - tools.evaluation.evaluate_essay_model: 서술형 평가
+    - tools.evaluation.essay_utils: 서술형 평가 유틸리티
 """
 
 import os
 import json
 import configparser
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Tuple
 from ..base import PipelineBase
 
 # evaluation 모듈 import
@@ -465,116 +482,8 @@ class Step6Evaluate(PipelineBase):
             
             # essay=True일 때 서술형 문제 평가 수행
             if essay:
-                self.logger.info("\n" + "="*60)
-                self.logger.info("서술형 문제 평가 시작")
-                self.logger.info("="*60)
-                
-                if evaluate_single_model is None:
-                    self.logger.warning("evaluate_essay_model 모듈을 import할 수 없어 서술형 평가를 건너뜁니다.")
-                else:
-                    try:
-                        # 서술형 문제 평가 경로 설정
-                        essay_base_dir = os.path.join(
-                            self.onedrive_path,
-                            'evaluation', 'eval_data', '9_multiple_to_essay'
-                        )
-                        
-                        if not os.path.exists(essay_base_dir):
-                            self.logger.warning(f"서술형 문제 디렉토리를 찾을 수 없습니다: {essay_base_dir}")
-                        else:
-                            # 모범답안 로드
-                            best_ans_file = os.path.join(essay_base_dir, 'best_ans.json')
-                            best_answers_dict = {}
-                            if load_best_answers:
-                                best_answers_dict = load_best_answers(best_ans_file, self.logger)
-                            else:
-                                # 직접 로드
-                                if os.path.exists(best_ans_file):
-                                    with open(best_ans_file, 'r', encoding='utf-8') as f:
-                                        best_answers = json.load(f)
-                                    for ba in best_answers:
-                                        key = (ba.get('file_id'), ba.get('tag'))
-                                        best_answers_dict[key] = ba.get('essay_answer', ba.get('answer', ''))
-                            
-                            # LLM 인스턴스 생성
-                            if setup_llm_with_api_key:
-                                llm = setup_llm_with_api_key(self.project_root_path, self.logger)
-                            else:
-                                llm = self.llm_query
-                            
-                            # 평가할 세트 설정 (객관식 평가와 동일한 sets 파라미터 사용)
-                            sets_to_evaluate = sets if sets else [1, 2, 3, 4, 5]
-                            
-                            # 출력 디렉토리
-                            essay_output_dir = os.path.join(essay_base_dir, 'evaluation_results')
-                            os.makedirs(essay_output_dir, exist_ok=True)
-                            
-                            # 각 모델과 세트 조합에 대해 평가 수행
-                            for set_num in sets_to_evaluate:
-                                set_name = self.SET_NAMES[set_num]
-                                
-                                # 각 세트별 문제 파일 경로 (questions/essay_questions_{set_name}.json)
-                                question_file = os.path.join(
-                                    essay_base_dir, 'questions', f'essay_questions_{set_name}.json'
-                                )
-                                
-                                if not os.path.exists(question_file):
-                                    self.logger.warning(f"서술형 문제 파일을 찾을 수 없습니다: {question_file}")
-                                    continue
-                                
-                                for model_name in models:
-                                    try:
-                                        self.logger.info(f"서술형 평가: 모델 {model_name}, 세트 {set_num} ({set_name})")
-                                        
-                                        # 평가 수행
-                                        evaluation_results, detailed_results, stats = evaluate_single_model(
-                                            model_name, question_file, 
-                                            keyword_check_model='google/gemini-2.5-flash',
-                                            scoring_model='google/gemini-3-pro-preview',
-                                            set_num=set_num,
-                                            best_answers_dict=best_answers_dict
-                                        )
-                                        
-                                        if evaluation_results is None:
-                                            self.logger.warning(f"모델 {model_name} 세트 {set_num} 평가 결과가 없습니다.")
-                                            continue
-                                        
-                                        # 파일명 생성
-                                        model_safe_name = model_name.replace("/", "_")
-                                        set_suffix = f"_set{set_num}"
-                                        
-                                        # 상세 결과 저장
-                                        detailed_output_file = os.path.join(
-                                            essay_output_dir, 
-                                            f'{model_safe_name}{set_suffix}_detailed_results.json'
-                                        )
-                                        with open(detailed_output_file, 'w', encoding='utf-8') as f:
-                                            json.dump(detailed_results, f, ensure_ascii=False, indent=2)
-                                        self.logger.info(f"상세 결과 저장: {detailed_output_file}")
-                                        
-                                        # 통계 저장
-                                        stats_output_file = os.path.join(
-                                            essay_output_dir,
-                                            f'{model_safe_name}{set_suffix}_statistics.json'
-                                        )
-                                        stats_for_save = dict(stats)
-                                        if 'keyword_avg_scores' in stats_for_save:
-                                            stats_for_save['keyword_avg_scores'] = dict(stats['keyword_avg_scores'])
-                                        with open(stats_output_file, 'w', encoding='utf-8') as f:
-                                            json.dump(stats_for_save, f, ensure_ascii=False, indent=2)
-                                        self.logger.info(f"통계 저장: {stats_output_file}")
-                                        
-                                    except Exception as e:
-                                        self.logger.error(f"서술형 평가 오류 (모델: {model_name}, 세트: {set_num}): {e}")
-                                        import traceback
-                                        self.logger.error(traceback.format_exc())
-                                        continue
-                            
-                            self.logger.info("서술형 문제 평가 완료")
-                    except Exception as e:
-                        self.logger.error(f"서술형 평가 중 오류: {e}")
-                        import traceback
-                        self.logger.error(traceback.format_exc())
+                essay_results = self._evaluate_essay(models, sets)
+                all_results['essay'] = essay_results
             
             return {
                 'success': True,
@@ -588,4 +497,178 @@ class Step6Evaluate(PipelineBase):
         finally:
             self._remove_step_logging()
     
+    def _evaluate_essay(self, models: List[str], sets: Optional[List[int]] = None) -> Dict[str, Any]:
+        """
+        서술형 문제 평가 수행
+        
+        Args:
+            models: 평가할 모델 목록
+            sets: 평가할 세트 번호 리스트 (None이면 모든 세트)
+            
+        Returns:
+            Dict[str, Any]: 서술형 평가 결과
+        """
+        self.logger.info("\n" + "="*60)
+        self.logger.info("서술형 문제 평가 시작")
+        self.logger.info("="*60)
+        
+        results = {'success': False, 'evaluated': []}
+        
+        if evaluate_single_model is None:
+            self.logger.warning("evaluate_essay_model 모듈을 import할 수 없어 서술형 평가를 건너뜁니다.")
+            return results
+        
+        try:
+            # 서술형 문제 평가 경로 설정
+            essay_base_dir = os.path.join(
+                self.onedrive_path,
+                'evaluation', 'eval_data', '9_multiple_to_essay'
+            )
+            
+            if not os.path.exists(essay_base_dir):
+                self.logger.warning(f"서술형 문제 디렉토리를 찾을 수 없습니다: {essay_base_dir}")
+                return results
+            
+            # 모범답안 로드
+            best_answers_dict = self._load_essay_best_answers(essay_base_dir)
+            
+            # LLM 인스턴스 생성
+            if setup_llm_with_api_key:
+                llm = setup_llm_with_api_key(self.project_root_path, self.logger)
+            else:
+                llm = self.llm_query
+            
+            # 평가할 세트 설정
+            sets_to_evaluate = sets if sets else [1, 2, 3, 4, 5]
+            
+            # 출력 디렉토리
+            essay_output_dir = os.path.join(essay_base_dir, 'evaluation_results')
+            os.makedirs(essay_output_dir, exist_ok=True)
+            
+            # 각 모델과 세트 조합에 대해 평가 수행
+            for set_num in sets_to_evaluate:
+                set_name = self.SET_NAMES[set_num]
+                
+                # 각 세트별 문제 파일 경로
+                question_file = os.path.join(
+                    essay_base_dir, 'questions', f'essay_questions_{set_name}.json'
+                )
+                
+                if not os.path.exists(question_file):
+                    self.logger.warning(f"서술형 문제 파일을 찾을 수 없습니다: {question_file}")
+                    continue
+                
+                for model_name in models:
+                    eval_result = self._evaluate_essay_single_model(
+                        model_name, set_num, set_name, question_file,
+                        best_answers_dict, essay_output_dir
+                    )
+                    if eval_result:
+                        results['evaluated'].append(eval_result)
+            
+            results['success'] = True
+            self.logger.info("서술형 문제 평가 완료")
+            
+        except Exception as e:
+            self.logger.error(f"서술형 평가 중 오류: {e}")
+            import traceback
+            self.logger.error(traceback.format_exc())
+        
+        return results
+    
+    def _load_essay_best_answers(self, essay_base_dir: str) -> Dict:
+        """
+        서술형 평가를 위한 모범답안 로드
+        
+        Args:
+            essay_base_dir: 서술형 문제 기본 디렉토리
+            
+        Returns:
+            Dict: (file_id, tag) → answer 매핑 딕셔너리
+        """
+        best_ans_file = os.path.join(essay_base_dir, 'best_ans.json')
+        best_answers_dict = {}
+        
+        if load_best_answers:
+            best_answers_dict = load_best_answers(best_ans_file, self.logger)
+        elif os.path.exists(best_ans_file):
+            # 직접 로드
+            with open(best_ans_file, 'r', encoding='utf-8') as f:
+                best_answers = json.load(f)
+            for ba in best_answers:
+                key = (ba.get('file_id'), ba.get('tag'))
+                best_answers_dict[key] = ba.get('essay_answer', ba.get('answer', ''))
+        
+        return best_answers_dict
+    
+    def _evaluate_essay_single_model(
+        self, model_name: str, set_num: int, set_name: str,
+        question_file: str, best_answers_dict: Dict, output_dir: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        단일 모델에 대한 서술형 평가 수행
+        
+        Args:
+            model_name: 평가할 모델 이름
+            set_num: 세트 번호
+            set_name: 세트 이름 (1st, 2nd, ...)
+            question_file: 문제 파일 경로
+            best_answers_dict: 모범답안 딕셔너리
+            output_dir: 결과 저장 디렉토리
+            
+        Returns:
+            평가 결과 딕셔너리 또는 None
+        """
+        try:
+            self.logger.info(f"서술형 평가: 모델 {model_name}, 세트 {set_num} ({set_name})")
+            
+            # 평가 수행
+            evaluation_results, detailed_results, stats = evaluate_single_model(
+                model_name, question_file,
+                keyword_check_model='google/gemini-2.5-flash',
+                scoring_model='google/gemini-3-pro-preview',
+                set_num=set_num,
+                best_answers_dict=best_answers_dict
+            )
+            
+            if evaluation_results is None:
+                self.logger.warning(f"모델 {model_name} 세트 {set_num} 평가 결과가 없습니다.")
+                return None
+            
+            # 파일명 생성
+            model_safe_name = model_name.replace("/", "_")
+            set_suffix = f"_set{set_num}"
+            
+            # 상세 결과 저장
+            detailed_output_file = os.path.join(
+                output_dir, f'{model_safe_name}{set_suffix}_detailed_results.json'
+            )
+            with open(detailed_output_file, 'w', encoding='utf-8') as f:
+                json.dump(detailed_results, f, ensure_ascii=False, indent=2)
+            self.logger.info(f"상세 결과 저장: {detailed_output_file}")
+            
+            # 통계 저장
+            stats_output_file = os.path.join(
+                output_dir, f'{model_safe_name}{set_suffix}_statistics.json'
+            )
+            stats_for_save = dict(stats)
+            if 'keyword_avg_scores' in stats_for_save:
+                stats_for_save['keyword_avg_scores'] = dict(stats['keyword_avg_scores'])
+            with open(stats_output_file, 'w', encoding='utf-8') as f:
+                json.dump(stats_for_save, f, ensure_ascii=False, indent=2)
+            self.logger.info(f"통계 저장: {stats_output_file}")
+            
+            return {
+                'model': model_name,
+                'set_num': set_num,
+                'set_name': set_name,
+                'detailed_file': detailed_output_file,
+                'stats_file': stats_output_file
+            }
+            
+        except Exception as e:
+            self.logger.error(f"서술형 평가 오류 (모델: {model_name}, 세트: {set_num}): {e}")
+            import traceback
+            self.logger.error(traceback.format_exc())
+            return None
 

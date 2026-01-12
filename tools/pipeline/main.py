@@ -2,9 +2,34 @@
 # -*- coding: utf-8 -*-
 """
 메인 파이프라인 - 전체 프로세스 실행
+
+이 모듈은 전체 파이프라인을 오케스트레이션하는 Pipeline 클래스를 제공합니다.
+
+사용 예시:
+    # 기본 사용
+    from tools.pipeline import Pipeline
+    pipeline = Pipeline()
+    
+    # 특정 단계만 실행
+    result = pipeline.run_full_pipeline(steps=['extract_qna_w_domain', 'create_exam'])
+    
+    # 평가 실행
+    result = pipeline.run_full_pipeline(
+        steps=['evaluate_exams'],
+        eval_models=['openai/gpt-5', 'google/gemini-2.5-pro'],
+        eval_sets=[1, 2]
+    )
+
+실행 가능한 단계:
+    - extract_qna_w_domain: Q&A 추출 및 도메인 분류 (Step1)
+    - create_exam: 일반 시험지 생성 (Step2)
+    - transform_questions: 객관식 문제 변형 (Step3)
+    - evaluate_exams: 시험지 평가 (Step6)
+    - create_transformed_exam: 변형 시험지 생성 (Step2)
+    - evaluate_essay: 서술형 변환 및 평가 (Step9)
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Type
 from .base import PipelineBase
 from .steps import (
     Step1ExtractQnAWDomain,
@@ -16,10 +41,31 @@ from .steps import (
 
 
 class Pipeline(PipelineBase):
-    """메인 파이프라인 클래스"""
+    """
+    메인 파이프라인 클래스
     
-    def __init__(self, base_path: str = None, config_path: str = None, 
-                 onedrive_path: str = None, project_root_path: str = None):
+    전체 파이프라인을 오케스트레이션하며, 각 단계를 lazy initialization으로 관리합니다.
+    
+    Attributes:
+        STEP_CLASSES: 단계명 → 클래스 매핑
+    """
+    
+    # 단계명 → (클래스, 내부 속성명) 매핑
+    STEP_CLASSES: Dict[str, tuple] = {
+        'step1': (Step1ExtractQnAWDomain, '_step1'),
+        'step2': (Step2CreateExams, '_step2'),
+        'step3': (Step3TransformQuestions, '_step3'),
+        'step6': (Step6Evaluate, '_step6'),
+        'step9': (Step9MultipleEssay, '_step9'),
+    }
+    
+    def __init__(
+        self, 
+        base_path: Optional[str] = None, 
+        config_path: Optional[str] = None, 
+        onedrive_path: Optional[str] = None, 
+        project_root_path: Optional[str] = None
+    ):
         """
         Args:
             base_path: 기본 데이터 경로 (None이면 ONEDRIVE_PATH 사용)
@@ -33,26 +79,35 @@ class Pipeline(PipelineBase):
         self._init_params = (base_path, config_path, onedrive_path, project_root_path)
         
         # 각 단계 인스턴스 (lazy initialization)
-        self._step1_domain = None
-        self._step2 = None
-        self._step3 = None
-        self._step6 = None
-        self._step9 = None
+        self._step1: Optional[Step1ExtractQnAWDomain] = None
+        self._step2: Optional[Step2CreateExams] = None
+        self._step3: Optional[Step3TransformQuestions] = None
+        self._step6: Optional[Step6Evaluate] = None
+        self._step9: Optional[Step9MultipleEssay] = None
     
-    def _get_step(self, step_name: str):
-        """필요할 때만 step 인스턴스 생성 (lazy initialization)"""
-        if step_name == 'step1' and self._step1_domain is None:
-            self._step1_domain = Step1ExtractQnAWDomain(*self._init_params)
-        elif step_name == 'step2' and self._step2 is None:
-            self._step2 = Step2CreateExams(*self._init_params)
-        elif step_name == 'step3' and self._step3 is None:
-            self._step3 = Step3TransformQuestions(*self._init_params)
-        elif step_name == 'step6' and self._step6 is None:
-            self._step6 = Step6Evaluate(*self._init_params)
-        elif step_name == 'step9' and self._step9 is None:
-            self._step9 = Step9MultipleEssay(*self._init_params)
+    def _get_step(self, step_name: str) -> PipelineBase:
+        """
+        필요할 때만 step 인스턴스 생성 (lazy initialization)
         
-        return getattr(self, f'_{step_name}' if step_name != 'step1' else '_step1_domain')
+        Args:
+            step_name: 단계 이름 ('step1', 'step2', 'step3', 'step6', 'step9')
+            
+        Returns:
+            해당 단계의 인스턴스
+            
+        Raises:
+            ValueError: 알 수 없는 step_name인 경우
+        """
+        if step_name not in self.STEP_CLASSES:
+            raise ValueError(f"알 수 없는 단계: {step_name}. 가능한 값: {list(self.STEP_CLASSES.keys())}")
+        
+        step_class, attr_name = self.STEP_CLASSES[step_name]
+        
+        # 인스턴스가 없으면 생성
+        if getattr(self, attr_name) is None:
+            setattr(self, attr_name, step_class(*self._init_params))
+        
+        return getattr(self, attr_name)
     
     def run_full_pipeline(self, cycle: int = None, steps: List[str] = None,
                          levels: List[str] = None, model: str = 'x-ai/grok-4-fast',
