@@ -9,6 +9,7 @@ report 패키지 - 통계 분석 및 리포트 생성
 - TransformReportGenerator: 변형 통계 저장 및 집계
 - QnAReportGenerator: QnA 통계 리포트 생성
 - QnAStatisticsAnalyzer: QnA 통계 분석
+- CleanupReportGenerator: JSON 정리 리포트 생성
 """
 
 from .markdown_writer import MarkdownWriter
@@ -17,6 +18,7 @@ from .transform_report import TransformReportGenerator
 from .qna_report import QnAReportGenerator
 from .qna_analyzer import QnAStatisticsAnalyzer
 from .validation_report import ValidationReportGenerator
+from .cleanup_report import CleanupReportGenerator
 
 
 __all__ = [
@@ -28,5 +30,6 @@ __all__ = [
     'QnAReportGenerator',
     'QnAStatisticsAnalyzer',
     'ValidationReportGenerator',
+    'CleanupReportGenerator',
 ]
 
