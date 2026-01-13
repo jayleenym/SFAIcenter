@@ -85,11 +85,11 @@ tools/
 │       └── create_model_answers.py       # 모델 답변 생성
 │
 ├── data_processing/         # 데이터 처리 및 정제
-│   ├── __init__.py          # JSONCleaner export
-│   ├── json_cleaner.py      # JSONCleaner (파이프라인에서 사용)
-│   ├── cleanup_empty_pages.py  # [도구] 빈 페이지 제거 스크립트
-│   ├── crop_analysis.py     # [도구] Crop 파일 분석 스크립트
-│   └── epubstats.py         # [도구] EPUB 변환 및 통계
+│   ├── __init__.py          # JSONCleaner, CropAnalyzer, epub_to_pdf 등 export
+│   ├── json_cleaner.py      # JSONCleaner, CleanupResult, DirectoryCleanupResult
+│   ├── cleanup_empty_pages.py  # [도구] 빈 페이지 제거 CLI (JSONCleaner 사용)
+│   ├── crop_analysis.py     # CropAnalyzer, FolderStats (BEFORE/AFTER 비교)
+│   └── epubstats.py         # epub_to_pdf(), check_pdf_pages() EPUB/PDF 분석
 │
 └── report/                  # 통계 분석 및 리포트 생성
     ├── __init__.py          # MarkdownWriter, ExamReportGenerator 등 export
@@ -252,6 +252,52 @@ Step9MultipleEssay.execute()
 ```
 
 - `is_table`: `question`에 `{tb_` 패턴이 있으면 `true`
+
+## 🗃️ 데이터 처리 모듈 (data_processing/)
+
+| 모듈 | 클래스/함수 | 역할 |
+|------|-------------|------|
+| `json_cleaner.py` | `JSONCleaner` | JSON 파일에서 빈 페이지 제거 및 정리 |
+| | `CleanupResult` | 단일 파일 정리 결과 데이터 클래스 |
+| | `DirectoryCleanupResult` | 디렉토리 정리 결과 데이터 클래스 |
+| `cleanup_empty_pages.py` | `main()` | [도구] 빈 페이지 제거 CLI (JSONCleaner 래퍼) |
+| `crop_analysis.py` | `CropAnalyzer` | Crop 파일 BEFORE/AFTER 비교 분석 |
+| | `FolderStats` | 폴더별 파일 통계 데이터 클래스 |
+| `epubstats.py` | `epub_to_pdf()` | EPUB → PDF 변환 (Calibre 사용) |
+| | `check_pdf_pages()` | PDF/EPUB 페이지 수 확인 |
+
+### 사용 예시
+
+```python
+from tools.data_processing import JSONCleaner, CropAnalyzer
+
+# JSON 빈 페이지 정리
+cleaner = JSONCleaner(verbose=True)
+result = cleaner.cleanup_directory('/path/to/json/dir', dry_run=True)
+print(f"제거할 페이지: {result.total_removed}개")
+
+# Crop 파일 분석
+analyzer = CropAnalyzer('/path/to/crop/dir')
+analyzer.analyze_before()  # BEFORE 상태 저장
+analyzer.analyze_after()   # AFTER 상태 저장 및 비교
+```
+
+### CLI 도구
+
+```bash
+# 빈 페이지 제거 (미리보기)
+python -m tools.data_processing.cleanup_empty_pages /path/to/dir --dry-run
+
+# 빈 페이지 제거 (실제 실행)
+python -m tools.data_processing.cleanup_empty_pages /path/to/dir
+
+# Crop 파일 분석
+python -m tools.data_processing.crop_analysis /path/to/crop_dir --before
+python -m tools.data_processing.crop_analysis /path/to/crop_dir --after
+
+# EPUB 페이지 수 확인
+python -m tools.data_processing.epubstats --cycle 4 --output pdf_pages.xlsx
+```
 
 ## 💻 사용법
 
@@ -429,6 +475,26 @@ from ..base import PipelineBase
 ```
 
 ## 📋 변경 이력
+
+### v1.7.0 (data_processing 리팩토링)
+- **`json_cleaner.py` 확장**:
+  - `CleanupResult`, `DirectoryCleanupResult` 데이터 클래스 추가
+  - `verbose` 모드 및 `dry_run` 옵션 지원
+  - 백업 로직 버그 수정 (`.replace()` → `.with_suffix()`)
+  - `find_json_files()`, `get_empty_pages_info()` 메서드 추가
+- **`cleanup_empty_pages.py` 간소화**:
+  - 중복 코드 제거 (217줄 → 95줄, 56% 감소)
+  - `JSONCleaner` 클래스 재사용하는 CLI wrapper로 변경
+  - `--no-backup` 옵션 추가
+- **`epubstats.py` 개선**:
+  - 잘못된 타입 힌트 수정 (`oname: None` → `oname: Optional[str] = None`)
+  - 파라미터명 명확화 (`ten` → `use_10pt_font`)
+  - Calibre 경로 상수화, `main()` 함수 추가
+- **`crop_analysis.py` 클래스 기반 리팩토링**:
+  - `CropAnalyzer` 클래스 도입
+  - `FolderStats` 데이터 클래스로 구조화
+  - 정규식 패턴 컴파일 (성능 개선)
+- **`__init__.py` 업데이트**: 모든 주요 클래스/함수 export
 
 ### v1.6.0 (리팩토링 - transformed 폴더 구조 개편)
 - **`tools/transformed` 하위 폴더 분리**:
