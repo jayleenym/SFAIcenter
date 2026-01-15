@@ -12,8 +12,9 @@ exam 패키지 - 시험지 생성 관련 기능
 
 유틸리티 함수:
     - extract_question_ids_from_exam: 시험지에서 문제 번호 추출
-    - extract_all_exam_question_lists: 모든 회차별 시험지에서 문제 번호 추출
+    - extract_exam_question_lists: 4_multiple_exam의 시험지에서 문제 번호 추출
     - load_question_lists: 저장된 문제 번호 리스트 로드
+    - save_question_lists: 문제 번호 리스트 저장
 
 Note:
     리포트 생성 기능은 tools.report 패키지로 분리되었습니다.
@@ -24,7 +25,7 @@ Note:
 from .exam_validator import ExamValidator, CIRCLED_NUMBERS, CIRCLED_NUMBERS_PATTERN
 from .extract_exam_question_list import (
     extract_question_ids_from_exam,
-    extract_all_exam_question_lists,
+    extract_exam_question_lists,
     load_question_lists,
     save_question_lists,
 )
@@ -48,7 +49,7 @@ __all__ = [
     'ExamValidator',
     # 유틸리티 함수
     'extract_question_ids_from_exam',
-    'extract_all_exam_question_lists',
+    'extract_exam_question_lists',
     'load_question_lists',
     'save_question_lists',
     # 상수
