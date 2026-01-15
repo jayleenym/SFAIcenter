@@ -3,11 +3,11 @@
 """
 시험지 문제 번호 추출 유틸리티
 
-이 모듈은 시험지에서 문제 번호(file_id, tag)를 추출하는 기능을 제공합니다.
+이 모듈은 시험지에서 문제 번호(file_id, tag, domain, subdomain)를 추출하는 기능을 제공합니다.
 
 기능:
     - extract_question_ids_from_exam: 단일 시험지에서 문제 번호 추출
-    - extract_all_exam_question_lists: 모든 회차별 시험지에서 문제 번호 추출
+    - extract_exam_question_lists: 4_multiple_exam의 시험지에서 문제 번호 추출
     - save_question_lists: 문제 번호 리스트를 JSON 파일로 저장
     - load_question_lists: 저장된 문제 번호 리스트 로드
 
@@ -16,26 +16,26 @@
     python -m tools.exam.extract_exam_question_list --onedrive_path /path/to/onedrive
     
     # 코드에서 사용
-    from tools.exam import extract_all_exam_question_lists, save_question_lists
-    question_lists = extract_all_exam_question_lists(onedrive_path)
+    from tools.exam import extract_exam_question_lists, save_question_lists
+    question_lists = extract_exam_question_lists(onedrive_path)
     save_question_lists(question_lists, output_file)
 """
 
 import os
 import json
-from typing import Dict, List, Any
-from pathlib import Path
+from typing import Dict, List
 
 
-def extract_question_ids_from_exam(exam_file: str) -> List[Dict[str, str]]:
+def extract_question_ids_from_exam(exam_file: str, include_domain: bool = True) -> List[Dict[str, str]]:
     """
-    시험지 파일에서 문제 번호(file_id, tag) 리스트 추출
+    시험지 파일에서 문제 번호(file_id, tag, domain, subdomain) 리스트 추출
     
     Args:
         exam_file: 시험지 JSON 파일 경로
+        include_domain: domain/subdomain 정보 포함 여부
     
     Returns:
-        [{"file_id": "...", "tag": "..."}, ...] 형태의 리스트
+        [{"file_id": "...", "tag": "...", "domain": "...", "subdomain": "..."}, ...] 형태의 리스트
     """
     with open(exam_file, 'r', encoding='utf-8') as f:
         exam_data = json.load(f)
@@ -45,29 +45,33 @@ def extract_question_ids_from_exam(exam_file: str) -> List[Dict[str, str]]:
         file_id = question.get('file_id', '')
         tag = question.get('tag', '')
         if file_id and tag:
-            question_ids.append({
+            item = {
                 'file_id': file_id,
                 'tag': tag
-            })
+            }
+            if include_domain:
+                item['domain'] = question.get('domain', '')
+                item['subdomain'] = question.get('subdomain', '')
+            question_ids.append(item)
     
     return question_ids
 
 
-def extract_all_exam_question_lists(onedrive_path: str) -> Dict[str, Dict[str, List[Dict[str, str]]]]:
+def extract_exam_question_lists(onedrive_path: str) -> Dict[str, List[Dict[str, str]]]:
     """
-    4_multiple_exam의 모든 회차별 시험지에서 문제 번호 리스트 추출
+    4_multiple_exam의 시험지에서 문제 번호 리스트 추출
+    
+    exam_create.py에서 생성하는 형식과 동일하게 추출합니다.
+    duplicate_filter.py에서 사용하는 형식입니다.
     
     Args:
         onedrive_path: OneDrive 경로
     
     Returns:
         {
-            "1st": {
-                "금융일반": [{"file_id": "...", "tag": "..."}, ...],
-                "금융실무1": [{"file_id": "...", "tag": "..."}, ...],
-                ...
-            },
-            "2nd": {...},
+            "금융일반": [{"file_id": "...", "tag": "...", "domain": "...", "subdomain": "..."}, ...],
+            "금융실무1": [...],
+            "표해석": [...],
             ...
         }
     """
@@ -77,51 +81,47 @@ def extract_all_exam_question_lists(onedrive_path: str) -> Dict[str, Dict[str, L
         raise FileNotFoundError(f"시험지 디렉토리를 찾을 수 없습니다: {exam_dir}")
     
     result = {}
-    set_names = ['1st', '2nd', '3rd', '4th', '5th']
     
-    for set_name in set_names:
-        set_dir = os.path.join(exam_dir, set_name)
-        if not os.path.exists(set_dir):
-            continue
-        
-        result[set_name] = {}
-        
-        # 해당 세트의 모든 시험지 파일 찾기
-        for exam_file in os.listdir(set_dir):
-            if exam_file.endswith('_exam.json') and not exam_file.endswith('_filled_modification_log.json'):
-                exam_path = os.path.join(set_dir, exam_file)
-                
-                # 시험 이름 추출 (예: "금융일반_exam.json" -> "금융일반")
-                exam_name = exam_file.replace('_exam.json', '')
-                
-                try:
-                    question_ids = extract_question_ids_from_exam(exam_path)
-                    result[set_name][exam_name] = question_ids
-                    print(f"  {set_name}/{exam_name}: {len(question_ids)}개 문제 추출")
-                except Exception as e:
-                    print(f"  ⚠️  {set_name}/{exam_name} 추출 실패: {e}")
+    # 4_multiple_exam 디렉토리의 모든 시험지 파일 찾기 (직접 있는 파일들)
+    for exam_file in os.listdir(exam_dir):
+        if exam_file.endswith('_exam.json'):
+            exam_path = os.path.join(exam_dir, exam_file)
+            
+            # 디렉토리는 건너뛰기
+            if os.path.isdir(exam_path):
+                continue
+            
+            # 시험 이름 추출 (예: "금융일반_exam.json" -> "금융일반")
+            exam_name = exam_file.replace('_exam.json', '')
+            
+            try:
+                question_ids = extract_question_ids_from_exam(exam_path, include_domain=True)
+                result[exam_name] = question_ids
+                print(f"  {exam_name}: {len(question_ids)}개 문제 추출")
+            except Exception as e:
+                print(f"  ⚠️  {exam_name} 추출 실패: {e}")
     
     return result
 
 
-def save_question_lists(question_lists: Dict[str, Dict[str, List[Dict[str, str]]]], 
+def save_question_lists(question_lists: Dict[str, List[Dict[str, str]]], 
                        output_file: str):
     """
     추출된 문제 번호 리스트를 JSON 파일로 저장
     
     Args:
-        question_lists: extract_all_exam_question_lists의 반환값
+        question_lists: extract_exam_question_lists의 반환값
         output_file: 출력 파일 경로
     """
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    dir_path = os.path.dirname(output_file)
+    if dir_path:
+        os.makedirs(dir_path, exist_ok=True)
     
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(question_lists, f, ensure_ascii=False, indent=2)
-    
-    print(f"\n문제 번호 리스트 저장 완료: {output_file}")
 
 
-def load_question_lists(question_list_file: str) -> Dict[str, Dict[str, List[Dict[str, str]]]]:
+def load_question_lists(question_list_file: str) -> Dict[str, List[Dict[str, str]]]:
     """
     저장된 문제 번호 리스트 로드
     
@@ -130,10 +130,7 @@ def load_question_lists(question_list_file: str) -> Dict[str, Dict[str, List[Dic
     
     Returns:
         {
-            "1st": {
-                "금융일반": [{"file_id": "...", "tag": "..."}, ...],
-                ...
-            },
+            "금융일반": [{"file_id": "...", "tag": "...", "domain": "...", "subdomain": "..."}, ...],
             ...
         }
     """
@@ -146,7 +143,7 @@ def main():
     import argparse
     import platform
     
-    parser = argparse.ArgumentParser(description='4_multiple_exam의 회차별 시험지에서 문제 번호 리스트 추출')
+    parser = argparse.ArgumentParser(description='4_multiple_exam 시험지에서 문제 번호 리스트 추출')
     parser.add_argument('--onedrive_path', type=str, default=None,
                        help='OneDrive 경로 (None이면 자동 감지)')
     parser.add_argument('--output', type=str, default=None,
@@ -176,28 +173,28 @@ def main():
         output_file = args.output
     
     print("=" * 80)
-    print("4_multiple_exam 회차별 시험지 문제 번호 리스트 추출")
+    print("4_multiple_exam 시험지 문제 번호 리스트 추출")
     print("=" * 80)
     print(f"OneDrive 경로: {onedrive_path}")
     print(f"출력 파일: {output_file}\n")
     
     try:
         # 문제 번호 리스트 추출
-        question_lists = extract_all_exam_question_lists(onedrive_path)
+        question_lists = extract_exam_question_lists(onedrive_path)
         
         # 통계 출력
         print("\n" + "=" * 80)
         print("추출 결과 요약")
         print("=" * 80)
-        for set_name in ['1st', '2nd', '3rd', '4th', '5th']:
-            if set_name in question_lists:
-                total = sum(len(questions) for questions in question_lists[set_name].values())
-                print(f"{set_name}: {len(question_lists[set_name])}개 시험지, 총 {total}개 문제")
-                for exam_name, questions in question_lists[set_name].items():
-                    print(f"  - {exam_name}: {len(questions)}개")
+        total_questions = 0
+        for exam_name, questions in sorted(question_lists.items()):
+            print(f"  {exam_name}: {len(questions)}개 문제")
+            total_questions += len(questions)
+        print(f"\n총 {len(question_lists)}개 시험지, {total_questions}개 문제")
         
         # 저장
         save_question_lists(question_lists, output_file)
+        print(f"\n문제 번호 리스트 저장 완료: {output_file}")
         
         print("\n✅ 완료!")
         
