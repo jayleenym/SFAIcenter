@@ -178,6 +178,7 @@ class ExamValidator:
         검증 조건:
         1. options의 각 항목이 ①②③④⑤ 중 하나로 시작해야 함
         2. answer에 ①②③④⑤ 중 하나의 번호만 포함되어야 함
+        3. 중복된 선지 번호가 없어야 함 (예: ②로 시작하는 옵션이 2개 이상)
         
         Args:
             exam_data: 문제 데이터 리스트
@@ -186,12 +187,14 @@ class ExamValidator:
             {
                 'invalid_options': [...],  # options 형식이 잘못된 문제들
                 'invalid_answer': [...],   # answer 형식이 잘못된 문제들
+                'duplicate_options': [...], # 중복 선지 번호가 있는 문제들
                 'all_invalid': [...]       # 모든 유효하지 않은 문제들 (중복 제거)
             }
             각 항목은 {'file_id': str, 'tag': str, 'reason': str, 'details': Any} 형태
         """
         invalid_options = []
         invalid_answer = []
+        duplicate_options = []
         all_invalid_ids: Set[Tuple[str, str]] = set()
         
         for question in exam_data:
@@ -208,6 +211,9 @@ class ExamValidator:
             # 1. options 검증: 각 항목이 ①②③④⑤ 중 하나로 시작해야 함
             options_invalid = False
             invalid_option_details = []
+            
+            # 중복 선지 번호 체크를 위한 딕셔너리 (번호 -> 해당 번호로 시작하는 옵션들)
+            option_number_map: Dict[str, List[Tuple[int, str]]] = defaultdict(list)
             
             for idx, option in enumerate(options):
                 if not option or not isinstance(option, str):
@@ -239,6 +245,9 @@ class ExamValidator:
                         'first_char': first_char,
                         'reason': f'①②③④⑤로 시작하지 않음 (시작 문자: "{first_char}")'
                     })
+                else:
+                    # 유효한 원문자 번호인 경우, 중복 체크용으로 기록
+                    option_number_map[first_char].append((idx, option[:50] + '...' if len(option) > 50 else option))
             
             if options_invalid:
                 invalid_options.append({
@@ -249,7 +258,28 @@ class ExamValidator:
                 })
                 all_invalid_ids.add((file_id, tag))
             
-            # 2. answer 검증: ①②③④⑤ 중 하나의 번호만 포함되어야 함
+            # 2. 중복 선지 번호 검증: 같은 번호로 시작하는 옵션이 2개 이상인 경우
+            duplicate_found = False
+            duplicate_details = []
+            for number, option_list in option_number_map.items():
+                if len(option_list) > 1:
+                    duplicate_found = True
+                    duplicate_details.append({
+                        'number': number,
+                        'count': len(option_list),
+                        'options': option_list
+                    })
+            
+            if duplicate_found:
+                duplicate_options.append({
+                    'file_id': file_id,
+                    'tag': tag,
+                    'reason': '중복 선지 번호',
+                    'details': duplicate_details
+                })
+                all_invalid_ids.add((file_id, tag))
+            
+            # 3. answer 검증: ①②③④⑤ 중 하나의 번호만 포함되어야 함
             answer_invalid = False
             answer_reason = ''
             
@@ -282,7 +312,7 @@ class ExamValidator:
         # all_invalid: 중복 제거된 전체 invalid 문제 목록
         all_invalid = []
         seen_ids = set()
-        for item in invalid_options + invalid_answer:
+        for item in invalid_options + invalid_answer + duplicate_options:
             key = (item['file_id'], item['tag'])
             if key not in seen_ids:
                 seen_ids.add(key)
@@ -294,11 +324,13 @@ class ExamValidator:
         return {
             'invalid_options': invalid_options,
             'invalid_answer': invalid_answer,
+            'duplicate_options': duplicate_options,
             'all_invalid': all_invalid,
             'summary': {
                 'total_multiple_choice': sum(1 for q in exam_data if q.get('qna_type') == 'multiple-choice'),
                 'invalid_options_count': len(invalid_options),
                 'invalid_answer_count': len(invalid_answer),
+                'duplicate_options_count': len(duplicate_options),
                 'total_invalid_count': len(all_invalid)
             }
         }
