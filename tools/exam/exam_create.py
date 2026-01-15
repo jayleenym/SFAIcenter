@@ -26,6 +26,11 @@ from typing import Dict, Any, List, Tuple, Set, Optional
 from tools.core.exam_config import ExamConfig
 from tools.qna.extraction.tag_processor import TagProcessor
 from tools.report import ExamReportGenerator
+from tools.exam.extract_exam_question_list import (
+    extract_question_ids_from_exam, 
+    save_question_lists, 
+    load_question_lists
+)
 
 
 class ExamMaker:
@@ -288,18 +293,18 @@ class ExamMaker:
         
         Returns:
             {
-                "금융일반": [{"file_id": "...", "tag": "..."}, ...],
+                "금융일반": [{"file_id": "...", "tag": "...", "domain": "...", "subdomain": "..."}, ...],
                 "금융심화": [...],
                 ...
             }
         """
-        with open(question_list_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        return load_question_lists(question_list_file)
 
     def _save_question_lists(self, exam_dir: str, exams_config: Dict[str, Any], 
                              valid_data: List[Dict], results: Dict[str, int]):
         """
         문제 번호 리스트 저장 (랜덤 모드로 생성 시 저장)
+        domain/subdomain 정보도 함께 저장하여 대체 문제 선택 시 활용
         
         Args:
             exam_dir: 시험 디렉토리 경로
@@ -313,29 +318,16 @@ class ExamMaker:
             exam_file = os.path.join(exam_dir, f'{exam_name}_exam.json')
             if os.path.exists(exam_file):
                 try:
-                    with open(exam_file, 'r', encoding='utf-8') as f:
-                        exam_data = json.load(f)
-                    
-                    question_ids = []
-                    for question in exam_data:
-                        file_id = question.get('file_id', '')
-                        tag = question.get('tag', '')
-                        if file_id and tag:
-                            question_ids.append({
-                                'file_id': file_id,
-                                'tag': tag
-                            })
-                    
+                    # extract_exam_question_list 모듈의 함수 사용
+                    question_ids = extract_question_ids_from_exam(exam_file, include_domain=True)
                     question_lists[exam_name] = question_ids
                     self.logger.info(f"  {exam_name}: {len(question_ids)}개 문제 번호 추출")
                 except Exception as e:
                     self.logger.warning(f"  {exam_name} 문제 번호 추출 실패: {e}")
         
-        # 저장
+        # extract_exam_question_list 모듈의 함수 사용
         output_file = os.path.join(exam_dir, 'exam_question_lists.json')
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(question_lists, f, ensure_ascii=False, indent=2)
-        
+        save_question_lists(question_lists, output_file)
         self.logger.info(f"문제 번호 리스트 저장 완료: {output_file}")
 
     def _create_exam_random(self, exam_name: str, exam_info: Dict[str, Any], 
@@ -498,6 +490,7 @@ class ExamMaker:
                                 all_data_index: Dict, used_questions: Set) -> List[Dict]:
         """
         리스트 모드: exam_question_lists.json에서 문제 번호를 읽어서 해당 문제 로드
+        없는 문제는 같은 domain/subdomain에서 대체 문제를 선택
         
         Args:
             exam_name: 과목명
@@ -516,6 +509,17 @@ class ExamMaker:
         question_ids = question_lists[exam_name]
         found_count = 0
         missing_count = 0
+        replaced_count = 0
+        
+        # domain/subdomain별로 사용 가능한 문제 인덱스 구축 (대체 문제 선택용)
+        domain_subdomain_index = {}
+        for key, item in all_data_index.items():
+            domain = item.get('domain', '')
+            subdomain = item.get('subdomain', '')
+            ds_key = (domain, subdomain)
+            if ds_key not in domain_subdomain_index:
+                domain_subdomain_index[ds_key] = []
+            domain_subdomain_index[ds_key].append((key, item))
         
         for qid in question_ids:
             file_id = qid.get('file_id', '')
@@ -528,10 +532,51 @@ class ExamMaker:
                 used_questions.add(key)
                 found_count += 1
             else:
-                missing_count += 1
-                self.logger.warning(f"  문제를 찾을 수 없음: {file_id}_{tag}")
+                # 문제를 찾을 수 없음 - 같은 domain/subdomain에서 대체 문제 선택
+                domain = qid.get('domain', '')
+                subdomain = qid.get('subdomain', '')
+                
+                if domain and subdomain:
+                    ds_key = (domain, subdomain)
+                    if ds_key in domain_subdomain_index:
+                        # 미사용 문제 중에서 선택
+                        available = [
+                            (k, item) for k, item in domain_subdomain_index[ds_key]
+                            if k not in used_questions and self._is_valid_question(item)
+                        ]
+                        
+                        if available:
+                            # 첫 번째 미사용 문제 선택
+                            replacement_key, replacement_item = available[0]
+                            exam_data.append(replacement_item)
+                            used_questions.add(replacement_key)
+                            replaced_count += 1
+                            self.logger.info(
+                                f"  대체 문제 선택: {file_id}_{tag} → "
+                                f"{replacement_item.get('file_id', '')}_{replacement_item.get('tag', '')} "
+                                f"(domain={domain}, subdomain={subdomain})"
+                            )
+                        else:
+                            missing_count += 1
+                            self.logger.warning(
+                                f"  문제를 찾을 수 없고 대체 문제도 없음: {file_id}_{tag} "
+                                f"(domain={domain}, subdomain={subdomain})"
+                            )
+                    else:
+                        missing_count += 1
+                        self.logger.warning(
+                            f"  문제를 찾을 수 없고 해당 domain/subdomain 없음: {file_id}_{tag} "
+                            f"(domain={domain}, subdomain={subdomain})"
+                        )
+                else:
+                    missing_count += 1
+                    self.logger.warning(
+                        f"  문제를 찾을 수 없고 domain/subdomain 정보 없음: {file_id}_{tag}"
+                    )
         
-        self.logger.info(f"  {exam_name}: {found_count}개 문제 로드 (누락: {missing_count}개)")
+        self.logger.info(
+            f"  {exam_name}: {found_count}개 문제 로드, {replaced_count}개 대체, {missing_count}개 누락"
+        )
         
         return exam_data
 

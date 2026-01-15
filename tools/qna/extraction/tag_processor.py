@@ -74,8 +74,45 @@ class TagProcessor:
                 return item
         return None
     
+    @staticmethod
+    def _extract_tags_from_tag_data(tag_data: Dict) -> List[str]:
+        """
+        태그 데이터 (description, caption 등)에서 중첩된 태그를 추출합니다.
+        예: note의 description에 {f_0287_0001}가 있는 경우
+        
+        Args:
+            tag_data: 태그 데이터 딕셔너리
+            
+        Returns:
+            추출된 태그 리스트
+        """
+        tag_types = '|'.join(TagProcessor.TAG_TYPES)
+        pattern = rf'\{{(?:{tag_types})_\d{{4}}_\d{{4}}\}}'
+        
+        tags = []
+        # 태그 데이터의 description, caption, content, text 필드에서 중첩 태그 추출
+        for field in ['description', 'caption', 'content', 'text']:
+            value = tag_data.get(field)
+            if value and isinstance(value, str):
+                found_tags = re.findall(pattern, value)
+                tags.extend(found_tags)
+        
+        # data 필드가 딕셔너리인 경우에도 확인
+        data = tag_data.get('data', {})
+        if isinstance(data, dict):
+            for field in ['description', 'caption', 'content', 'text']:
+                value = data.get(field)
+                if value and isinstance(value, str):
+                    found_tags = re.findall(pattern, value)
+                    tags.extend(found_tags)
+        
+        return tags
+    
     def add_missing_tags(self, qna_data: List[Dict], source_data: Dict) -> tuple:
-        """additional_tags_found에 있지만 additional_tag_data에 없는 태그 추가"""
+        """
+        additional_tags_found에 있지만 additional_tag_data에 없는 태그 추가
+        중첩된 태그도 재귀적으로 추가합니다.
+        """
         source_tags_data = {}
         for item in source_data.get('contents', []):
             if "add_info" in item and isinstance(item["add_info"], list):
@@ -98,10 +135,15 @@ class TagProcessor:
             
             entry["additional_tags_found"] = list(additional_tags_found)
             
-            additional_tag_data_tags = {item["tag"] for item in entry.get("additional_tag_data", [])}
-            missing_in_data = additional_tags_found - additional_tag_data_tags
-            
-            if missing_in_data:
+            # 중첩 태그를 포함하여 모든 필요한 태그 수집 (최대 3단계까지)
+            max_depth = 3
+            for _ in range(max_depth):
+                additional_tag_data_tags = {item.get("tag", "") for item in entry.get("additional_tag_data", [])}
+                missing_in_data = additional_tags_found - additional_tag_data_tags
+                
+                if not missing_in_data:
+                    break
+                
                 for tag_with_braces in missing_in_data:
                     tag_without_braces = tag_with_braces.strip('{}')
                     
@@ -113,6 +155,11 @@ class TagProcessor:
                         tag_data["tag"] = tag_with_braces
                         entry["additional_tag_data"].append(tag_data)
                         tags_added_from_source += 1
+                        
+                        # 이 태그 데이터에서 중첩된 태그 추출하여 추가
+                        nested_tags = self._extract_tags_from_tag_data(tag_data)
+                        for nested_tag in nested_tags:
+                            additional_tags_found.add(nested_tag)
                     else:
                         if "additional_tag_data" not in entry:
                             entry["additional_tag_data"] = []
@@ -121,6 +168,9 @@ class TagProcessor:
                             "data": {}
                         })
                         tags_added_empty += 1
+                
+                # additional_tags_found 업데이트
+                entry["additional_tags_found"] = list(additional_tags_found)
         
         return tags_added_from_source, tags_added_empty, tags_found_in_content
     
