@@ -12,7 +12,7 @@
     - random_mode=False: exam_question_lists.json에서 문제 번호 로드 (기본값)
     - random_mode=True: exam_config.json 조건에 맞게 랜덤 선택
 
-변형 시험지 생성 (transformed=True, --transformed 옵션 사용 시):
+변형 시험지 생성 (transformed=True, --eval_transformed 옵션 사용 시):
     - 4_multiple_exam의 각 세트(1st~5th) 시험지의 객관식들을 변형된 문제로 교체
     - 8_multiple_exam_+에 저장
 

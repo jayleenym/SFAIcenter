@@ -47,7 +47,7 @@ def main():
   python main_pipeline.py --steps evaluate_exams --eval_models gpt-4 claude-3
 
   # 5단계 평가 (변형 시험지, vLLM 서버 모드)
-  python main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/exam --eval_models model_path --eval_use_server_mode --eval_batch_size 1 --transformed
+  python main_pipeline.py --steps evaluate_exams --eval_exam_dir /path/to/exam --eval_models model_path --eval_use_server_mode --eval_batch_size 1 --eval_transformed
         """
     )
     
@@ -107,9 +107,9 @@ def main():
     evaluate.add_argument('--eval_models', nargs='+', help='평가 모델 목록')
     evaluate.add_argument('--eval_sets', type=int, nargs='+', choices=[1, 2, 3, 4, 5],
                           help='평가할 세트 번호')
-    evaluate.add_argument('--eval_transformed', '--transformed', action='store_true', 
+    evaluate.add_argument('--eval_transformed', action='store_true', 
                           dest='eval_transformed', help='변형 시험지 평가')
-    evaluate.add_argument('--eval_server_mode', '--eval_use_server_mode', action='store_true', 
+    evaluate.add_argument('--eval_use_server_mode', action='store_true', 
                           dest='eval_use_server_mode', help='vLLM 서버 모드')
     evaluate.add_argument('--eval_exam_dir', type=str,
                           help='시험지 디렉토리/파일 경로 (미지정시 기본 경로 사용)')
