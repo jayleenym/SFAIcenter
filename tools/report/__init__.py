@@ -10,6 +10,7 @@ report 패키지 - 통계 분석 및 리포트 생성
 - QnAReportGenerator: QnA 통계 리포트 생성
 - QnAStatisticsAnalyzer: QnA 통계 분석
 - CleanupReportGenerator: JSON 정리 리포트 생성
+- CrossFileDuplicatesReportGenerator: 파일 간 중복 리포트 생성
 """
 
 from .markdown_writer import MarkdownWriter
@@ -19,6 +20,7 @@ from .qna_report import QnAReportGenerator
 from .qna_analyzer import QnAStatisticsAnalyzer
 from .validation_report import ValidationReportGenerator
 from .cleanup_report import CleanupReportGenerator
+from .cross_file_duplicates_report import CrossFileDuplicatesReportGenerator
 
 
 __all__ = [
@@ -31,5 +33,6 @@ __all__ = [
     'QnAStatisticsAnalyzer',
     'ValidationReportGenerator',
     'CleanupReportGenerator',
+    'CrossFileDuplicatesReportGenerator',
 ]
 

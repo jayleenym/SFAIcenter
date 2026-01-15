@@ -3,17 +3,16 @@
 """
 Q&A 타입 분류 모듈
 - _extracted_qna.json 파일들을 읽어서 타입별로 분류하여 2_subdomain에 저장
+- 중복 문제는 exam_question_lists.json 우선으로 하나만 선택하여 포함
 """
 
 import os
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 # tools 모듈 import를 위한 경로 설정 (필요한 경우)
 from .formatting import format_qna_item, should_include_qna_item
-# QnATypeClassifier가 필요하다면 import (step3에서는 사용했지만, 여기서는 로직을 직접 구현하거나 import)
-# step3에서는 qna.processing.qna_type_classifier.QnATypeClassifier를 사용했음.
-from .qna_type_classifier import QnATypeClassifier
+from .duplicate_filter import DuplicateFilter
 
 class QnAOrganizer:
     """Q&A 타입별 정리 클래스"""
@@ -22,6 +21,7 @@ class QnAOrganizer:
         self.file_manager = file_manager
         self.json_handler = json_handler
         self.logger = logger or logging.getLogger(__name__)
+        self._duplicate_filter = None  # lazy initialization
 
     def classify_and_save(self, cycle: Optional[int], onedrive_path: str, debug: bool = False) -> Dict[str, Any]:
         """
@@ -101,6 +101,9 @@ class QnAOrganizer:
                 self.logger.error(f"파일 처리 오류 ({extracted_file}): {e}")
         
         # 타입별로 저장 (기존 파일이 있으면 병합)
+        total_duplicates_removed = 0
+        all_cross_file_duplicates = {}  # qna_type -> cross_file_duplicates
+        
         for qna_type, items in classified_data.items():
             if items:
                 output_file = os.path.join(output_dir, f'{qna_type}.json')
@@ -141,10 +144,35 @@ class QnAOrganizer:
                     merged_items = items
                     new_items = items
                 
-                self.json_handler.save(merged_items, output_file, backup=debug, logger=self.logger)
+                # 중복 문제 필터링 (exam_question_lists.json 우선, 문제/정답/해설/선택지 기준)
+                if self._duplicate_filter is None:
+                    self._duplicate_filter = DuplicateFilter(
+                        onedrive_path=onedrive_path, 
+                        logger=self.logger
+                    )
+                filtered_items, duplicates_removed, cross_file_dups = self._duplicate_filter.filter_duplicates(
+                    merged_items, track_duplicates=True
+                )
+                if duplicates_removed > 0:
+                    self.logger.info(f"{qna_type}: 중복 문제 {duplicates_removed}개 제거됨 ({len(merged_items)}개 → {len(filtered_items)}개)")
+                    total_duplicates_removed += duplicates_removed
+                    all_cross_file_duplicates[qna_type] = cross_file_dups
                 
-                self.logger.info(f"{qna_type}: 저장 완료 (총 {len(merged_items)}개, 신규 {len(new_items)}개)")
+                self.json_handler.save(filtered_items, output_file, backup=debug, logger=self.logger)
+                
+                self.logger.info(f"{qna_type}: 저장 완료 (총 {len(filtered_items)}개, 신규 {len(new_items)}개)")
+        
+        # Cross-file duplicates 리포트 생성
+        if all_cross_file_duplicates:
+            from tools.report import CrossFileDuplicatesReportGenerator
+            report_path = os.path.join(workbook_base, 'CROSS_FILE_DUPLICATES.md')
+            try:
+                CrossFileDuplicatesReportGenerator.save_report(all_cross_file_duplicates, report_path)
+                self.logger.info(f"Cross-file duplicates 리포트 저장: {report_path}")
+            except Exception as e:
+                self.logger.error(f"Cross-file duplicates 리포트 저장 실패: {e}")
         
         return {
-            'classified_data': {k: len(v) for k, v in classified_data.items()}
+            'classified_data': {k: len(v) for k, v in classified_data.items()},
+            'duplicates_removed': total_duplicates_removed
         }

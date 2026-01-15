@@ -81,6 +81,16 @@ class ValidationReportGenerator:
                         for detail in details:
                             lines.append(f"  - {detail}")
                         lines.append("")
+                    
+                    # 중복 그룹별 태그(q_0000_0000) 상세 정보
+                    duplicate_details = result.get('duplicates', {}).get('details', [])
+                    if duplicate_details:
+                        lines.append("  **중복 그룹 상세:**")
+                        lines.append("")
+                        for group_idx, tags in enumerate(duplicate_details, 1):
+                            tags_str = ", ".join(f"`{tag}`" for tag in tags)
+                            lines.append(f"  - 그룹 {group_idx}: {tags_str}")
+                        lines.append("")
         
         return '\n'.join(lines)
     

@@ -62,6 +62,7 @@ def check_duplicates_single_file(file_path: str, return_details: bool = False) -
         answer = description.get('answer', '').strip()
         explanation = description.get('explanation', '').strip()
         options = description.get('options', [])
+        tag = qna_data.get('tag', '')  # q_0000_0000 형식의 태그
         
         options_str = '|'.join([opt.strip() for opt in options]) if options else ''
         content_key = f"{question}|{answer}|{explanation}|{options_str}"
@@ -69,6 +70,7 @@ def check_duplicates_single_file(file_path: str, return_details: bool = False) -
         content_keys[content_key].append({
             'index': i,
             'page': item.get('page', ''),
+            'tag': tag,
             'question': question,
             'answer': answer,
             'explanation': explanation,
@@ -86,7 +88,8 @@ def check_duplicates_single_file(file_path: str, return_details: bool = False) -
         for i, (content_key, items) in enumerate(real_duplicates.items()):
             print(f"     중복 그룹 {i+1}:")
             for item in items:
-                print(f"       - 인덱스 {item['index']}, 페이지 {item['page']}: {item['question'][:20]}...")
+                tag_info = f", 태그 {item['tag']}" if item.get('tag') else ""
+                print(f"       - 인덱스 {item['index']}, 페이지 {item['page']}{tag_info}: {item['question'][:20]}...")
     else:
         print(f"   ✅ 진짜 중복 없음")
     

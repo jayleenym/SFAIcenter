@@ -48,7 +48,7 @@ class ExtractedQnABuilder:
         """
         validation_result = {
             'file': file_path,
-            'duplicates': {'total': 0, 'groups': 0},
+            'duplicates': {'total': 0, 'groups': 0, 'details': []},
             'invalid_options': {'total': 0, 'empty': 0, 'invalid_format': 0},
             'issues': []
         }
@@ -58,10 +58,20 @@ class ExtractedQnABuilder:
         
         # 1. 중복 검사
         try:
-            total_qna, duplicate_groups, _ = check_duplicates_single_file(file_path, return_details=True)
+            total_qna, duplicate_groups, duplicate_details = check_duplicates_single_file(file_path, return_details=True)
+            
+            # 중복 그룹 상세 정보 추출 (각 그룹별 태그 목록)
+            duplicate_group_list = []
+            if duplicate_details:
+                for content_key, items in duplicate_details.items():
+                    tags = [item.get('tag', '') for item in items if item.get('tag')]
+                    if tags:
+                        duplicate_group_list.append(tags)
+            
             validation_result['duplicates'] = {
                 'total': total_qna,
-                'groups': duplicate_groups
+                'groups': duplicate_groups,
+                'details': duplicate_group_list  # 각 그룹별 태그 리스트
             }
             if duplicate_groups > 0:
                 validation_result['issues'].append(f"중복 {duplicate_groups}개 그룹 발견")
